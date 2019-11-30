@@ -10,7 +10,6 @@
   "author": "Oskar Rodriguez",
   "license": "MIT",
   "dependencies": {
-    "bcrypt": "^3.0.7",
     "body-parser": "^1.19.0",
     "connect-multiparty": "^2.2.0",
     "express": "^4.17.1",
