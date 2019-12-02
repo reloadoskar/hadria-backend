@@ -2,7 +2,7 @@
 
 var mongoose = require('mongoose');
 var app = require('./app');
-var port = 3900;
+var port = 8080;
 
 mongoose.set('useFindAndModify', false);
 mongoose.Promise = global.Promise;
@@ -11,7 +11,9 @@ mongoose.connect('mongodb://localhost:27017/api_rest_hadria', {useNewUrlParser: 
         console.log('Conectado a la base de datos HOMIE.');
 
         // Crear servidor
-        app.listen(port, () => {
-            console.log('Servidor corriendo en http://localhost:'+port);
+        const server = app.listen(port, () => {
+            const host = server.address().address;
+            const port = server.address().port;
+            console.log('Servidor corriendo en ' + host + ":" + port );
         })
     });

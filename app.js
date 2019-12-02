@@ -1,9 +1,8 @@
 'use strict'
 
-var express = require('express');
-var bodyParser = require('body-parser');
-
-var app = express();
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
 
 //cargar rutas
 var producto_routes = require('./routes/producto');
@@ -55,5 +54,9 @@ app.use('/api', cuentas_por_cobrar_routes);
 app.use('/api', corte_routes);
 app.use('/api', balance_routes);
 app.use('/api', user_routes);
+
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+});
 
 module.exports = app;
