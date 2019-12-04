@@ -1,6 +1,6 @@
 'use strict'
 
-var Unidad = require('../models/unidad');
+var Concepto = require('../models/concepto');
 
 var controller = {
     save: (req, res) => {
@@ -8,55 +8,54 @@ var controller = {
         var params = req.body;
 
         //Crear el objeto a guardar
-        var unidad = new Unidad();
+        var concepto = new Concepto();
             
         //Asignar valores
-        unidad.unidad = params.unidad;
-        unidad.abr = params.abr;
+        concepto.concepto = params.concepto;
 
         //Guardar objeto
-        unidad.save((err, unidadStored) => {
-            if(err || !unidadStored){
+        concepto.save((err, conceptoStored) => {
+            if(err || !conceptoStored){
                 return res.status(404).send({
                     status: 'error',
-                    message: 'La unidad no se guardó.',
+                    message: 'El concepto no se guardó.',
                     err
                 })
             }
             //Devolver respuesta
             return res.status(200).send({
                 status: 'success',
-                message: 'Unidad registrada correctamente.',
-                unidad: unidadStored
+                message: 'Concepto registrado correctamente.',
+                concepto: conceptoStored
             })
         })
 
     },
 
-    getUnidades: (req, res) => {
-        Unidad.find({}).sort('_id').exec( (err, unidads) => {
-            if(err || !unidads){
+    getConceptos: (req, res) => {
+        Concepto.find({}).sort('_id').exec( (err, conceptos) => {
+            if(err || !conceptos){
                 return res.status(500).send({
                     status: 'error',
-                    message: 'Error al devolver las unidades'
+                    message: 'Error al devolver los conceptos'
                 })
             }
 
             return res.status(200).send({
                 status: 'success',
-                unidads: unidads
+                conceptos: conceptos
             })
         })
     },
 
     delete: (req, res) => {
-        var unidadId = req.params.id;
+        var conceptoId = req.params.id;
 
-        Unidad.findOneAndDelete({_id: unidadId}, (err, unidadRemoved) => {
-            if(!unidadRemoved){
+        Concepto.findOneAndDelete({_id: conceptoId}, (err, conceptoRemoved) => {
+            if(!conceptoRemoved){
                 return res.status(500).send({
                     status: 'error',
-                    message: 'No se pudo borrar la unidad.'
+                    message: 'No se pudo borrar la concepto.'
                 })
             }
             if(err){
@@ -68,8 +67,8 @@ var controller = {
 
             return res.status(200).send({
                 status: 'success',
-                message: 'Unidad eliminada correctamente.',
-                unidadRemoved
+                message: 'Concepto eliminado correctamente.',
+                conceptoRemoved
             })
         })
 

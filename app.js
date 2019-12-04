@@ -22,6 +22,9 @@ var cuentas_por_cobrar_routes = require('./routes/porCobrarCuenta')
 var corte_routes = require('./routes/corte')
 var balance_routes = require('./routes/balance')
 var user_routes = require('./routes/user')
+var unidad_routes = require('./routes/unidad')
+var empaque_routes = require('./routes/empaque')
+var concepto_routes = require('./routes/concepto')
 
 //Middlewares
 app.use(bodyParser.urlencoded({extended: false}));
@@ -54,6 +57,9 @@ app.use('/api', cuentas_por_cobrar_routes);
 app.use('/api', corte_routes);
 app.use('/api', balance_routes);
 app.use('/api', user_routes);
+app.use('/api', unidad_routes);
+app.use('/api', empaque_routes);
+app.use('/api', concepto_routes);
 
 app.get('/', (req, res) => {
     res.send('Hello World!');

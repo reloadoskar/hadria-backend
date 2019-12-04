@@ -26,8 +26,8 @@ var controller = {
             //Devolver respuesta
             return res.status(200).send({
                 status: 'success',
-                message: 'Empaque registrada correctamente.',
-                ubicacion: empaqueStored
+                message: 'Empaque registrado correctamente.',
+                empaque: empaqueStored
             })
         })
 
@@ -38,7 +38,7 @@ var controller = {
             if(err || !empaques){
                 return res.status(500).send({
                     status: 'error',
-                    message: 'Error al devolver las empaques'
+                    message: 'Error al devolver los empaques'
                 })
             }
 
