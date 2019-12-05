@@ -163,6 +163,14 @@ var controller = {
             path: 'items',
             populate: { path: 'producto'},
         })
+        .populate({
+            path: 'items',
+            populate: { path: 'producto', populate: { path: 'unidad'} },
+        })
+        .populate({
+            path: 'items',
+            populate: { path: 'producto', populate: { path: 'empaque'} },
+        })
         .populate('pagos.ubicacion')
         .exec()
         .then( (compra) => {

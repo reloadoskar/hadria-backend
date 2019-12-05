@@ -95,7 +95,7 @@ var controller = {
                         }
 
                         var ingreso = new Ingreso()
-                        ingreso.ubicacion = "5db7b83c05acf86681f52521"
+                        ingreso.ubicacion = "5de69405393cee89bef96299"
                         ingreso.concepto = "RECEPCIÓN DE CORTE"
                         ingreso.fecha = data.fecha
                         ingreso.importe = data.total

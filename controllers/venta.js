@@ -95,7 +95,7 @@ var controller = {
                                 stockDisponible += el.stock
                             });
                             if(stockDisponible === 0){
-                                compra.status = "5dc987a7c3ea92f940c0bbe4"
+                                compra.status = "TERMINADO"
                             }
                             compra.save()
                         })

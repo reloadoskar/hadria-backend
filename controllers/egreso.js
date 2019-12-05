@@ -29,7 +29,13 @@ var controller = {
                         message: 'No se registró el egreso.' + err
                     })
                 }
-    
+                if(params.compra !== 1){
+                    Compra.findById(params.compra).exec((err, compra) => {
+                        if(err)console.log(err)
+                        compra.saldo -= egreso.importe
+                        compra.save()
+                    })
+                }
                 return res.status(200).send({
                     status: 'success',
                     message: 'Egreso registrado correctamente.'
