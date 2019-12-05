@@ -1,14 +1,16 @@
 'use strict'
 
 var mongoose = require('mongoose');
-// const bcrypt = require('bcrypt')
-const saltRounds = 10;
-
 
 var Schema = mongoose.Schema;
 var UserSchema = Schema({
+    nombre: {type: String},
+    apellido: {type: String},
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    database: String
+},{
+    timestamps: true
 });
 
 // UserSchema.pre('save', function(next) {

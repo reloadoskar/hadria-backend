@@ -1,11 +1,18 @@
 'use strict'
 
-var express = require('express');
-var UserController = require('../controllers/user');
+const express = require('express');
+const router = express.Router();
+const cors = require('cors')
 
-var router = express.Router();
+const UserController = require('../controllers/user');
+
+router.use(cors())
+
+
 
 //Rutas
-router.post('/user/save', UserController.save);
+router.post('/register', UserController.save);
+router.post('/login', UserController.login)
+router.get('/profile', UserController.profile)
 
 module.exports = router;
