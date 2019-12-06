@@ -11,8 +11,8 @@ router.use(cors())
 
 
 //Rutas
-router.post('/register', UserController.save);
-router.post('/login', UserController.login)
+router.post('/client/register', UserController.save);
+router.post('/user/login', UserController.login)
 router.get('/profile', UserController.profile)
 
 module.exports = router;

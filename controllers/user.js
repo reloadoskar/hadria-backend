@@ -69,12 +69,22 @@ var controller = {
                         expiresIn: 1440
                     })
 
-                    res.send(token)
+                    res.status(200).send({
+                        status: 'success',
+                        message: 'Bienvenido',
+                        token
+                    })
                 }else{
-                    res.json({error: "El usuario o la contraseña son incorrectos."})
+                    res.status(200).send({
+                        status: 'error',
+                        message: "El usuario o la contraseña son incorrectos."
+                    })
                 }
             }else{
-                res.json({error: "El usuario no existe."})
+                res.status(200).send({
+                    status: 'error',
+                    message: "El usuario no existe."
+                })
             }
         })
         .catch(err => {

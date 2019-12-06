@@ -7,7 +7,6 @@ var controller = {
     save: (req, res) => {
         //recoger parametros
         var params = req.body;
-        console.log(params)
         //validar datos
         try{
             var validate_nombre = !validator.isEmpty(params.nombre);
