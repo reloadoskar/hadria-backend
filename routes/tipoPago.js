@@ -1,7 +1,7 @@
 'use strict'
 
 var express = require('express');
-var TipoPagoController = require('../controllers/tipopago');
+var TipoPagoController = require('../controllers/tipoPago');
 
 var router = express.Router();
 

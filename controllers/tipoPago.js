@@ -1,7 +1,7 @@
 'use strict'
 
 var validator = require('validator');
-var TipoPago = require('../models/tipopago');
+var TipoPago = require('../models/tipoPago');
 
 var controller = {
     save: (req, res) => {
