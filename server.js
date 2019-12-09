@@ -7,7 +7,10 @@ mongoose.connect('mongodb://34.70.127.109:27017/hadria_angy', {useNewUrlParser: 
     .then( () => {
         console.log('WELCOME HOMIE!');
         // Crear servidor
-        app.listen(port, () => {    
-            console.log('Servidor corriendo en puerto:' + port );
+        const server = app.listen(port, () => {
+            const host = server.address().address;
+            const port = server.address().port;
+            console.log('Servidor corriendo en ' + host + ":" + port );
         })
+
       })
