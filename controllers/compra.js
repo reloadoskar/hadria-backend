@@ -126,7 +126,7 @@ var controller = {
     },
 
     getCompras: (req, res) => {
-        Compra.find({}).sort('folio')
+        Compra.find({status: { $ne: "CERRADO" }}).sort('folio')
             .populate('provedor', 'nombre')
             .populate('ubicacion')
             .populate('tipoCompra')
@@ -214,11 +214,11 @@ var controller = {
     close: (req, res) => {
         var compraId = req.params.id
 
-        Compra.findOneAndUpdate({_id: compraId}, {status: "5ddd89fdb47cdb22c669c374"} , (err, compraUpdated) => {
+        Compra.findOneAndUpdate({_id: compraId}, {status: "CERRADO"} , (err, compraUpdated) => {
             if(err)console.log(err)
             return res.status(200).send({
                 status: 'success',
-                message: 'Actualizado correctamente',
+                message: 'Compra cerrada correctamente.',
                 compraUpdated
             })
         })

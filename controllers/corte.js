@@ -4,6 +4,7 @@ var Corte = require('../models/corte');
 var Venta = require('../models/venta')
 var Egreso = require('../models/egreso')
 var Ingreso = require('../models/ingreso')
+var Ubicacion = require('../models/ubicacion')
 
 var controller = {
     getData: (req, res) => {
@@ -93,23 +94,28 @@ var controller = {
                                 message: 'No se registró el egreso.' + err
                             })
                         }
-
                         var ingreso = new Ingreso()
-                        ingreso.ubicacion = "5de69405393cee89bef96299"
-                        ingreso.concepto = "RECEPCIÓN DE CORTE"
-                        ingreso.fecha = data.fecha
-                        ingreso.importe = data.total
-                        ingreso.save((err, ingresoSaved) => {
-                            if(err){
-                                return res.status(500).send({
-                                    status: 'error',
-                                    message: "No se pudo registrar el Ingreso."
-                                })
+                        Ubicacion.find({nombre: {$eq: "ADMINISTRACION"}}).exec( (err, uFinded) => {
+                            if(err || !uFinded){
+                                console.log(err)
                             }
-                            return res.status(200).send({
-                                    status: 'success', 
-                                    message: 'Corte guardado correctamente',
-                                    corte 
+                            ingreso.ubicacion = uFinded[0]._id
+                            ingreso.concepto = "RECEPCIÓN DE CORTE"
+                            ingreso.fecha = data.fecha
+                            ingreso.importe = data.total
+                            ingreso.save((err, ingresoSaved) => {
+                                if(err){
+                                    return res.status(500).send({
+                                        status: 'error',
+                                        message: "No se pudo registrar el Ingreso.",
+                                        err
+                                    })
+                                }
+                                return res.status(200).send({
+                                        status: 'success', 
+                                        message: 'Corte guardado correctamente',
+                                        corte 
+                                })
                             })
                         })
                     })
