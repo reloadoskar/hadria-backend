@@ -71,7 +71,7 @@ var controller = {
 
                     res.status(200).send({
                         status: 'success',
-                        message: 'Bienvenido',
+                        message: 'Bienvenido '+payload.nombre,
                         token
                     })
                 }else{
@@ -100,9 +100,12 @@ var controller = {
         })
         .then(user => {
             if(user){
-                res.json(user)
+                res.send({
+                    message: "success",
+                    user
+                })
             }else{
-                res.send("El usuario no existe.")
+                res.send({ message: "El usuario no existe."})
             }
         })
         .catch(err => {

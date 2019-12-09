@@ -100,7 +100,7 @@ var controller = {
     },
 
     getComprasDash: (req, res) => {
-        Compra.find({ "status": { $ne: "5dc987d5c3ea92f940c0bbfb", $ne: "5ddd89fdb47cdb22c669c374", $ne: "5dc987e7c3ea92f940c0bc03" } }).sort('_id')
+        Compra.find({ "status": { $ne: 'CERRADO', $ne: "LIQUIDADO" } }).sort('_id')
             .populate('provedor', 'nombre')
             .populate('ubicacion')
             .populate('tipoCompra')
