@@ -28,11 +28,13 @@ var controller = {
                     user.save((err, user) => {
                         if(err || !user) {
                             return res.status(404).send({
+                                status: 'error',
                                 message: "Ocurrio un error",
                                 err
                             })
                         }else{
                             return res.status(200).send({
+                                status: 'success',
                                 message:"Registrado.",
                             })
                         }
@@ -41,7 +43,7 @@ var controller = {
 
                 })
             }else{
-                return res.status(400).send({
+                return res.status(200).send({
                     status: 'error',
                     message:"El Usuario ya existe."
                 })
