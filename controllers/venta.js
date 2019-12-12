@@ -128,9 +128,24 @@ var controller = {
                     ingreso.tipoPago = params.tipoPago
                     ingreso.save((err, ing) =>{
                         if(err)console.log(err)
-                        return res.status(200).send({
-                            status: "success",
-                            message: "Venta guardada correctamente."
+                        Venta.findById(ventaSaved._id)
+                            .populate('ubicacion')
+                            .populate('cliente')
+                            .populate({
+                                path: 'items',
+                                populate: { path: 'producto'},
+                            })
+                            .populate({
+                                path: 'pagos',
+                                populate: { path: 'ubicacion'},
+                            })
+                            .exec((err, venta) => {
+                                if(err)console.log(err)
+                                return res.status(200).send({
+                                    status: "success",
+                                    message: "Venta guardada correctamente.",
+                                    venta: venta
+                            })
                         })
                     })
                 }        
