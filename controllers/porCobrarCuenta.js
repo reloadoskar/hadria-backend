@@ -3,8 +3,51 @@
 var Venta = require('../models/venta');
 var Ingreso = require('../models/ingreso');
 var Cliente = require('../models/cliente');
-
+var mongoose = require('mongoose');
 var controller = {
+    save: (req, res) => {
+        var params = req.body
+        var venta = new Venta()
+
+        Venta.estimatedDocumentCount((err, count) => {
+            venta._id = mongoose.Types.ObjectId(),
+            venta.folio = ++count
+            venta.cliente = params.cliente
+            venta.fecha = params.fecha
+            venta.importe = params.importe 
+            venta.saldo = params.importe
+            venta.tipoPago = 'CRÉDITO'
+
+            Cliente.findById(params.cliente._id, (err, cliente) => {
+                if(err)console.log(err)
+                let creditoDisponible = cliente.credito_disponible
+                let creditoActualizado = creditoDisponible - venta.saldo
+                cliente.credito_disponible = creditoActualizado
+                cliente.save((err, cliente) => {
+                    if(err)console.log(err)
+                })
+            })
+
+            venta.save( (err, ventaSaved) => {
+                if(err){
+                    return res.status(404).send({
+                        status: "error",
+                        message: "Error al guardar la venta",
+                        err
+                    })
+                }
+                else{
+                    return res.status(200).send({
+                        status: "success",
+                        message: "Venta guardada correctamente.",
+                        venta: ventaSaved
+                    })
+                }        
+            })
+                       
+        })
+        
+    },
     getCuentas: (req, res) => {
         Venta.find( { "saldo": {$gt: 0} } )
             .select("cliente total saldo fecha acuenta")

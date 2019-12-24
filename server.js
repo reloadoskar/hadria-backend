@@ -3,6 +3,7 @@ var mongoose = require('mongoose')
 var port = 8080;
 
 mongoose.Promise = global.Promise;
+// mongoose.connect('mongodb://127.0.0.1:27017/hadria_pruebas_1', {useNewUrlParser: true, useUnifiedTopology: true})
 mongoose.connect('mongodb://34.70.127.109:27017/hadria_angy', {useNewUrlParser: true, useUnifiedTopology: true})
     .then( () => {
         console.log('WELCOME HOMIE!');

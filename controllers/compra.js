@@ -48,6 +48,11 @@ var controller = {
                             var itmsToSave = []
                             i.map((item) => {
                                 var compraItem = {}
+                                if(item.provedor === ''){
+                                    compraItem.provedor = compra.provedor
+                                }else{
+                                    compraItem.provedor = item.provedor
+                                }
                                 compraItem.compra = compraSaved._id
                                 compraItem.producto = item.producto._id
                                 compraItem.cantidad = item.cantidad
@@ -134,6 +139,10 @@ var controller = {
                 path: 'items',
                 populate: { path: 'producto'},
             })
+            .populate({
+                path: 'items',
+                populate: { path: 'provedor'},
+            })
             .exec((err, compras) => {
                 if (err || !compras) {
                     return res.status(500).send({
@@ -156,9 +165,13 @@ var controller = {
         var data = {}
         Compra
         .findById(compraId)
-        .populate('provedor', 'nombre tel1 cta1 email diasDeCredito comision')
+        .populate('provedor', 'clave nombre tel1 cta1 email diasDeCredito comision')
         .populate('ubicacion')
         .populate('tipoCompra')
+        .populate({
+            path: 'items',
+            populate: { path: 'provedor'},
+        })
         .populate({
             path: 'items',
             populate: { path: 'producto'},
