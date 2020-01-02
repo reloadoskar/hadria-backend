@@ -154,114 +154,6 @@ var controller = {
         })
         
     },
-    saveOld: (req, res) => {
-        var errors = []
-        //recoger parametros
-        var params = req.body;
-        
-        // console.log(params)
-        var venta = new Venta()
-        var ingreso = new Ingreso()
-
-        ingreso.importe = params.total
-
-        venta.ubicacion = params.ubicacion
-        venta.cliente = params.cliente
-        venta.fecha = params.fecha
-        venta.tipoPago = params.tipoPago
-        venta.importe = params.total
-        // venta.items = [];
-        var items = params.items
-        
-        var ventaItems = []
-        items.map((item) => {
-            ventaItems.push({
-                item: item.item,
-                compra: item.compra,
-                producto: item.producto._id,
-                cantidad: item.cantidad,
-                empaques: item.empaques,
-                precio: item.precio,
-                importe: item.importe,
-            })
-            // ACTUALIZAMOS STOCK
-            Compra.findById(item.compra, (err, compra) => {
-                if(err)console.log(err)
-                compra.items.id(item.item).stock -= item.cantidad 
-                compra.items.id(item.item).empaques -= item.empaques 
-                compra.save((err, compra) => {
-                    if(err) console.log(err)
-                    let stockDisponible = 0
-                    compra.items.forEach(el => {
-                        stockDisponible += el.stock
-                    });
-                    if(stockDisponible === 0){
-                        compra.status = "5dc987a7c3ea92f940c0bbe4"
-                        compra.save()
-                    }
-                })
-            })
-            
-            
-        })
-        VentaItem.insertMany(ventaItems)
-        // venta.items = items
-
-        if (params.tipoPago === 'CRÉDITO'){
-            venta.acuenta = params.acuenta
-            venta.saldo = params.saldo
-
-            ingreso.importe = params.acuenta
-
-            Cliente.findById(params.cliente._id, (err, cliente) => {
-                if(err)console.log(err)
-                let creditoDisponible = cliente.credito_disponible
-                let creditoActualizado = creditoDisponible - venta.saldo
-
-                cliente.credito_disponible = creditoActualizado
-                cliente.save((err, cliente) => {
-                    if(err)console.log(err)
-                })
-            })
-
-            if(params.acuenta > 0){
-                venta.pagos.push({
-                    ubicacion: venta.ubicacion,
-                    fecha: venta.fecha,
-                    importe: params.acuenta
-                })
-            }
-
-        }
-
-        ingreso.ubicacion = params.ubicacion
-        ingreso.fecha = params.fecha
-        
-        ingreso.concepto = "VENTA"
-        ingreso.descripcion = "VENTA DESDE UBICACIÓN"
-        ingreso.tipoPago = params.tipoPago
-
-        ingreso.save((err, ing) =>{
-            if(err)console.log(err)
-            // console.log(ing)
-        })
-
-
-        venta.save((err, ventaStored) => {
-            if(err || !ventaStored){
-                return res.status(404).send({
-                    status: 'error',
-                    message: 'No se pudo guardar la venta: ',
-                    error: err 
-                })
-            }
-            return res.status(200).send({
-                status: 'success',
-                message: 'Venta registrada correctamente.'
-            })
-        })
-        
-    },
 
     getVentas: (req, res) => {
         Venta.find({}).exec((err, ventas) => {
@@ -270,6 +162,25 @@ var controller = {
                 status: "success",
                 ventas
             })
+        })
+    },
+
+    getVenta: (req, res) => {
+        var folio = req.params.folio
+        Venta.find({"folio": folio })
+        .exec((err, venta) => {
+            if(err){
+                return res.status(500).send({
+                    status: "error",
+                    err
+                })
+            }
+            else{
+                return res.status(200).send({
+                    status: "success",
+                    venta
+                })
+            }
         })
     },
 
