@@ -9,7 +9,7 @@ var router = express.Router();
 router.post('/venta/save', VentaController.save);
 router.get('/ventas', VentaController.getVentas);
 router.get('/venta/producto/:id', VentaController.getVentasOfProduct);
-router.post('/venta/:id', VentaController.getVenta);
-// router.delete('/venta/:id', VentaController.delete);
+router.post('/venta', VentaController.getVenta);
+router.delete('/venta/:id', VentaController.cancel);
 
 module.exports = router;

@@ -19,6 +19,7 @@ var VentaSchema = Schema({
         fecha: String,
         importe: Number
     }],
+    status: String,
 },{
     timestamps: true
 });

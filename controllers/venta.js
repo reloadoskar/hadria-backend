@@ -23,6 +23,7 @@ var controller = {
             venta.fecha = params.fecha
             venta.tipoPago = params.tipoPago
             venta.importe = params.total 
+            // venta.status = "ACTIVO"
             ingreso.importe = params.total
 
             if (params.tipoPago === 'CRÉDITO'){
@@ -166,8 +167,18 @@ var controller = {
     },
 
     getVenta: (req, res) => {
-        var folio = req.params.folio
+        var folio = req.body.folio
         Venta.find({"folio": folio })
+        .populate({
+            path: 'items',
+            populate: { path: 'producto'},
+        })
+        .populate({
+            path: 'items',
+            populate: { path: 'compra'},
+        })
+        .populate('ubicacion')
+        .populate('cliente')
         .exec((err, venta) => {
             if(err){
                 return res.status(500).send({
@@ -251,28 +262,73 @@ var controller = {
 
     },
 
-    delete: (req, res) => {
-        var compraId = req.params.id;
+    cancel: (req, res) => {
+        var id = req.params.id;
 
-        Compra.findOneAndDelete({_id: compraId}, (err, compraRemoved) => {
-            if(!compraRemoved){
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'No se pudo borrar el compra.'
-                })
-            }
-            if(err){
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'Ocurrio un error.'
-                })
-            }
-
-            return res.status(200).send({
-                status: 'success',
-                message: 'Compra eliminada correctamente',
-                compraRemoved
+        Venta.findById(id)
+            .populate({
+                path: 'items',
+                populate: { path: 'compraItem'},
             })
+            .exec((err, venta) => {
+                if(!venta){
+                    return res.status(500).send({
+                        status: 'error',
+                        message: 'No se encontró la venta.'
+                    })
+                }
+                if(err){
+                    return res.status(500).send({
+                        status: 'error',
+                        message: 'Ocurrio un error.'
+                    })
+                }
+
+
+                venta.tipoPago = "CANCELADO"
+                venta.saldo = 0
+                venta.importe = 0
+
+                venta.items.map(item => {
+                    let stockUpdated = item.compraItem.stock + item.cantidad
+                    let empUpdated = item.compraItem.stock + item.empaques
+                    CompraItem.findById(item.compraItem._id).exec((err, item) => {
+                        if(err || !item){
+                            return res.status(500).send({
+                                status: 'error',
+                                message: 'No encontré el item.'
+                            })
+                        }
+                        else{
+                            item.stock = stockUpdated
+                            item.empaquesStock = empUpdated
+
+                            item.save( (err, itemSaved) => {
+                                if(err)console.log(err)
+                            })
+                            
+                        }
+                    })
+                })
+                Ingreso.deleteMany({"venta": venta._id}, err => {
+                    if(err)console.log(err)
+                })
+                venta.save((err, ventaSaved) => {
+                    if(err || !ventaSaved){
+                        return res.status(200).send({
+                            status: 'error',
+                            message: 'No se actualizo la venta.',
+                        })
+                    }
+                    else{
+                        return res.status(200).send({
+                            status: 'success',
+                            message: 'Venta cancelada correctamente',
+                            venta
+                        })
+                    }
+                })
+
         })
 
     },
