@@ -8,7 +8,8 @@ var UserSchema = Schema({
     apellido: {type: String},
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    database: String
+    database: String,
+    level: Number
 },{
     timestamps: true
 });

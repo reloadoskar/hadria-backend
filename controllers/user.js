@@ -65,7 +65,8 @@ var controller = {
                         nombre: user.nombre,
                         apellido: user.apellido,
                         email: user.email,
-                        database: user.database
+                        database: user.database,
+                        level: user.level,
                     }
                     let token = jwt.sign(payload, process.env.SECRET_KEY, {
                         expiresIn: 1440
