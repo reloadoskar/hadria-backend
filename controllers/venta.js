@@ -137,6 +137,10 @@ var controller = {
                                 populate: { path: 'producto'},
                             })
                             .populate({
+                                path: 'items',
+                                populate: { path: 'compra'},
+                            })
+                            .populate({
                                 path: 'pagos',
                                 populate: { path: 'ubicacion'},
                             })
