@@ -50,7 +50,7 @@ var controller = {
     },
     getCuentas: (req, res) => {
         Venta.find( { "saldo": {$gt: 0} } )
-            .select("cliente total saldo fecha acuenta")
+            .select("cliente importe saldo fecha acuenta folio")
             .populate("cliente")
             .exec((err, docs) => {
                 if (err){
