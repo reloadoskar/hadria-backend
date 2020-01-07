@@ -5,7 +5,7 @@ var Compra = require('../models/compra');
 var controller = {
     getInventario: (req, res) => {
         Compra.find({"status": "ACTIVO"})
-            .select('clave ubicacion items')
+            .select('clave folio ubicacion items')
             .populate({
                 path: 'items',
                 select: 'stock empaques cantidad, empaquesStock producto provedor',

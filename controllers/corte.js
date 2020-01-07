@@ -24,7 +24,7 @@ var controller = {
         })
         .populate('ubicacion')
         .populate('cliente')
-        .sort('ubicacion cliente tipoPago acuenta saldo importe')
+        .sort('folio')
         .exec()
         .then(ventas => {
             corte.ventas = ventas
@@ -130,7 +130,9 @@ var controller = {
 
         Corte.find({"ubicacion": ubicacion, "fecha": fecha}).
         exec((err, corte)=>{
-            if(err || !corte) res.status(404).send()
+            if(err || !corte) res.status(404).send({
+                status: "error",
+            })
             res.status(200).send({
                 status: 'success',
                 corte: corte
