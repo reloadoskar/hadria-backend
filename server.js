@@ -12,3 +12,6 @@ mongoose.connect('mongodb+srv://reloadoskar:MuffinTop100685@hdra1-qllhk.mongodb.
             console.log('HADRIA IS LISTENING HOMIE!!!!');
         })
     })
+    .catch(err => {
+        console.log(err)
+    })
