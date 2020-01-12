@@ -39,5 +39,5 @@ var CompraSchema = Schema({
     timestamps: true
 });
 
-// module.exports = mongoose.model('Compra', CompraSchema);
-module.exports = CompraSchema
+module.exports = mongoose.model('Compra', CompraSchema);
+// module.exports = CompraSchema

@@ -24,5 +24,5 @@ var VentaSchema = Schema({
     timestamps: true
 });
 
-module.exports = VentaSchema
-// module.exports = mongoose.model('Venta', VentaSchema);
+// module.exports = VentaSchema
+module.exports = mongoose.model('Venta', VentaSchema);

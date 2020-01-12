@@ -7,5 +7,5 @@ var TipoVentaSchema = Schema({
     tipo: {type: String, unique: true},
 });
 
-module.exports = TipoVentaSchema
-// module.exports = mongoose.model('TipoVenta', TipoVentaSchema);
+// module.exports = TipoVentaSchema
+module.exports = mongoose.model('TipoVenta', TipoVentaSchema);

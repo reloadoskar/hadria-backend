@@ -7,5 +7,5 @@ var UbicacionSchema = Schema({
     nombre: {type: String, unique: true},
 });
 
-module.exports = UbicacionSchema
-// module.exports = mongoose.model('Ubicacion', UbicacionSchema);
+// module.exports = UbicacionSchema
+module.exports = mongoose.model('Ubicacion', UbicacionSchema);

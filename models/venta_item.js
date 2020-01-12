@@ -17,5 +17,5 @@ var VentaItemSchema = Schema({
     timestamps: true
 });
 
-// module.exports = mongoose.model('VentaItem', VentaItemSchema);
-module.exports = VentaItemSchema
+module.exports = mongoose.model('VentaItem', VentaItemSchema);
+// module.exports = VentaItemSchema

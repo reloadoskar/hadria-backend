@@ -19,5 +19,5 @@ var ProvedorSchema = Schema({
     timestamps: true
 });
 
-// module.exports = mongoose.model('Provedor', ProvedorSchema);
-module.exports = ProvedorSchema
+module.exports = mongoose.model('Provedor', ProvedorSchema);
+// module.exports = ProvedorSchema

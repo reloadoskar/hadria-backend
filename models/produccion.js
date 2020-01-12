@@ -17,5 +17,5 @@ var ProduccionSchema = Schema({
     timestamps: true
 });
 
-module.exports = ProduccionSchema
-// module.exports = mongoose.model('Produccion', ProduccionSchema);
+// module.exports = ProduccionSchema
+module.exports = mongoose.model('Produccion', ProduccionSchema);

@@ -7,5 +7,5 @@ var TipoPagoSchema = Schema({
     tipo: {type: String, unique: true},
 });
 
-module.exports = TipoPagoSchema
-// module.exports = mongoose.model('TipoPago', TipoPagoSchema);
+// module.exports = TipoPagoSchema
+module.exports = mongoose.model('TipoPago', TipoPagoSchema);

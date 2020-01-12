@@ -9,5 +9,5 @@ var StatusSchema = Schema({
     timestamps: true
 });
 
-// module.exports = mongoose.model('Status', StatusSchema);
-module.exports = StatusSchema
+module.exports = mongoose.model('Status', StatusSchema);
+// module.exports = StatusSchema

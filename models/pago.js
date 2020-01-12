@@ -12,5 +12,5 @@ var PagoSchema = Schema({
     timestamps: true
 });
 
-module.exports = PagoSchema
-// module.exports = mongoose.model('Pago', PagoSchema);
+// module.exports = PagoSchema
+module.exports = mongoose.model('Pago', PagoSchema);

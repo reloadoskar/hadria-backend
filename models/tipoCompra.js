@@ -7,5 +7,5 @@ var TipoCompraSchema = Schema({
     tipo: {type: String, unique: true},
 });
 
-module.exports = TipoCompraSchema
-// module.exports = mongoose.model('TipoCompra', TipoCompraSchema);
+// module.exports = TipoCompraSchema
+module.exports = mongoose.model('TipoCompra', TipoCompraSchema);

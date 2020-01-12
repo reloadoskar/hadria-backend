@@ -15,5 +15,5 @@ var PorPagarCuentaSchema = Schema({
     timestamps: true
 });
 
-module.exports = PorPagarCuentaSchema
-// module.exports = mongoose.model('PorPagarCuenta', PorPagarCuentaSchema);
+// module.exports = PorPagarCuentaSchema
+module.exports = mongoose.model('PorPagarCuenta', PorPagarCuentaSchema);

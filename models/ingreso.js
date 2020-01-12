@@ -23,5 +23,5 @@ var IngresoSchema = Schema({
     timestamps: true
 });
 
-// module.exports = mongoose.model('Ingreso', IngresoSchema);
-module.exports = IngresoSchema
+module.exports = mongoose.model('Ingreso', IngresoSchema);
+// module.exports = IngresoSchema
