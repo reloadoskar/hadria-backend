@@ -29,4 +29,5 @@ var CorteSchema = Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model('Corte', CorteSchema);
+// module.exports = mongoose.model('Corte', CorteSchema);
+module.exports = CorteSchema

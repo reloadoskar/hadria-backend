@@ -10,4 +10,5 @@ var UnidadSchema = Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model('Unidad', UnidadSchema);
+module.exports = UnidadSchema
+// module.exports = mongoose.model('Unidad', UnidadSchema);

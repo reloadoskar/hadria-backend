@@ -1,4 +1,7 @@
 'use strict'
+// var app = require('../app');
+// var app = require('../app_client')
+var mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 var User = require('../models/user');
@@ -72,19 +75,49 @@ var controller = {
                         expiresIn: 1440
                     })
 
-                    res.status(200).send({
+                    var db_client = "mongodb://127.0.0.1:27017/"+user.database
+                    var port = 8080;
+                    console.log(db_client)
+                    const options = {
+                        useNewUrlParser: true,
+                        autoIndex: false, // Don't build indexes
+                        reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
+                        reconnectInterval: 500, // Reconnect every 500ms
+                        poolSize: 4, // Maintain up to 10 socket connections
+                        // If not connected, return errors immediately rather than waiting for reconnect
+                        bufferMaxEntries: 0,
+                        connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
+                        socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+                        family: 4 // Use IPv4, skip trying IPv6
+                      };
+                    // const conn = mongoose.createConnection(db_client, options);
+
+                    // const conn = mongoose.createConnection(db_client, {useNewUrlParser: true, useUnifiedTopology: true})
+                    return res.status(200).send({
                         status: 'success',
                         message: 'Bienvenido '+payload.nombre,
                         token
                     })
+                    // .then( () => {
+                    //     console.log('WELCOME AGAIN!');
+                    //     return res.status(200).send({
+                    //         status: 'success',
+                    //         message: 'Bienvenido '+payload.nombre,
+                    //         token
+                    //     })
+                    // })
+                    // .catch(err => {
+                    //     console.log(err)
+                    // })
+
                 }else{
-                    res.status(200).send({
+                    return res.status(200).send({
                         status: 'error',
                         message: "El usuario o la contraseña son incorrectos."
                     })
                 }
             }else{
-                res.status(200).send({
+                return res.status(200).send({
                     status: 'error',
                     message: "El usuario no existe."
                 })

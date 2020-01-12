@@ -1,26 +1,28 @@
 'use strict'
-
+var mongoose = require('mongoose');
 var validator = require('validator')
 var Compra = require('../models/compra')
 var CompraItem = require('../models/compra_item')
 var Venta = require('../models/venta')
 var VentaItem = require('../models/venta_item')
 var Egreso = require('../models/egreso')
+var Produccion = require('../models/produccion')
 
 var controller = {
     save: (req, res) => {
         //recoger parametros
         var params = req.body;
 
-        async function getNumberOfComprasFor(provedorId) {
-            var res = await Compra.countDocuments({ provedor: provedorId })
-            return res
-        }
+        // async function getNumberOfComprasFor(provedorId) {
+        //     var res = await Compra.countDocuments({ provedor: provedorId })
+        //     return res
+        // }
         Compra.estimatedDocumentCount((err, count) => {
             // .then((err, count) =>{
             if (err) console.log(err)
             const nDocuments = count
             var compra = new Compra();
+            compra._id = mongoose.Types.ObjectId(),
             compra.folio = nDocuments + 1
             compra.provedor = params.provedor
             compra.ubicacion = params.ubicacion
@@ -30,6 +32,16 @@ var controller = {
             compra.saldo = params.total
             compra.fecha = params.fecha
             compra.status = 'ACTIVO'
+
+            if (params.tipoCompra.tipo === "PRODUCCION" ){
+                compra.produccion = params.produccion
+                compra.status = 'PRODUCCION'
+                Produccion.findById(params.produccion._id).exec((err, produccion) => {
+                    produccion.compras.push(compra.id)
+                    produccion.costo += compra.importe
+                    produccion.save()
+                })
+            }
 
             compra.save((err, compraSaved) => {
                 if (err) {
@@ -105,7 +117,7 @@ var controller = {
     },
 
     getComprasDash: (req, res) => {
-        Compra.find({ "status": { $ne: 'CERRADO', $ne: "LIQUIDADO" } }).sort('_id')
+        Compra.find({ "status": { $ne: "PRODUCCION" } }).sort('folio')
             .populate('provedor', 'nombre')
             .populate('ubicacion')
             .populate('tipoCompra')
@@ -131,7 +143,7 @@ var controller = {
     },
 
     getCompras: (req, res) => {
-        Compra.find({status: { $ne: "CERRADO" }}).sort('folio')
+        Compra.find({status: { $ne: "CERRADO", $ne: "PRODUCCION" }}).sort('folio')
             .populate('provedor', 'nombre')
             .populate('ubicacion')
             .populate('tipoCompra')

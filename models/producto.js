@@ -16,4 +16,5 @@ var ProductoSchema = Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model('Producto', ProductoSchema);
+// module.exports = mongoose.model('Producto', ProductoSchema);
+module.exports = ProductoSchema

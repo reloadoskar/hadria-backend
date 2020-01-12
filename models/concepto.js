@@ -8,4 +8,5 @@ var ConceptoSchema = Schema({
 
 });
 
-module.exports = mongoose.model('Concepto', ConceptoSchema);
+// module.exports = mongoose.model('Concepto', ConceptoSchema);
+module.exports = ConceptoSchema

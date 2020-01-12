@@ -16,4 +16,5 @@ var EgresoSchema = Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model('Egreso', EgresoSchema);
+// module.exports = mongoose.model('Egreso', EgresoSchema);
+module.exports = EgresoSchema

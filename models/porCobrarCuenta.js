@@ -15,4 +15,5 @@ var PorCobrarCuentaSchema = Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model('PorCobrarCuenta', PorCobrarCuentaSchema);
+module.exports = PorCobrarCuentaSchema
+// module.exports = mongoose.model('PorCobrarCuenta', PorCobrarCuentaSchema);

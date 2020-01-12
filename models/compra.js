@@ -20,6 +20,7 @@ var CompraSchema = Schema({
     provedor: { type: Schema.ObjectId, ref: 'Provedor' },
     ubicacion: {type: Schema.ObjectId, ref: 'Ubicacion'},
     tipoCompra: {type: Schema.ObjectId, ref: 'TipoCompra'},
+    produccion: {type: Schema.ObjectId, ref: 'Produccion'},
     fecha: String,
     remision: Number,
     importe: Number,
@@ -38,4 +39,5 @@ var CompraSchema = Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model('Compra', CompraSchema);
+// module.exports = mongoose.model('Compra', CompraSchema);
+module.exports = CompraSchema

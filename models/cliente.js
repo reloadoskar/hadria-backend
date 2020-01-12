@@ -17,4 +17,5 @@ var ClienteSchema = Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model('Cliente', ClienteSchema);
+// module.exports = mongoose.model('Cliente', ClienteSchema);
+module.exports = ClienteSchema

@@ -10,4 +10,5 @@ var EmpaqueSchema = Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model('Empaque', EmpaqueSchema);
+// module.exports = mongoose.model('Empaque', EmpaqueSchema);
+module.exports = EmpaqueSchema
