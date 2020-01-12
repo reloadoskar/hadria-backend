@@ -3,8 +3,9 @@ var mongoose = require('mongoose')
 var port = 8080;
 
 mongoose.Promise = global.Promise;
-// mongoose.connect('mongodb://127.0.0.1:27017/hadria_pruebas_1', {useNewUrlParser: true, useUnifiedTopology: true})
-mongoose.connect('mongodb://34.70.127.109:27017/hadria_angy', {useNewUrlParser: true, useUnifiedTopology: true})
+mongoose.connect('mongodb+srv://reloadoskar:MuffinTop100685@hdra1-qllhk.mongodb.net/DB_HADRIA2_ANGY?retryWrites=true&w=majority', {useNewUrlParser: true, useUnifiedTopology: true})
+// mongoose.connect('mongodb://127.0.0.1:27017/hadria_Copy_ANGY_1', {useNewUrlParser: true, useUnifiedTopology: true})
+// mongoose.connect('mongodb://34.70.127.109:27017/hadria_angy', {useNewUrlParser: true, useUnifiedTopology: true})
     .then( () => {
         console.log('WELCOME HOMIE!');
         // Crear servidor
