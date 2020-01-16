@@ -250,26 +250,9 @@ var controller = {
     },
 
     update: (req, res) => {
-        var compraId = req.params.id;
+        var compra = req.body
 
-        //recoger datos actualizados y validarlos
-        var params = req.body;
-        try {
-            var validate_clave = !validator.isEmpty(params.clave);
-            var validate_descripcion = !validator.isEmpty(params.descripcion);
-            var validate_costo = !validator.isEmpty(params.costo);
-            var validate_precio1 = !validator.isEmpty(params.precio1);
-        } catch (err) {
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if (validate_clave && validate_descripcion && validate_costo, validate_precio1) {
-
-            // Find and update
-            Compra.findOneAndUpdate({ _id: compraId }, params, { new: true }, (err, compraUpdated) => {
+            Compra.findByIdAndUpdate(compra._id, compra, { new: true }, (err, compraUpdated) => {
                 if (err) {
                     return res.status(500).send({
                         status: 'error',
@@ -286,17 +269,11 @@ var controller = {
 
                 return res.status(200).send({
                     status: 'success',
+                    message: "Compra actualizada",
                     compra: compraUpdated
                 })
 
             })
-
-        } else {
-            return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
-            })
-        }
 
     },
 
@@ -325,6 +302,85 @@ var controller = {
         })
 
     },
+
+    addCompraItem: (req,res) => {
+        var item = req.body
+        var newItem = new CompraItem()
+        newItem.compra = item.compra
+        newItem.producto = item.producto
+        newItem.cantidad = item.cantidad
+        newItem.stock = item.stock
+        newItem.empaques = item.empaques
+        newItem.empaquesStock = item.stock
+        newItem.costo = item.costo
+        newItem.importe = item.importe
+
+        newItem.save((err, itmSaved) => {
+            if(err || !itmSaved) {
+                return res.status(200).send({
+                    status: 'error',
+                    message: 'Ocurrio un error.'
+                })
+            }else{
+                Compra.findById(newItem.compra).exec((err,compra) => {
+                    if(err){
+                        return res.status(200).send({
+                            status: 'error',
+                            message: 'Ocurrio un error.'
+                        })      
+                    }else{
+                        compra.items.push(itmSaved._id)
+                        compra.save()
+                        CompraItem.findById(itmSaved._id).populate('producto').exec((err, item)=> {
+                            return res.status(200).send({
+                                status: 'success',
+                                message: 'Item Agregado correctamente.',
+                                item: item
+                            })
+
+                        })
+                    }
+                })
+            }
+        })
+
+    },
+
+    updateCompraItem: (req, res) => {
+        var item = req.body;
+
+        CompraItem.findById(item.item_id).exec( (err, compraItem) => {
+            if(err || !compraItem){
+                return res.status(200).send({
+                    status: 'error',
+                    message: 'Ocurrio un error.'
+                })
+            }else{
+                let cantDiff = item.cantidad - compraItem.cantidad
+                let empDiff = item.empaques - compraItem.empaques
+                compraItem.cantidad = item.cantidad
+                compraItem.empaques = item.empaques
+                compraItem.costo = item.costo
+                compraItem.importe = item.importe
+                compraItem.stock += cantDiff
+                compraItem.empaquesStock += empDiff
+                compraItem.save((err, compraItemSaved) => {
+                    if(err || !compraItemSaved){
+                        return res.status(200).send({
+                            status: 'error',
+                            message: 'Algo pasó al actualizar.',
+                            err
+                        })
+                    }else{
+                        return res.status(200).send({
+                            status: 'success',
+                            message: 'Item actualizado.'
+                        })
+                    }
+                })
+            }
+        })
+    }
 
 
 
