@@ -15,5 +15,6 @@ router.put('/compra/:id', CompraController.close);
 router.put('/update/compra/:id', CompraController.update);
 router.put('/compra/item/:id', CompraController.updateCompraItem);
 router.delete('/compra/:id', CompraController.delete);
+router.put('/compra/cancel/:id', CompraController.cancel);
 
 module.exports = router;

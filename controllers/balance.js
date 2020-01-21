@@ -52,7 +52,7 @@ var controller = {
         .then( disponiblePorUbicacion =>{
             balance.disponiblePorUbicacion = disponiblePorUbicacion
                 
-            return Compra.find({"saldo": {$gt: 0}})
+            return Compra.find({"status": "ACTIVO", "saldo": {$gt: 0}})
                 .select('provedor ubicacion fecha saldo clave')
                 .populate('provedor')
                 .populate('ubicacion')
@@ -65,6 +65,7 @@ var controller = {
                 .select('stock costo')
                 .exec()
             })
+            
         .then( inventario => {
             balance.inventario = inventario
             res.status(200).send({

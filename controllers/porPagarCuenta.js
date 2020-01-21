@@ -5,7 +5,13 @@ var Egreso = require('../models/egreso')
 
 var controller = {
     getCuentas: (req, res) => {
-        Compra.find({"saldo": {$gt: 0}})
+        Compra.find({
+            $and:[
+                {"status": {$ne: "CANCELADO"} }, 
+                {"status": {$ne: "CERRADO"} },
+                {"saldo": {$gt: 0} },
+                ]
+        })
             .select('clave importe saldo provedor fecha')
             .populate('provedor')
             .exec( (err, docs) => {

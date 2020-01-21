@@ -1,9 +1,7 @@
 'use strict'
 var mongoose = require('mongoose');
-var validator = require('validator')
 var Compra = require('../models/compra')
 var CompraItem = require('../models/compra_item')
-var Venta = require('../models/venta')
 var VentaItem = require('../models/venta_item')
 var Egreso = require('../models/egreso')
 var Produccion = require('../models/produccion')
@@ -117,7 +115,7 @@ var controller = {
     },
 
     getComprasDash: (req, res) => {
-        Compra.find({ "status": { $ne: "PRODUCCION" } }).sort('folio')
+        Compra.find({ "status": { $ne: "PRODUCCION" }, "status": { $ne: "CANCELADO"} }).sort('folio')
             .populate('provedor', 'nombre')
             .populate('ubicacion')
             .populate('tipoCompra')
@@ -143,7 +141,13 @@ var controller = {
     },
 
     getCompras: (req, res) => {
-        Compra.find({status: { $ne: "CERRADO", $ne: "PRODUCCION" }}).sort('folio')
+        Compra.find({
+            $and:[
+                {"status": {$ne: "CANCELADO"} }, 
+                {"status": {$ne: "CERRADO"} },
+                {"status": {$ne: "PRODUCCION"} },
+                ]
+        }).sort('folio')
             .populate('provedor', 'nombre')
             .populate('ubicacion')
             .populate('tipoCompra')
@@ -303,6 +307,32 @@ var controller = {
 
     },
 
+    cancel: (req, res) => {
+        var compraId = req.params.id
+
+        Compra.findById(compraId).exec((err, compra) => {
+            compra.status = "CANCELADO"
+
+            compra.save((err, saved) => {
+                if(err | !saved){
+                    return res.status(200).send({
+                        status: 'error',
+                        message: 'Ocurrió un error',
+                        err
+                    })
+                }else{
+                    CompraItem.updateMany({"compra": saved._id}, {"stock": 0}, (err, n) => {
+                        return res.status(200).send({
+                            status: 'success',
+                            message: 'Compra CANCELADA correctamente.',
+                            saved
+                        })
+                    })
+                }
+            })
+        })
+    },
+
     addCompraItem: (req,res) => {
         var item = req.body
         var newItem = new CompraItem()
@@ -356,14 +386,14 @@ var controller = {
                     message: 'Ocurrio un error.'
                 })
             }else{
-                let cantDiff = item.cantidad - compraItem.cantidad
-                let empDiff = item.empaques - compraItem.empaques
+                let cantDiff = compraItem.cantidad - item.cantidad
+                let empDiff = compraItem.empaques - item.empaques
                 compraItem.cantidad = item.cantidad
                 compraItem.empaques = item.empaques
                 compraItem.costo = item.costo
                 compraItem.importe = item.importe
-                compraItem.stock += cantDiff
-                compraItem.empaquesStock += empDiff
+                compraItem.stock -= cantDiff
+                compraItem.empaquesStock -= empDiff
                 compraItem.save((err, compraItemSaved) => {
                     if(err || !compraItemSaved){
                         return res.status(200).send({
