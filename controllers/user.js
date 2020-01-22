@@ -77,7 +77,6 @@ var controller = {
 
                     var db_client = "mongodb://127.0.0.1:27017/"+user.database
                     var port = 8080;
-                    console.log(db_client)
                     const options = {
                         useNewUrlParser: true,
                         autoIndex: false, // Don't build indexes

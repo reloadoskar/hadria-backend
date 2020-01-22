@@ -1,6 +1,7 @@
 'use strict'
 
 var Produccion = require('../models/produccion');
+var ProduccionItem = require('../models/produccionItem')
 
 var controller = {
     save: (req, res) => {
@@ -62,15 +63,22 @@ var controller = {
         if (!produccionId) {
             return res.status(404).send({
                 status: 'error',
-                message: 'No existe el produccion'
+                message: 'No existe la producción: ',
+                produccionId
             })
         }
 
-        Produccion.findById(produccionId, (err, produccion) => {
+        Produccion.findById(produccionId)
+        .populate('insumos')
+        .populate('egresos')
+        .populate('items')
+        .populate('ventas')
+        .exec( (err, produccion) => {
             if (err || !produccion) {
                 return res.status(404).send({
                     status: 'success',
-                    message: 'No existe el produccion.'
+                    message: 'Ocurrio un error.',
+                    err
                 })
             }
             return res.status(200).send({
