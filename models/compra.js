@@ -3,17 +3,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var ItemsSchema = Schema({
-    producto: { type: Schema.ObjectId, ref: 'Producto' },
-    cantidad: Number,
-    empaques: Number,
-    stock: Number,
-    costo: Number,
-    importe: Number
-},{
-    timestamps: true
-})
-
 var CompraSchema = Schema({
     folio: Number,
     clave: { type: String, unique: true},
@@ -22,7 +11,7 @@ var CompraSchema = Schema({
     tipoCompra: {type: Schema.ObjectId, ref: 'TipoCompra'},
     produccion: {type: Schema.ObjectId, ref: 'Produccion'},
     fecha: String,
-    remision: Number,
+    remision: String,
     importe: Number,
     saldo: Number,
     status: String,

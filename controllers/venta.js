@@ -314,9 +314,15 @@ var controller = {
                         }
                     })
                 })
+
+                VentaItem.deleteMany({"venta": venta._id}, err => {
+                    if(err)console.log(err)
+                })
+                
                 Ingreso.deleteMany({"venta": venta._id}, err => {
                     if(err)console.log(err)
                 })
+                
                 venta.save((err, ventaSaved) => {
                     if(err || !ventaSaved){
                         return res.status(200).send({
