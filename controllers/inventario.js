@@ -25,6 +25,7 @@ var controller = {
                 path: 'ubicacion',
                 select: 'nombre'
             })
+            .sort('folio')
             .exec( (err, docs) => {
                 if (err){
                     return res.status(500).send({

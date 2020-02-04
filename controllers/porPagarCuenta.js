@@ -12,8 +12,9 @@ var controller = {
                 {"saldo": {$gt: 0} },
                 ]
         })
-            .select('clave importe saldo provedor fecha')
+            .select('clave folio importe saldo provedor fecha')
             .populate('provedor')
+            .sort('folio')
             .exec( (err, docs) => {
                 if (err){
                     return res.status(500).send({
