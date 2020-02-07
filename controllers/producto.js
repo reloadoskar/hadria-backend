@@ -62,7 +62,7 @@ var controller = {
     },
 
     getProductos: (req, res) => {
-        Producto.find({}).sort('-_id').exec( (err, productos) => {
+        Producto.find({}).sort('clave').exec( (err, productos) => {
             if(err || !productos){
                 return res.status(500).send({
                     status: 'error',
