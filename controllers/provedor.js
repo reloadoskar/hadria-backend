@@ -64,11 +64,11 @@ var controller = {
     },
 
     getProvedors: (req, res) => {
-        Provedor.find({}).sort('_id').exec( (err, provedors) => {
+        Provedor.find({}).sort('clave').exec( (err, provedors) => {
             if(err || !provedors){
                 return res.status(500).send({
                     status: 'error',
-                    message: 'Error al devolver los provedors'
+                    message: 'Error al devolver los provedores'
                 })
             }
 

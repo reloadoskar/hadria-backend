@@ -53,7 +53,7 @@ var controller = {
             balance.disponiblePorUbicacion = disponiblePorUbicacion
                 
             return Compra.find({"status": "ACTIVO", "saldo": {$gt: 0}})
-                .select('provedor ubicacion fecha saldo clave')
+                .select('provedor ubicacion fecha folio saldo clave')
                 .populate('provedor')
                 .populate('ubicacion')
                 .exec()
