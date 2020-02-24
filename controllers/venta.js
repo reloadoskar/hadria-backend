@@ -161,7 +161,9 @@ var controller = {
     },
 
     getVentas: (req, res) => {
-        Venta.find({}).exec((err, ventas) => {
+        Venta.find({})
+        .populate('compras')
+        .exec((err, ventas) => {
             if(err)console.log(err)
             res.status(200).send({
                 status: "success",
