@@ -183,10 +183,7 @@ var controller = {
             path: 'items',
             populate: { path: 'compra'},
         })
-        .populate({
-            path: 'pagos',
-            populate: { path: 'ubicacion'}
-        })
+        .populate('pagos.ubicacion')
         .populate('ubicacion')
         .populate('cliente')
         .exec((err, venta) => {
