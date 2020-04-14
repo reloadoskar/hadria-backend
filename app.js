@@ -31,6 +31,7 @@ var unidad_routes = require('./routes/unidad')
 var empaque_routes = require('./routes/empaque')
 var concepto_routes = require('./routes/concepto')
 var produccion_routes = require('./routes/produccion')
+var retiro_routes = require('./routes/retiro')
 
 //Usar rutas
 app.use('/api', producto_routes);
@@ -54,6 +55,7 @@ app.use('/api', unidad_routes);
 app.use('/api', empaque_routes);
 app.use('/api', concepto_routes);
 app.use('/api', produccion_routes);
+app.use('/api', retiro_routes)
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
