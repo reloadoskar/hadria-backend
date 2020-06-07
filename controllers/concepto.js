@@ -33,7 +33,7 @@ var controller = {
     },
 
     getConceptos: (req, res) => {
-        Concepto.find({}).sort('_id').exec( (err, conceptos) => {
+        Concepto.find({}).sort('concepto').exec( (err, conceptos) => {
             if(err || !conceptos){
                 return res.status(500).send({
                     status: 'error',
