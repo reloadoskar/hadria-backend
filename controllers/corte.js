@@ -19,8 +19,8 @@ var controller = {
             populate: { path: 'producto'},
         })
         .populate({
-            path: 'items.compra',
-            select: 'clave '
+            path: 'items',
+            populate: { path: 'compra'},
         })
         .populate('ubicacion')
         .populate('cliente')
