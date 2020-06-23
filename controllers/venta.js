@@ -218,6 +218,29 @@ var controller = {
     },
 
 
+    getVentasSemana: (req, res) => {
+        var fecha1 = req.params.f1
+        var fecha2 = req.params.f2
+
+        Venta.aggregate([
+            { $match: { fecha: { $gte: fecha1, $lt: fecha2 } } },
+            { $group: 
+                { 
+                    _id: "$fecha" ,                
+                    totalVenta: { $sum: "$importe" } ,
+                } 
+            },
+            { $sort: {_id: 1 } }
+        ]).exec((err, ventas) => {
+            if(err)console.log(err)
+                res.status(200).send({
+                    status: "success",
+                    ventas
+                })
+        })
+    },
+
+
     update: (req, res) => {
         var compraId = req.params.id;
         

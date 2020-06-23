@@ -12,4 +12,6 @@ router.get('/venta/producto/:id', VentaController.getVentasOfProduct);
 router.post('/venta', VentaController.getVenta);
 router.delete('/venta/:id', VentaController.cancel);
 
+router.get('/ventas/semana', VentaController.getVentasSemana);
+
 module.exports = router;
