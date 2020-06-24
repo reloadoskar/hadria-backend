@@ -219,11 +219,11 @@ var controller = {
 
 
     getVentasSemana: (req, res) => {
-        var fecha1 = req.params.f1
-        var fecha2 = req.params.f2
+        var fecha1 = req.query.f1
+        var fecha2 = req.query.f2
 
         Venta.aggregate([
-            { $match: { fecha: { $gte: fecha1, $lt: fecha2 } } },
+            { $match: { fecha: { $gte: fecha2, $lt: fecha1 } } },
             { $group: 
                 { 
                     _id: "$fecha" ,                
