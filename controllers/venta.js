@@ -223,7 +223,7 @@ var controller = {
         var fecha2 = req.query.f2
 
         Venta.aggregate([
-            { $match: { fecha: { $gte: fecha2, $lt: fecha1 } } },
+            { $match: { fecha: { $gte: fecha1, $lte: fecha2 } } },
             { $group: 
                 { 
                     _id: "$fecha" ,                
