@@ -6,10 +6,10 @@ var ProvedorController = require('../controllers/provedor');
 var router = express.Router();
 
 //Rutas
-router.post('/provedor/save', ProvedorController.save);
-router.get('/provedors', ProvedorController.getProvedors);
-router.get('/provedor/:id', ProvedorController.getProvedor);
-router.put('/provedor/:id', ProvedorController.update);
-router.delete('/provedor/:id', ProvedorController.delete);
+router.post('/:bd/provedor/save', ProvedorController.save);
+router.get('/:bd/provedors', ProvedorController.getProvedors);
+router.get('/:bd/provedor/:id', ProvedorController.getProvedor);
+router.put('/:bd/provedor/:id', ProvedorController.update);
+router.delete('/:bd/provedor/:id', ProvedorController.delete);
 
 module.exports = router;

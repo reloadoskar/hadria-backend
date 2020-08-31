@@ -6,8 +6,8 @@ var UnidadController = require('../controllers/unidad');
 var router = express.Router();
 
 //Rutas
-router.post('/unidad/save', UnidadController.save);
-router.get('/unidads', UnidadController.getUnidades);
-router.delete('/unidad/:id', UnidadController.delete)
+router.post('/:bd/unidad/save', UnidadController.save);
+router.get('/:bd/unidads', UnidadController.getUnidades);
+router.delete('/:bd/unidad/:id', UnidadController.delete)
 
 module.exports = router;

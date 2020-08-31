@@ -1,9 +1,12 @@
 'use strict'
-
-var Concepto = require('../models/concepto');
+const con = require('../conections/hadriaUser')
+// var Concepto = require('../models/concepto');
 
 var controller = {
     save: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Concepto = conn.model('Concepto',require('../schemas/concepto') )
         //recoger parametros
         var params = req.body;
 
@@ -33,6 +36,9 @@ var controller = {
     },
 
     getConceptos: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Concepto = conn.model('Concepto',require('../schemas/concepto') )
         Concepto.find({}).sort('concepto').exec( (err, conceptos) => {
             if(err || !conceptos){
                 return res.status(500).send({
@@ -50,6 +56,9 @@ var controller = {
 
     delete: (req, res) => {
         var conceptoId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Concepto = conn.model('Concepto',require('../schemas/concepto') )
 
         Concepto.findOneAndDelete({_id: conceptoId}, (err, conceptoRemoved) => {
             if(!conceptoRemoved){

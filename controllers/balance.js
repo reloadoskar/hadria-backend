@@ -1,14 +1,20 @@
 'use strict'
 
-var Venta = require('../models/venta')
-var Ingreso = require('../models/ingreso')
-var Egreso = require('../models/egreso')
-var Compra = require('../models/compra')
-var CompraItem = require('../models/compra_item')
-var Ubicacion = require('../models/ubicacion')
+const con = require('../conections/hadriaUser')
 
 var controller = {
     getBalance: (req, res) => {
+        var bd = req.params.bd
+        const conn = con(bd)
+
+        var Venta = conn.model('Venta',require('../schemas/venta') )
+        var Ingreso = conn.model('Ingreso', require('../schemas/ingreso') )
+        var Egreso = conn.model('Egreso', require('../schemas/egreso') )
+        var Compra = conn.model('Compra', require('../schemas/compra') )
+        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
+        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
+
+
         var balance = {}
         // traemos ventas a crédito
         Venta

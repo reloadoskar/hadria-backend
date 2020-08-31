@@ -1,10 +1,13 @@
 'use strict'
-
-var Compra = require('../models/compra');
-var Egreso = require('../models/egreso')
+const con = require('../conections/hadriaUser')
+// var Compra = require('../models/compra');
+// var Egreso = require('../models/egreso')
 
 var controller = {
     getCuentas: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Compra = conn.model('Compra',require('../schemas/compra') )
         Compra.find({
             $and:[
                 {"status": {$ne: "CANCELADO"} }, 

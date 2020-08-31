@@ -1,20 +1,19 @@
 'use strict'
 var mongoose = require('mongoose');
-var Compra = require('../models/compra')
-var CompraItem = require('../models/compra_item')
-var VentaItem = require('../models/venta_item')
-var Egreso = require('../models/egreso')
-var Produccion = require('../models/produccion')
+const con = require('../conections/hadriaUser')
 
 var controller = {
     save: (req, res) => {
         //recoger parametros
         var params = req.body;
-
-        // async function getNumberOfComprasFor(provedorId) {
-        //     var res = await Compra.countDocuments({ provedor: provedorId })
-        //     return res
-        // }
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Provedor = conn.model('Provedor', require('../schemas/provedor') )
+        var Compra = conn.model('Compra', require('../schemas/compra') )
+        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
+        var Produccion = conn.model('Produccion', require('../schemas/produccion') )
+        var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
+        var Producto = conn.model('Producto', require('../schemas/producto') )
         Compra.estimatedDocumentCount((err, count) => {
             // .then((err, count) =>{
             if (err) console.log(err)
@@ -115,6 +114,15 @@ var controller = {
     },
 
     getComprasDash: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+
+        var Compra = conn.model('Compra', require('../schemas/compra') )
+        // var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
+        // var VentaItem = conn.model('VentaItem', require('../schemas/venta_item') )
+        // var Egreso = conn.model('Egreso', require('../schemas/egreso') )
+        // var Produccion = conn.model('Produccion', require('../schemas/produccion') )
+
         Compra.find({ "status": { $ne: "PRODUCCION" }, "status": { $ne: "CANCELADO"} }).sort('folio')
             .populate('provedor', 'nombre')
             .populate('ubicacion')
@@ -141,6 +149,13 @@ var controller = {
     },
 
     getCompras: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Compra = conn.model('Compra', require('../schemas/compra') )
+        var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
+        var Provedor = conn.model('Provedor', require('../schemas/provedor') )
+        var Producto = conn.model('Producto', require('../schemas/producto') )
+
         Compra.find({
             $and:[
                 {"status": {$ne: "CANCELADO"} }, 
@@ -178,6 +193,11 @@ var controller = {
 
     getCompra: (req, res) => {
         var compraId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Compra = conn.model('Compra', require('../schemas/compra') )
+        var VentaItem = conn.model('VentaItem', require('../schemas/venta_item') )
+        var Egreso = conn.model('Egreso', require('../schemas/egreso') )
         var data = {}
         Compra
         .findById(compraId)
@@ -242,7 +262,9 @@ var controller = {
 
     close: (req, res) => {
         var compraId = req.params.id
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Compra = conn.model('Compra', require('../schemas/compra') )
         Compra.findOneAndUpdate({_id: compraId}, {status: "CERRADO"} , (err, compraUpdated) => {
             if(err)console.log(err)
             return res.status(200).send({
@@ -255,7 +277,9 @@ var controller = {
 
     update: (req, res) => {
         var compra = req.body
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Compra = conn.model('Compra', require('../schemas/compra') )
             Compra.findByIdAndUpdate(compra._id, compra, { new: true }, (err, compraUpdated) => {
                 if (err) {
                     return res.status(500).send({
@@ -283,7 +307,9 @@ var controller = {
 
     delete: (req, res) => {
         var compraId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Compra = conn.model('Compra', require('../schemas/compra') )
         Compra.findOneAndDelete({ _id: compraId }, (err, compraRemoved) => {
             if (!compraRemoved) {
                 return res.status(500).send({
@@ -309,7 +335,10 @@ var controller = {
 
     cancel: (req, res) => {
         var compraId = req.params.id
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Compra = conn.model('Compra', require('../schemas/compra') )
+        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
         Compra.findById(compraId).exec((err, compra) => {
             compra.status = "CANCELADO"
 
@@ -334,6 +363,10 @@ var controller = {
     },
 
     addCompraItem: (req,res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Compra = conn.model('Compra', require('../schemas/compra') )
+        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
         var item = req.body
         var newItem = new CompraItem()
         newItem.compra = item.compra
@@ -378,6 +411,10 @@ var controller = {
 
     updateCompraItem: (req, res) => {
         var item = req.body;
+        const bd = req.params.bd
+        const conn = con(bd)
+        
+        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
 
         CompraItem.findById(item.item_id).exec( (err, compraItem) => {
             if(err || !compraItem){

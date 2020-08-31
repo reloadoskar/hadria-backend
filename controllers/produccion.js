@@ -1,7 +1,8 @@
 'use strict'
+const con = require('../conections/hadriaUser')
 
-var Produccion = require('../models/produccion');
-var ProduccionItem = require('../models/produccionItem')
+// var Produccion = require('../models/produccion');
+// var ProduccionItem = require('../models/produccionItem')
 
 var controller = {
     save: (req, res) => {
@@ -42,6 +43,9 @@ var controller = {
     },
 
     getProduccions: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Produccion = conn.model('Produccion',require('../schemas/produccion') )
         Produccion.find({}).sort('folio').exec((err, produccions) => {
             if (err || !produccions) {
                 return res.status(500).send({

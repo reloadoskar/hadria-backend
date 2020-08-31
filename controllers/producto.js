@@ -1,10 +1,14 @@
 'use strict'
 
 var validator = require('validator');
-var Producto = require('../models/producto');
+const con = require('../conections/hadriaUser')
+// var Producto = require('../models/producto');
 
 var controller = {
     save: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Producto = conn.model('Producto',require('../schemas/producto') )
         //recoger parametros
         var params = req.body;
 
@@ -62,6 +66,9 @@ var controller = {
     },
 
     getProductos: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Producto = conn.model('Producto',require('../schemas/producto') )
         Producto.find({}).sort('clave').exec( (err, productos) => {
             if(err || !productos){
                 return res.status(500).send({
@@ -79,6 +86,9 @@ var controller = {
 
     getProducto: (req, res) => {
         var productoId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Producto = conn.model('Producto',require('../schemas/producto') )
 
         if(!productoId){
             return res.status(404).send({
@@ -103,6 +113,9 @@ var controller = {
 
     update: (req, res) => {
         var productoId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Producto = conn.model('Producto',require('../schemas/producto') )
         
         //recoger datos actualizados y validarlos
         var params = req.body;
@@ -154,7 +167,9 @@ var controller = {
 
     delete: (req, res) => {
         var productoId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Producto = conn.model('Producto',require('../schemas/producto') )
         Producto.findOneAndDelete({_id: productoId}, (err, productoRemoved) => {
             if(!productoRemoved){
                 return res.status(500).send({

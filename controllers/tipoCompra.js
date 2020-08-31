@@ -1,13 +1,14 @@
 'use strict'
-
+const con = require('../conections/hadriaUser')
 var validator = require('validator');
-var TipoCompra = require('../models/tipoCompra');
 
 var controller = {
     save: (req, res) => {
         //recoger parametros
         var params = req.body;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
         //validar datos
         try{
             var validate_tipo = !validator.isEmpty(params.tipo);
@@ -51,6 +52,9 @@ var controller = {
     },
 
     getTipoCompras: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
         TipoCompra.find({}).sort('_id').exec( (err, tipocompras) => {
             if(err || !tipocompras){
                 return res.status(500).send({
@@ -68,7 +72,9 @@ var controller = {
 
     getTipoCompra: (req, res) => {
         var tipocompraId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
         if(!tipocompraId){
             return res.status(404).send({
                 status: 'error',
@@ -92,7 +98,9 @@ var controller = {
 
     update: (req, res) => {
         var tipocompraId = req.params.id;
-        
+        const bd = req.params.bd
+        const conn = con(bd)
+        var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
         //recoger datos actualizados y validarlos
         var params = req.body;
         try{
@@ -140,7 +148,9 @@ var controller = {
 
     delete: (req, res) => {
         var tipocompraId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
         TipoCompra.findOneAndDelete({_id: tipocompraId}, (err, tipocompraRemoved) => {
             if(!tipocompraRemoved){
                 return res.status(500).send({

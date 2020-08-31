@@ -1,13 +1,15 @@
 'use strict'
-
+const con = require('../conections/hadriaUser')
 var validator = require('validator');
-var Ubicacion = require('../models/ubicacion');
+
 
 var controller = {
     save: (req, res) => {
         //recoger parametros
         var params = req.body;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
         //validar datos
         try{
             var validate_nombre = !validator.isEmpty(params.nombre);
@@ -52,6 +54,9 @@ var controller = {
     },
 
     getUbicacions: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
         Ubicacion.find({}).sort('_id').exec( (err, ubicacions) => {
             if(err || !ubicacions){
                 return res.status(500).send({
@@ -69,7 +74,9 @@ var controller = {
 
     getUbicacion: (req, res) => {
         var ubicacionId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
         if(!ubicacionId){
             return res.status(404).send({
                 status: 'error',
@@ -93,7 +100,9 @@ var controller = {
 
     update: (req, res) => {
         var ubicacionId = req.params.id;
-        
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
         //recoger datos actualizados y validarlos
         var params = req.body;
         try{
@@ -141,7 +150,9 @@ var controller = {
 
     delete: (req, res) => {
         var ubicacionId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
         Ubicacion.findOneAndDelete({_id: ubicacionId}, (err, ubicacionRemoved) => {
             if(!ubicacionRemoved){
                 return res.status(500).send({

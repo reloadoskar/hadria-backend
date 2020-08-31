@@ -1,12 +1,15 @@
 'use strict'
-
+const con = require('../conections/hadriaUser')
 var validator = require('validator');
-var Provedor = require('../models/provedor');
+// var Provedor = require('../models/provedor');
 
 var controller = {
     save: (req, res) => {
         //recoger parametros
         var params = req.body;
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Provedor = conn.model('Provedor',require('../schemas/provedor') )
         //validar datos
         try{
             var validate_nombre = !validator.isEmpty(params.nombre);
@@ -64,6 +67,9 @@ var controller = {
     },
 
     getProvedors: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Provedor = conn.model('Provedor',require('../schemas/provedor') )
         Provedor.find({}).sort('clave').exec( (err, provedors) => {
             if(err || !provedors){
                 return res.status(500).send({
@@ -81,7 +87,9 @@ var controller = {
 
     getProvedor: (req, res) => {
         var provedorId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Provedor = conn.model('Provedor',require('../schemas/provedor') )
         if(!provedorId){
             return res.status(404).send({
                 status: 'error',
@@ -105,7 +113,9 @@ var controller = {
 
     update: (req, res) => {
         var provedorId = req.params.id;
-        
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Provedor = conn.model('Provedor',require('../schemas/provedor') )
         //recoger datos actualizados y validarlos
         var params = req.body;
         try{
@@ -159,7 +169,9 @@ var controller = {
 
     delete: (req, res) => {
         var provedorId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Provedor = conn.model('Provedor',require('../schemas/provedor') )
         Provedor.findOneAndDelete({_id: provedorId}, (err, provedorRemoved) => {
             if(!provedorRemoved){
                 return res.status(500).send({

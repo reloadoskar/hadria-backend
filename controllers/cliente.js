@@ -1,12 +1,15 @@
 'use strict'
-
+const con = require('../conections/hadriaUser')
 var validator = require('validator');
-var Cliente = require('../models/cliente');
+// var Cliente = require('../models/cliente');
 
 var controller = {
     save: (req, res) => {
         //recoger parametros
         var params = req.body;
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Cliente = conn.model('Cliente',require('../schemas/cliente') )
 
         //Crear el objeto a guardar
         var cliente = new Cliente();
@@ -41,6 +44,9 @@ var controller = {
     },
 
     getClientes: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Cliente = conn.model('Cliente',require('../schemas/cliente') )
         Cliente.find({}).sort('_id').exec((err, clientes) => {
             if (err || !clientes) {
                 return res.status(500).send({
@@ -59,7 +65,9 @@ var controller = {
 
     getCliente: (req, res) => {
         var clienteId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Cliente = conn.model('Cliente',require('../schemas/cliente') )
         if (!clienteId) {
             return res.status(404).send({
                 status: 'error',
@@ -83,7 +91,9 @@ var controller = {
 
     update: (req, res) => {
         var clienteId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Cliente = conn.model('Cliente',require('../schemas/cliente') )
         //recoger datos actualizados y validarlos
         var params = req.body;
         try {
@@ -134,7 +144,9 @@ var controller = {
 
     delete: (req, res) => {
         var clienteId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Cliente = conn.model('Cliente',require('../schemas/cliente') )
         Cliente.findOneAndDelete({ _id: clienteId }, (err, clienteRemoved) => {
             if (!clienteRemoved) {
                 return res.status(500).send({

@@ -1,9 +1,12 @@
 'use strict'
+const con = require('../conections/hadriaUser')
+// var Empaque = require('../models/empaque');
 
-var Empaque = require('../models/empaque');
-
-var controller = {
+var controller = {    
     save: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Empaque = conn.model('Empaque',require('../schemas/empaque') )
         //recoger parametros
         var params = req.body;
 
@@ -34,6 +37,9 @@ var controller = {
     },
 
     getEmpaques: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Empaque = conn.model('Empaque',require('../schemas/empaque') )
         Empaque.find({}).sort('_id').exec( (err, empaques) => {
             if(err || !empaques){
                 return res.status(500).send({
@@ -50,6 +56,9 @@ var controller = {
     },
 
     delete: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Empaque = conn.model('Empaque',require('../schemas/empaque') )
         var empaqueId = req.params.id;
 
         Empaque.findOneAndDelete({_id: empaqueId}, (err, empaqueRemoved) => {

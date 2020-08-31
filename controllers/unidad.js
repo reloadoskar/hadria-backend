@@ -1,9 +1,12 @@
 'use strict'
-
-var Unidad = require('../models/unidad');
+const con = require('../conections/hadriaUser')
+// var Unidad = require('../models/unidad');
 
 var controller = {
     save: (req, res) => {
+        const bd= req.params.bd
+        const conn = con(bd)
+        var Unidad = conn.model('Unidad',require('../schemas/unidad') )
         //recoger parametros
         var params = req.body;
 
@@ -34,6 +37,9 @@ var controller = {
     },
 
     getUnidades: (req, res) => {
+        const bd= req.params.bd
+        const conn = con(bd)
+        var Unidad = conn.model('Unidad',require('../schemas/unidad') )
         Unidad.find({}).sort('_id').exec( (err, unidads) => {
             if(err || !unidads){
                 return res.status(500).send({
@@ -50,6 +56,9 @@ var controller = {
     },
 
     delete: (req, res) => {
+        const bd= req.params.bd
+        const conn = con(bd)
+        var Unidad = conn.model('Unidad',require('../schemas/unidad') )
         var unidadId = req.params.id;
 
         Unidad.findOneAndDelete({_id: unidadId}, (err, unidadRemoved) => {

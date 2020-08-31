@@ -1,11 +1,11 @@
 'use strict'
-// var app = require('../app');
-// var app = require('../app_client')
 var mongoose = require('mongoose')
+
+const conn = require('../conections/hadria')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-var User = require('../models/user');
-
+// var User = require('../models/user');
+var User = conn.model('User', require('../schemas/user') );
 process.env.SECRET_KEY = 'secret'
 
 var controller = {
@@ -13,46 +13,52 @@ var controller = {
         //recoger parametros
         const {email, password, nombre, apellido} = req.body;
         //Crear el objeto a guardar
-        const user = new User();
-        user.nombre = nombre
-        user.apellido = apellido
-        user.email = email
-        user.password = password
-        user.database = email + "_hadria_db"
 
-        User.findOne({
-            email: email
-        })
-        .then(usr => {
-            if(!usr){
-                bcrypt.hash(password, 10, (err, hash) => {
-                    user.password = hash
-                    
-                    user.save((err, user) => {
-                        if(err || !user) {
-                            return res.status(404).send({
-                                status: 'error',
-                                message: "Ocurrio un error",
-                                err
-                            })
-                        }else{
-                            return res.status(200).send({
-                                status: 'success',
-                                message:"Registrado.",
-                            })
-                        }
-            
+        User.estimatedDocumentCount((err, count) => {
+            // .then((err, count) =>{
+            if (err) console.log(err)
+            const nDocuments = count
+
+            const user = new User();
+            user.nombre = nombre
+            user.apellido = apellido
+            user.email = email
+            user.password = password
+            user.database = count+1
+
+            User.findOne({
+                email: email
+            })
+            .then(usr => {
+                if(!usr){
+                    bcrypt.hash(password, 10, (err, hash) => {
+                        user.password = hash
+                        
+                        user.save((err, user) => {
+                            if(err || !user) {
+                                return res.status(404).send({
+                                    status: 'error',
+                                    message: "Ocurrio un error",
+                                    err
+                                })
+                            }else{
+                                return res.status(200).send({
+                                    status: 'success',
+                                    message:"Registrado.",
+                                })
+                            }
+                
+                        })
+
                     })
-
-                })
-            }else{
-                return res.status(200).send({
-                    status: 'error',
-                    message:"El Usuario ya existe."
-                })
-            }
+                }else{
+                    return res.status(200).send({
+                        status: 'error',
+                        message:"El Usuario ya existe."
+                    })
+                }
+            })
         })
-
     },
 
     login: (req, res) => {

@@ -1,9 +1,9 @@
 'use strict'
-
-var Venta = require('../models/venta');
-var Ingreso = require('../models/ingreso');
-var Cliente = require('../models/cliente');
 var mongoose = require('mongoose');
+const con = require('../conections/hadriaUser')
+// var Venta = require('../models/venta');
+// var Ingreso = require('../models/ingreso');
+// var Cliente = require('../models/cliente');
 var controller = {
     save: (req, res) => {
         var params = req.body
@@ -49,6 +49,9 @@ var controller = {
         
     },
     getCuentas: (req, res) => {
+        const bd= req.params.bd
+        const conn = con(bd)
+        var Venta = conn.model('Venta',require('../schemas/venta') )
         Venta.find( { "saldo": {$gt: 0} } )
             .select("cliente importe saldo fecha acuenta folio")
             .populate("cliente")

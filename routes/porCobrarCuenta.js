@@ -6,7 +6,7 @@ var PccController = require('../controllers/porCobrarCuenta');
 var router = express.Router();
 
 //Rutas
-router.get('/cuentasporcobrar', PccController.getCuentas);
+router.get('/:bd/cuentasporcobrar', PccController.getCuentas);
 router.post('/cuentasporcobrar/pago/save', PccController.savePago);
 router.post('/cuentasporcobrar/save', PccController.save);
 // router.get('/pcc/:id', PccController.getCliente);

@@ -7,7 +7,7 @@ var router = express.Router();
 
 //Rutas
 router.get('/produccion/save', ProduccionController.save);
-router.get('/produccions', ProduccionController.getProduccions);
+router.get('/:bd/produccions', ProduccionController.getProduccions);
 router.get('/produccion/:id', ProduccionController.getProduccion);
 router.put('/produccion/:id', ProduccionController.update);
 router.delete('/produccion/:id', ProduccionController.delete);
