@@ -1,6 +1,6 @@
 'use strict'
+
 const con = require('../conections/hadriaUser')
-var validator = require('validator');
 
 var controller = {
     save: (req, res) => {
@@ -9,25 +9,15 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
-        //validar datos
-        try{
-            var validate_tipo = !validator.isEmpty(params.tipo);
-        }catch(err){
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if(validate_tipo){
-            //Crear el objeto a guardar
-            var tipocompra = new TipoCompra();
+        
+        //Crear el objeto a guardar
+        var tipocompra = new TipoCompra();
             
-            //Asignar valores
-            tipocompra.tipo = params.tipo;
+        //Asignar valores
+        tipocompra.tipo = params.tipo;
 
-            //Guardar objeto
-            tipocompra.save((err, tipocompraStored) => {
+        //Guardar objeto
+        tipocompra.save((err, tipocompraStored) => {
                 if(err || !tipocompraStored){
                     return res.status(404).send({
                         status: 'error',
@@ -37,18 +27,10 @@ var controller = {
                 //Devolver respuesta
                 return res.status(200).send({
                     status: 'success',
+                    message: 'Se creó correctamente',
                     tipocompra: tipocompraStored
                 })
             })
-
-
-        }else{
-            return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
-            })
-        }
-
     },
 
     getTipoCompras: (req, res) => {

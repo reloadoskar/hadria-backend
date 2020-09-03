@@ -1,14 +1,17 @@
 'use strict'
-
+const con = require('../conections/hadriaUser')
 var validator = require('validator');
-var Egreso = require('../models/egreso');
-var Compra = require('../models/compra');
+// var Egreso = require('../models/egreso');
+// var Compra = require('../models/compra');
 
 var controller = {
     save: (req, res) => {
         //recoger parametros
         var params = req.body;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
+        var Compra = conn.model('Compra',require('../schemas/compra') )
         var egreso = new Egreso()
         Egreso.estimatedDocumentCount((err, count) => {
             egreso.folio = ++count
@@ -45,6 +48,11 @@ var controller = {
     },
 
     getEgresos: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
+        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
+        var Compra = conn.model('Compra',require('../schemas/compra') )
         Egreso.find({}).sort('_id')
             .populate('ubicacion')
             .populate('compra', 'clave')
@@ -66,7 +74,9 @@ var controller = {
 
     getEgreso: (req, res) => {
         var egresoId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
         if (!egresoId) {
             return res.status(404).send({
                 status: 'error',
@@ -91,7 +101,9 @@ var controller = {
 
     update: (req, res) => {
         var egresoId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Egreso = conn.model('Egreso',require('../schemas/egreso') )        
         //recoger datos actualizados y validarlos
         var params = req.body;
         try {
@@ -143,7 +155,9 @@ var controller = {
 
     delete: (req, res) => {
         var egresoId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
         Egreso.findById(egresoId, (err, egreso) => {
             if(egreso.compra){
                 return res.status(500).send({

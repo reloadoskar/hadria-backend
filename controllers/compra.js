@@ -14,6 +14,7 @@ var controller = {
         var Produccion = conn.model('Produccion', require('../schemas/produccion') )
         var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
         var Producto = conn.model('Producto', require('../schemas/producto') )
+        var Ubicacion = conn.model('Ubicacion', require('../schemas/ubicacion') )
         Compra.estimatedDocumentCount((err, count) => {
             // .then((err, count) =>{
             if (err) console.log(err)
@@ -95,7 +96,7 @@ var controller = {
                                                     message: 'Error al devolver la compra' + err
                                                 })
                                             }
-
+                                            conn.close()
                                             return res.status(200).send({
                                                 status: 'success',
                                                 message: 'Compra registrada correctamente.',
@@ -152,9 +153,11 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         var Compra = conn.model('Compra', require('../schemas/compra') )
+        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
         var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
         var Provedor = conn.model('Provedor', require('../schemas/provedor') )
         var Producto = conn.model('Producto', require('../schemas/producto') )
+        var Ubicacion = conn.model('Ubicacion', require('../schemas/ubicacion') )
 
         Compra.find({
             $and:[

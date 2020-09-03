@@ -74,6 +74,7 @@ var controller = {
             
         .then( inventario => {
             balance.inventario = inventario
+            conn.close()
             res.status(200).send({
                 balance
             })

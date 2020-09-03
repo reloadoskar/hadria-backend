@@ -1,17 +1,27 @@
 'use strict'
-
+const con = require('../conections/hadriaUser')
 var validator = require('validator');
-var Compra = require('../models/compra');
-var Venta = require('../models/venta');
-var CompraItem = require('../models/compra_item');
-var VentaItem = require('../models/venta_item');
-var Cliente = require('../models/cliente');
-var Ingreso = require('../models/ingreso');
+// var Compra = require('../models/compra');
+// var Venta = require('../models/venta');
+// var CompraItem = require('../models/compra_item');
+// var VentaItem = require('../models/venta_item');
+// var Cliente = require('../models/cliente');
+// var Ingreso = require('../models/ingreso');
 
 var mongoose = require('mongoose');
 
 var controller = {
     save: (req, res) => {
+        const bd= req.params.bd
+        const conn = con(bd)
+        var Venta = conn.model('Venta',require('../schemas/venta') )
+        var Cliente = conn.model('Cliente',require('../schemas/cliente') )
+        var VentaItem = conn.model('VentaItem',require('../schemas/venta_item') )
+        var Compra = conn.model('Compra',require('../schemas/compra') )
+        var CompraItem = conn.model('CompraItem',require('../schemas/compra_item') )
+        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
+        var TipoCompra = conn.model('TipoCompra',require('../schemas/tipoCompra') )
+        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
         var params = req.body
         var venta = new Venta()
         var ingreso = new Ingreso()
@@ -25,6 +35,7 @@ var controller = {
             venta.importe = params.total 
             // venta.status = "ACTIVO"
             ingreso.importe = params.total
+            ingreso.concepto = "VENTA"
 
             if (params.tipoPago === 'CRÉDITO'){
                 venta.acuenta = params.acuenta
@@ -37,7 +48,7 @@ var controller = {
                         importe: params.acuenta
                     })
                 }
-    
+                ingreso.descripcion = "PAGO A CUENTA DE: "+ params.cliente.nombre + " FOLIO: "+ venta.folio
                 ingreso.importe = params.acuenta
     
                 Cliente.findById(params.cliente._id, (err, cliente) => {
@@ -87,7 +98,7 @@ var controller = {
                             if(err)console.log(err)
                             // console.log(compra)
                             if(compra.tipoCompra.tipo === 'CONSIGNACION'){
-                                let calc = params.total - (params.total * .10)
+                                let calc = item.importe - (item.importe * .10)
                                 compra.saldo += calc
                             }
                             let stockDisponible = 0
@@ -125,7 +136,7 @@ var controller = {
                     ingreso.venta = ventaSaved._id
                     ingreso.ubicacion = params.ubicacion
                     ingreso.fecha = params.fecha        
-                    ingreso.concepto = "VENTA"
+                    
                     ingreso.tipoPago = params.tipoPago
                     ingreso.save((err, ing) =>{
                         if(err)console.log(err)
@@ -161,6 +172,9 @@ var controller = {
     },
 
     getVentas: (req, res) => {
+        const bd= req.params.bd
+        const conn = con(bd)
+        var Venta = conn.model('Venta',require('../schemas/venta') )
         Venta.find({})
         .populate('compras')
         .exec((err, ventas) => {
@@ -174,6 +188,9 @@ var controller = {
 
     getVenta: (req, res) => {
         var folio = req.body.folio
+        const bd= req.params.bd
+        const conn = con(bd)
+        var Venta = conn.model('Venta',require('../schemas/venta') )
         Venta.find({"folio": folio })
         .populate({
             path: 'items',
@@ -204,6 +221,9 @@ var controller = {
 
     getVentasOfProduct: (req, res) => {
         var productId = req.params.id;
+        const bd= req.params.bd
+        const conn = con(bd)
+        var Venta = conn.model('Venta',require('../schemas/venta') )
         Venta.aggregate()
             .project({"items": 1, fecha: 1, cliente: 1, tipoPago:1, })
             // .sort("items.item")
@@ -221,7 +241,9 @@ var controller = {
     getVentasSemana: (req, res) => {
         var fecha1 = req.query.f1
         var fecha2 = req.query.f2
-
+        const bd= req.params.bd
+        const conn = con(bd)
+        var Venta = conn.model('Venta',require('../schemas/venta') )
         Venta.aggregate([
             { $match: { fecha: { $gte: fecha1, $lte: fecha2 } } },
             { $group: 
@@ -243,7 +265,9 @@ var controller = {
 
     update: (req, res) => {
         var compraId = req.params.id;
-        
+        const bd= req.params.bd
+        const conn = con(bd)
+        var Venta = conn.model('Venta',require('../schemas/venta') )
         //recoger datos actualizados y validarlos
         var params = req.body;
         try{
@@ -294,7 +318,9 @@ var controller = {
 
     cancel: (req, res) => {
         var id = req.params.id;
-
+        const bd= req.params.bd
+        const conn = con(bd)
+        var Venta = conn.model('Venta',require('../schemas/venta') )
         Venta.findById(id)
             .populate({
                 path: 'items',

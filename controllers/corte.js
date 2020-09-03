@@ -1,18 +1,39 @@
 'use strict'
+const con = require('../conections/hadriaUser')
+// var mongoose = require('mongoose');
 
-var Corte = require('../models/corte');
-var Venta = require('../models/venta')
-var Egreso = require('../models/egreso')
-var Ingreso = require('../models/ingreso')
-var Ubicacion = require('../models/ubicacion')
+const connectToClient = (db) => {
+
+    const conn = con(db)
+    conn.once("open", function() {
+        console.log("Conectado a cliente:" + db)
+    })
+    .on("disconected", function() {
+        console.log("Desconectado, adios.")
+        conn.close()
+    })
+    .on('SIGINT', function(){
+        console.log("Desconectado debido a inactividad.")
+        conn.close()
+    })
+
+    return conn
+
+}
 
 var controller = {
     getData: (req, res) => {
         var ubicacion = req.params.ubicacion;
         var fecha = req.params.fecha;
+        const bd = req.params.bd
+        const conn = connectToClient(bd)
+        var Venta = conn.model('Venta', require('../schemas/venta'))
+        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
+        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
         var corte = {}
-        Venta
-        .find({"ubicacion": ubicacion, "fecha": fecha })
+         
+
+        Venta.find({"ubicacion": ubicacion, "fecha": fecha })
         .select('ubicacion cliente tipoPago acuenta saldo importe items folio')
         .populate({
             path: 'items',
@@ -25,8 +46,9 @@ var controller = {
         .populate('ubicacion')
         .populate('cliente')
         .sort('folio')
-        .exec()
-        .then(ventas => {
+        .exec() 
+        .then( ventas => {
+            if(!ventas){console.log('error en ventas')}
             corte.ventas = ventas
             return Egreso.find({"ubicacion": ubicacion, "fecha": fecha})
             .select("ubicacion concepto descripcion fecha importe")
@@ -61,6 +83,7 @@ var controller = {
         })
         .then(creditos => {
             corte.creditos = creditos
+            conn.close()
             res.status(200).send({
                 corte
             })
@@ -71,6 +94,14 @@ var controller = {
 
     save: (req, res) => {
         var data = req.body
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Venta = conn.model('Venta',require('../schemas/venta') )
+        var Producto = conn.model('Producto',require('../schemas/producto') )
+        var Corte = conn.model('Corte',require('../schemas/corte') )
+        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
+        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
+        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
         Corte.create(data, (err, corte) => {
             if(err || !corte){
                 return res.status(404).send({
@@ -127,7 +158,11 @@ var controller = {
     exist: (req, res) => {
         var ubicacion = req.params.ubicacion;
         var fecha = req.params.fecha;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        
+        var Corte = conn.model('Corte',require('../schemas/corte') )
+        
         Corte.find({"ubicacion": ubicacion, "fecha": fecha}).
         exec((err, corte)=>{
             if(err || !corte) res.status(404).send({
@@ -143,7 +178,10 @@ var controller = {
     getEgresos: (req, res) => {
         var ubicacion = req.params.ubicacion;
         var fecha = req.params.fecha;
+        const bd = req.params.bd
+        const conn = con(bd)
         
+        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
         Egreso.find({"ubicacion": ubicacion, "fecha": fecha})
             .exec((err, egresos) => {
             if(err) console.log(err)
@@ -159,7 +197,10 @@ var controller = {
     getIngresos: (req, res) => {
         var ubicacion = req.params.ubicacion
         var fecha = req.params.fecha
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        
+        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         Ingreso.find({"ubicacion": ubicacion, "fecha": fecha, concepto: {$ne: 'VENTA'}})
             .exec((err, ingresos) => {
                 if(err)console.log(err)

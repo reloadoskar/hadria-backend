@@ -1,9 +1,15 @@
 'use strict'
-
-var Compra = require('../models/compra');
+const con = require('../conections/hadriaUser')
 
 var controller = {
     getInventario: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Compra = conn.model('Compra',require('../schemas/compra') )
+        var Provedor = conn.model('Provedor',require('../schemas/provedor') )
+        var Producto = conn.model('Producto',require('../schemas/producto') )
+        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
+        var CompraItem = conn.model('CompraItem',require('../schemas/compra_item') )
         Compra.find({"status": "ACTIVO"})
             .select('clave folio ubicacion items')
             .populate({
@@ -31,6 +37,7 @@ var controller = {
                     return res.status(500).send({
                         status: 'error',
                         message: 'No se encontraron items',
+                        err
                     })
                 }
 
@@ -43,6 +50,9 @@ var controller = {
     },
     
     getInventarioBy: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Compra = conn.model('Compra',require('../schemas/compra') )
         var ubicacion = req.params.ubicacion;
         Compra.find({ "ubicacion": ubicacion._id, "items.stock": {$gt: 0}})
             .select('clave items ubicacion')

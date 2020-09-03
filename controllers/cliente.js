@@ -33,6 +33,7 @@ var controller = {
                     err: err
                 })
             }
+            conn.close()
             //Devolver respuesta
             return res.status(200).send({
                 status: 'success',
@@ -54,7 +55,7 @@ var controller = {
                     message: 'Error al devolver los clientes'
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Ok',
@@ -82,6 +83,7 @@ var controller = {
                     message: 'No existe el cliente.'
                 })
             }
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 cliente
@@ -125,7 +127,7 @@ var controller = {
                         message: 'No existe el cliente'
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     cliente: clienteUpdated

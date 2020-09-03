@@ -8,7 +8,10 @@ var controller = {
     save: (req, res) => {
         var params = req.body
         var venta = new Venta()
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Venta = conn.model('Venta',require('../schemas/venta') )
+        var Cliente = conn.model('Cliente',require('../schemas/cliente') )
         Venta.estimatedDocumentCount((err, count) => {
             venta._id = mongoose.Types.ObjectId(),
             venta.folio = ++count
@@ -73,7 +76,11 @@ var controller = {
 
     savePago: (req, res) => {
         var params = req.body
-        
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Venta = conn.model('Venta',require('../schemas/venta') )
+        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
+        var Cliente = conn.model('Cliente',require('../schemas/cliente') )
         Venta.findById(params.cuenta._id)
             .exec()
             .then(venta => {

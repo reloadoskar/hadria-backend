@@ -6,7 +6,9 @@ const con = require('../conections/hadriaUser')
 
 var controller = {
     save: (req, res) => {
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Produccion = conn.model('Produccion',require('../schemas/produccion') )
         //Crear el objeto a guardar
 
         Produccion.estimatedDocumentCount((err, count) => {
@@ -63,7 +65,9 @@ var controller = {
 
     getProduccion: (req, res) => {
         var produccionId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Produccion = conn.model('Produccion',require('../schemas/produccion') )
         if (!produccionId) {
             return res.status(404).send({
                 status: 'error',
@@ -94,7 +98,9 @@ var controller = {
 
     update: (req, res) => {
         var produccionId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Produccion = conn.model('Produccion',require('../schemas/produccion') )
         //recoger datos actualizados y validarlos
         var params = req.body;
         try {
@@ -145,7 +151,9 @@ var controller = {
 
     delete: (req, res) => {
         var produccionId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Produccion = conn.model('Produccion',require('../schemas/produccion') )
         Produccion.findOneAndDelete({ _id: produccionId }, (err, produccionRemoved) => {
             if (!produccionRemoved) {
                 return res.status(500).send({

@@ -1,14 +1,13 @@
 'use strict'
-
-var validator = require('validator');
-var Ingreso = require('../models/ingreso');
-var Cuenta = require('../models/porCobrarCuenta');
+const con = require('../conections/hadriaUser')
 
 var controller = {
     save: (req, res) => {
         //recoger parametros
         var params = req.body;
-        
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         var ingreso = new Ingreso()
 
         ingreso.ubicacion = params.ubicacion
@@ -24,7 +23,7 @@ var controller = {
                     message: "No se pudo registrar el Ingreso."
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: "Ingreso registrado correctamente.",
@@ -35,6 +34,9 @@ var controller = {
     },
 
     getIngresos: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         Ingreso.find({}).sort('-_id')
             .populate('provedor', 'nombre')
             .populate('ubicacion')
@@ -56,7 +58,9 @@ var controller = {
 
     getIngreso: (req, res) => {
         var ingresoId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         if(!ingresoId){
             return res.status(404).send({
                 status: 'error',
@@ -80,7 +84,9 @@ var controller = {
 
     update: (req, res) => {
         var ingresoId = req.params.id;
-        
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         //recoger datos actualizados y validarlos
         var params = req.body;
         try{
@@ -131,7 +137,9 @@ var controller = {
 
     delete: (req, res) => {
         var ingresoId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         Ingreso.findOneAndDelete({_id: ingresoId}, (err, ingresoRemoved) => {
             if(!ingresoRemoved){
                 return res.status(500).send({

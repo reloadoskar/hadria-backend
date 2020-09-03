@@ -1,13 +1,14 @@
 'use strict'
-
-var Ingreso = require('../models/ingreso');
-var Egreso = require('../models/egreso')
+const con = require('../conections/hadriaUser')
 
 var controller = {
     save: (req, res) => {
         //recoger parametros
         var params = req.body;
-        
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
+        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         var egreso = new Egreso()
         Egreso.estimatedDocumentCount((err, count) => {
             egreso.folio = ++count
@@ -24,7 +25,7 @@ var controller = {
                     })
                 }
                 var ingreso = new Ingreso()
-                ingreso.ubicacion = params.ubicacion
+                ingreso.ubicacion = params.ubicacionReceptora
                 ingreso.concepto = "RECEPCION"
                 ingreso.descripcion = params.descripcion
                 ingreso.fecha = params.fecha
@@ -55,7 +56,10 @@ var controller = {
 
     delete: (req, res) => {
         var ingresoId = req.params.id;
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
+        var Ingreso = conn.model('Egreso',require('../schemas/ingreso') )
         Ingreso.findOneAndDelete({_id: ingresoId}, (err, ingresoRemoved) => {
             if(!ingresoRemoved){
                 return res.status(500).send({
