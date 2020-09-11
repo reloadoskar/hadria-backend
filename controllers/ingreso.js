@@ -3,6 +3,7 @@
 var validator = require('validator');
 var Ingreso = require('../models/ingreso');
 var Cuenta = require('../models/porCobrarCuenta');
+var Compra = require('../models/compra')
 
 var controller = {
     save: (req, res) => {
@@ -16,6 +17,24 @@ var controller = {
         ingreso.descripcion = params.descripcion
         ingreso.fecha = params.fecha
         ingreso.importe = params.importe
+
+        if(ingreso.concepto === "PRESTAMO"){
+            Compra.estimatedDocumentCount((err, count) => {
+                const nDocuments = count
+                var compra = new Compra()
+                compra._id = mongoose.Types.ObjectId(),
+                compra.folio = nDocuments + 1
+                compra.provedor = params.provedor
+                compra.ubicacion = params.ubicacion
+                compra.tipoCompra = "PRESTAMO"
+                compra.importe = params.importe
+                compra.saldo = params.importe
+                compra.fecha = params.fecha
+                compra.status = 'ACTIVO'
+                compra.save()
+            })
+
+        }
 
         ingreso.save((err, ingresoSaved) => {
             if(err){
