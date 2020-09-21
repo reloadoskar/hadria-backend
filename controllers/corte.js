@@ -2,31 +2,12 @@
 const con = require('../conections/hadriaUser')
 // var mongoose = require('mongoose');
 
-const connectToClient = (db) => {
-
-    const conn = con(db)
-    conn.once("open", function() {
-        console.log("Conectado a cliente:" + db)
-    })
-    .on("disconected", function() {
-        console.log("Desconectado, adios.")
-        conn.close()
-    })
-    .on('SIGINT', function(){
-        console.log("Desconectado debido a inactividad.")
-        conn.close()
-    })
-
-    return conn
-
-}
-
 var controller = {
     getData: (req, res) => {
         var ubicacion = req.params.ubicacion;
         var fecha = req.params.fecha;
         const bd = req.params.bd
-        const conn = connectToClient(bd)
+        const conn = con(bd)
         var Venta = conn.model('Venta', require('../schemas/venta'))
         var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         var Egreso = conn.model('Egreso',require('../schemas/egreso') )
@@ -128,6 +109,7 @@ var controller = {
                         var ingreso = new Ingreso()
                         Ubicacion.find({nombre: {$eq: "ADMINISTRACION"}}).exec( (err, uFinded) => {
                             if(err || !uFinded){
+                                conn.close()
                                 console.log(err)
                             }
                             ingreso.ubicacion = uFinded[0]._id
@@ -136,12 +118,14 @@ var controller = {
                             ingreso.importe = data.total
                             ingreso.save((err, ingresoSaved) => {
                                 if(err){
+                                    conn.close()
                                     return res.status(500).send({
                                         status: 'error',
                                         message: "No se pudo registrar el Ingreso.",
                                         err
                                     })
                                 }
+                                conn.close()
                                 return res.status(200).send({
                                         status: 'success', 
                                         message: 'Corte guardado correctamente',
@@ -168,6 +152,7 @@ var controller = {
             if(err || !corte) res.status(404).send({
                 status: "error",
             })
+            conn.close()
             res.status(200).send({
                 status: 'success',
                 corte: corte
@@ -185,6 +170,7 @@ var controller = {
         Egreso.find({"ubicacion": ubicacion, "fecha": fecha})
             .exec((err, egresos) => {
             if(err) console.log(err)
+            conn.close()
             res.status(200).send({
                 status: 'success',
                 message: 'se encontraron resultados:',
@@ -204,6 +190,7 @@ var controller = {
         Ingreso.find({"ubicacion": ubicacion, "fecha": fecha, concepto: {$ne: 'VENTA'}})
             .exec((err, ingresos) => {
                 if(err)console.log(err)
+                conn.close()
                 res.status(200).send({
                     status: 'success',
                     ingresos: ingresos

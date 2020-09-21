@@ -119,10 +119,6 @@ var controller = {
         const conn = con(bd)
 
         var Compra = conn.model('Compra', require('../schemas/compra') )
-        // var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
-        // var VentaItem = conn.model('VentaItem', require('../schemas/venta_item') )
-        // var Egreso = conn.model('Egreso', require('../schemas/egreso') )
-        // var Produccion = conn.model('Produccion', require('../schemas/produccion') )
 
         Compra.find({ "status": { $ne: "PRODUCCION" }, "status": { $ne: "CANCELADO"} }).sort('folio')
             .populate('provedor', 'nombre')
@@ -139,7 +135,7 @@ var controller = {
                         message: 'Error al devolver los compras' + err
                     })
                 }
-    
+                conn.close()
                 return res.status(200).send({
     
                     status: 'success',
@@ -184,7 +180,7 @@ var controller = {
                         message: 'Error al devolver los compras' + err
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
 
                     status: 'success',
@@ -229,7 +225,6 @@ var controller = {
             
             data.compra = compra
                 
-                
             return VentaItem.find({compra: compra._id})
                 .populate('venta')
                 .populate('producto')
@@ -255,6 +250,7 @@ var controller = {
         })
         .then( egresos => {
                 data.egresos = egresos
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     data
@@ -270,6 +266,7 @@ var controller = {
         var Compra = conn.model('Compra', require('../schemas/compra') )
         Compra.findOneAndUpdate({_id: compraId}, {status: "CERRADO"} , (err, compraUpdated) => {
             if(err)console.log(err)
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Compra cerrada correctamente.',
@@ -297,7 +294,7 @@ var controller = {
                         message: 'No existe el compra'
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: "Compra actualizada",
@@ -326,7 +323,7 @@ var controller = {
                     message: 'Ocurrio un error.'
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Compra eliminada correctamente',

@@ -27,6 +27,7 @@ var controller = {
             }
             egreso.save((err, egreso) => {
                 if( err || !egreso){
+                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No se registró el egreso.' + err
@@ -39,6 +40,7 @@ var controller = {
                         compra.save()
                     })
                 }
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: 'Egreso registrado correctamente.'
@@ -59,12 +61,13 @@ var controller = {
             .sort({concepto: 'asc'})
             .exec((err, egresos) => {
                 if (err || !egresos) {
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al devolver los egresos' + err
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     egresos
@@ -78,6 +81,7 @@ var controller = {
         const conn = con(bd)
         var Egreso = conn.model('Egreso',require('../schemas/egreso') )
         if (!egresoId) {
+            conn.close()
             return res.status(404).send({
                 status: 'error',
                 message: 'No existe el egreso'
@@ -86,11 +90,13 @@ var controller = {
 
         Egreso.findById(egresoId, (err, egreso) => {
             if (err || !egreso) {
+                conn.close()
                 return res.status(404).send({
                     status: 'success',
                     message: 'No existe el egreso.'
                 })
             }
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 egreso
@@ -113,6 +119,7 @@ var controller = {
             var validate_importe = !validator.isEmpty(params.importe);
             var validate_tipo_pago = !validator.isEmpty(params.tipo_pago);
         } catch (err) {
+            conn.close()
             return res.status(200).send({
                 status: 'error',
                 message: 'Faltan datos.'
@@ -124,6 +131,7 @@ var controller = {
             // Find and update
             Egreso.findOneAndUpdate({ _id: egresoId }, params, { new: true }, (err, egresoUpdated) => {
                 if (err) {
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al actualizar'
@@ -131,12 +139,13 @@ var controller = {
                 }
 
                 if (!egresoUpdated) {
+                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No existe el egreso'
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     egreso: egresoUpdated
@@ -145,6 +154,7 @@ var controller = {
             })
 
         } else {
+            conn.close()
             return res.status(200).send({
                 status: 'error',
                 message: 'Datos no validos.'
@@ -176,11 +186,13 @@ var controller = {
             // }
             Egreso.findOneAndDelete({ _id: egresoId }, (err, egresoRemoved) => {
                 if (err || !egresoRemoved) {
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'No se pudo borrar el egreso.'
                     })
                 }
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     egresoRemoved

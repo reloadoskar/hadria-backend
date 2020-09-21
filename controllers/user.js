@@ -1,15 +1,17 @@
 'use strict'
 var mongoose = require('mongoose')
 
-const conn = require('../conections/hadria')
+const conexion_app = require('../conections/hadria')
+const conexion_cliente = require('../conections/hadriaUser')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-// var User = require('../models/user');
-var User = conn.model('User', require('../schemas/user') );
+
 process.env.SECRET_KEY = 'secret'
 
 var controller = {
     save: (req, res) => {
+        const conn = conexion_app()
+        var User = conn.model('User', require('../schemas/user') );
         //recoger parametros
         const {email, password, nombre, apellido} = req.body;
         //Crear el objeto a guardar
@@ -42,6 +44,7 @@ var controller = {
                                     err
                                 })
                             }else{
+                                conn.close()
                                 return res.status(200).send({
                                     status: 'success',
                                     message:"Registrado.",
@@ -61,7 +64,18 @@ var controller = {
         })
     },
 
+    logout: (req, res) => {
+        const conn = conexion_app()
+        conn.close()
+        return res.status(200).send({
+            status: 'success',
+            message: "Se cerro la sesión."
+        })
+    },
+
     login: (req, res) => {
+        const conn = conexion_app()
+        var User = conn.model('User', require('../schemas/user') );
         const {email, password} = req.body;
         User.findOne({
             email: email
@@ -80,6 +94,7 @@ var controller = {
                     let token = jwt.sign(payload, process.env.SECRET_KEY, {
                         expiresIn: 1440
                     })
+                    conn.close()
                     return res.status(200).send({
                         status: 'success',
                         message: 'Bienvenido '+payload.nombre,
@@ -105,6 +120,8 @@ var controller = {
     },
 
     profile: (req, res) => {
+        const conn = conexion_app()
+        var User = conn.model('User', require('../schemas/user') );
         var decoded = jwt.verify(req.headers['authorization'], process.env.SECRET_KEY)
 
         User.findOne({

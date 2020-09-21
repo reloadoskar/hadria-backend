@@ -19,6 +19,7 @@ var controller = {
             egreso.importe = params.importe
             egreso.save((err, egreso) => {
                 if( err || !egreso){
+                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No se registró el egreso.' + err
@@ -32,12 +33,13 @@ var controller = {
                 ingreso.importe = params.importe
                 ingreso.save((err, ingresoSaved) => {
                     if(err){
+                        conn.close()
                         return res.status(500).send({
                             status: 'error',
                             message: "No se pudo registrar el Ingreso."
                         })
                     }
-        
+                    conn.close()
                     return res.status(200).send({
                         status: 'success',
                         message: "Retiro registrado correctamente.",
@@ -62,18 +64,20 @@ var controller = {
         var Ingreso = conn.model('Egreso',require('../schemas/ingreso') )
         Ingreso.findOneAndDelete({_id: ingresoId}, (err, ingresoRemoved) => {
             if(!ingresoRemoved){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar el ingreso.'
                 })
             }
             if(err){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 ingresoRemoved

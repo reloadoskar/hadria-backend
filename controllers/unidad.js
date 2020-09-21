@@ -20,6 +20,7 @@ var controller = {
         //Guardar objeto
         unidad.save((err, unidadStored) => {
             if(err || !unidadStored){
+                conn.close()
                 return res.status(404).send({
                     status: 'error',
                     message: 'La unidad no se guardó.',
@@ -27,6 +28,7 @@ var controller = {
                 })
             }
             //Devolver respuesta
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Unidad registrada correctamente.',
@@ -42,12 +44,13 @@ var controller = {
         var Unidad = conn.model('Unidad',require('../schemas/unidad') )
         Unidad.find({}).sort('_id').exec( (err, unidads) => {
             if(err || !unidads){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver las unidades'
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 unidads: unidads
@@ -63,18 +66,20 @@ var controller = {
 
         Unidad.findOneAndDelete({_id: unidadId}, (err, unidadRemoved) => {
             if(!unidadRemoved){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar la unidad.'
                 })
             }
             if(err){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Unidad eliminada correctamente.',

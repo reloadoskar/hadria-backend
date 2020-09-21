@@ -25,6 +25,7 @@ var controller = {
                     err
                 })
             }
+            conn.close()
             //Devolver respuesta
             return res.status(200).send({
                 status: 'success',
@@ -46,7 +47,7 @@ var controller = {
                     message: 'Error al devolver los conceptos'
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 conceptos: conceptos
@@ -62,18 +63,20 @@ var controller = {
 
         Concepto.findOneAndDelete({_id: conceptoId}, (err, conceptoRemoved) => {
             if(!conceptoRemoved){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar la concepto.'
                 })
             }
             if(err){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Concepto eliminado correctamente.',

@@ -19,12 +19,14 @@ var controller = {
         //Guardar objeto
         tipocompra.save((err, tipocompraStored) => {
                 if(err || !tipocompraStored){
+                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'El tipocompra no se guardó'
                     })
                 }
                 //Devolver respuesta
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: 'Se creó correctamente',
@@ -39,12 +41,13 @@ var controller = {
         var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
         TipoCompra.find({}).sort('_id').exec( (err, tipocompras) => {
             if(err || !tipocompras){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los tipocompras'
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 tipoCompras: tipocompras
@@ -58,6 +61,7 @@ var controller = {
         const conn = con(bd)
         var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
         if(!tipocompraId){
+            conn.close()
             return res.status(404).send({
                 status: 'error',
                 message: 'No existe el tipocompra'
@@ -66,11 +70,13 @@ var controller = {
 
         TipoCompra.findById(tipocompraId, (err, tipocompra) => {
             if(err || !tipocompra){
+                conn.close()
                 return res.status(404).send({
                     status: 'success',
                     message: 'No existe el tipocompra.'
                 })
             }
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 tipocompra
@@ -88,6 +94,7 @@ var controller = {
         try{
             var validate_tipo = !validator.isEmpty(params.tipo);
         }catch(err){
+            conn.close()
             return res.status(200).send({
                 status: 'error',
                 message: 'Faltan datos.'
@@ -99,6 +106,7 @@ var controller = {
             // Find and update
             TipoCompra.findOneAndUpdate({_id: tipocompraId}, params, {new:true}, (err, tipocompraUpdated) => {
                 if(err){
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al actualizar'
@@ -106,12 +114,13 @@ var controller = {
                 }
 
                 if(!tipocompraUpdated){
+                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No existe el tipocompra'
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     tipocompra: tipocompraUpdated
@@ -120,6 +129,7 @@ var controller = {
             })
 
         }else{
+            conn.close()
             return res.status(200).send({
                 status: 'error',
                 message: 'Datos no validos.'
@@ -135,18 +145,20 @@ var controller = {
         var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
         TipoCompra.findOneAndDelete({_id: tipocompraId}, (err, tipocompraRemoved) => {
             if(!tipocompraRemoved){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar el tipocompra.'
                 })
             }
             if(err){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 tipocompraRemoved

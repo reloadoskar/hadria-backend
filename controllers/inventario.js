@@ -34,13 +34,14 @@ var controller = {
             .sort('folio')
             .exec( (err, docs) => {
                 if (err){
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'No se encontraron items',
                         err
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: 'Items encontrados',
@@ -60,12 +61,13 @@ var controller = {
             .populate('ubicacion')
             .exec( (err, docs) => {
                 if (err){
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'No se encontraron items',
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: 'Items encontrados',

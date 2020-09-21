@@ -33,6 +33,7 @@ var controller = {
 
             venta.save( (err, ventaSaved) => {
                 if(err){
+                    conn.close()
                     return res.status(404).send({
                         status: "error",
                         message: "Error al guardar la venta",
@@ -40,6 +41,7 @@ var controller = {
                     })
                 }
                 else{
+                    conn.close()
                     return res.status(200).send({
                         status: "success",
                         message: "Venta guardada correctamente.",
@@ -60,12 +62,13 @@ var controller = {
             .populate("cliente")
             .exec((err, docs) => {
                 if (err){
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'No se encontraron cuentas',
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: 'Cuentas encontradas',
@@ -114,7 +117,7 @@ var controller = {
                 cliente.credito_disponible += parseFloat(params.importe)
 
                 cliente.save()
-
+                conn.close()
                 res.status(200).send({
                     status: 'success',
                     message: 'Cobro agregado correctamente.'

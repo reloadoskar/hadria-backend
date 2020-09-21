@@ -162,7 +162,7 @@ var controller = {
                     message: 'Ocurrio un error.'
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Cliente eliminado correctamente.',

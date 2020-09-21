@@ -27,12 +27,13 @@ var controller = {
             //Guardar objeto
             produccion.save((err, produccionStored) => {
                 if (err || !produccionStored) {
+                    conn.close()
                     return res.status(200).send({
                         status: 'error',
                         message: 'La produccion no se creó'
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: 'Producción creada correctamente.',
@@ -50,12 +51,13 @@ var controller = {
         var Produccion = conn.model('Produccion',require('../schemas/produccion') )
         Produccion.find({}).sort('folio').exec((err, produccions) => {
             if (err || !produccions) {
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los produccions'
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 produccions: produccions
@@ -69,6 +71,7 @@ var controller = {
         const conn = con(bd)
         var Produccion = conn.model('Produccion',require('../schemas/produccion') )
         if (!produccionId) {
+            conn.close()
             return res.status(404).send({
                 status: 'error',
                 message: 'No existe la producción: ',
@@ -83,12 +86,14 @@ var controller = {
         .populate('ventas')
         .exec( (err, produccion) => {
             if (err || !produccion) {
+                conn.close()
                 return res.status(404).send({
                     status: 'success',
                     message: 'Ocurrio un error.',
                     err
                 })
             }
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 produccion
@@ -109,6 +114,7 @@ var controller = {
             var validate_costo = !validator.isEmpty(params.costo);
             var validate_precio1 = !validator.isEmpty(params.precio1);
         } catch (err) {
+            conn.close()
             return res.status(200).send({
                 status: 'error',
                 message: 'Faltan datos.'
@@ -120,6 +126,7 @@ var controller = {
             // Find and update
             Produccion.findOneAndUpdate({ _id: produccionId }, params, { new: true }, (err, produccionUpdated) => {
                 if (err) {
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al actualizar'
@@ -127,12 +134,13 @@ var controller = {
                 }
 
                 if (!produccionUpdated) {
+                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No existe el produccion'
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     produccion: produccionUpdated
@@ -141,6 +149,7 @@ var controller = {
             })
 
         } else {
+            conn.close()
             return res.status(200).send({
                 status: 'error',
                 message: 'Datos no validos.'
@@ -156,18 +165,20 @@ var controller = {
         var Produccion = conn.model('Produccion',require('../schemas/produccion') )
         Produccion.findOneAndDelete({ _id: produccionId }, (err, produccionRemoved) => {
             if (!produccionRemoved) {
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar el produccion.'
                 })
             }
             if (err) {
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Produccion eliminado correctamente.',

@@ -20,12 +20,13 @@ var controller = {
             .sort('folio')
             .exec( (err, docs) => {
                 if (err){
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'No se encontraron items',
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: 'Items encontrados',
@@ -63,10 +64,14 @@ var controller = {
                     egreso.importe = params.importe
                     egreso.descripcion = "PAGO A: " + params.cuenta.provedor.nombre + "-" + params.cuenta.clave
                     egreso.concepto = "PAGO"
-                    console.log(egreso)
+                    // console.log(egreso)
                     // console.log(compra)
                     egreso.save().catch(err => { console.log(err) } )
-                    compra.save().catch(err => { console.log(err) } )
+                    compra.save()
+                    .then(()=>{
+                        conn.close()
+                    })
+                    .catch(err => { console.log(err) } )
                     return res.status(200).send({
                         status: 'success',
                         message: 'Pago agregado correctamente.'

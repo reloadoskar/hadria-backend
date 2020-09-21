@@ -18,6 +18,7 @@ var controller = {
 
         ingreso.save((err, ingresoSaved) => {
             if(err){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: "No se pudo registrar el Ingreso."
@@ -43,12 +44,13 @@ var controller = {
             .populate('items.producto')
             .exec( (err, ingresos) => {
             if(err || !ingresos){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los ingresos' + err
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 ingresos
@@ -62,6 +64,7 @@ var controller = {
         const conn = con(bd)
         var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         if(!ingresoId){
+            conn.close()
             return res.status(404).send({
                 status: 'error',
                 message: 'No existe el ingreso'
@@ -70,11 +73,13 @@ var controller = {
 
         Ingreso.findById(ingresoId, (err, ingreso) => {
             if(err || !ingreso){
+                conn.close()
                 return res.status(404).send({
                     status: 'success',
                     message: 'No existe el ingreso.'
                 })
             }
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 ingreso
@@ -95,6 +100,7 @@ var controller = {
             var validate_costo = !validator.isEmpty(params.costo);
             var validate_precio1 = !validator.isEmpty(params.precio1);
         }catch(err){
+            conn.close()
             return res.status(200).send({
                 status: 'error',
                 message: 'Faltan datos.'
@@ -106,6 +112,7 @@ var controller = {
             // Find and update
             Ingreso.findOneAndUpdate({_id: ingresoId}, params, {new:true}, (err, ingresoUpdated) => {
                 if(err){
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al actualizar'
@@ -113,12 +120,13 @@ var controller = {
                 }
 
                 if(!ingresoUpdated){
+                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No existe el ingreso'
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     ingreso: ingresoUpdated
@@ -127,6 +135,7 @@ var controller = {
             })
 
         }else{
+            conn.close()
             return res.status(200).send({
                 status: 'error',
                 message: 'Datos no validos.'
@@ -142,18 +151,20 @@ var controller = {
         var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         Ingreso.findOneAndDelete({_id: ingresoId}, (err, ingresoRemoved) => {
             if(!ingresoRemoved){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar el ingreso.'
                 })
             }
             if(err){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
                 })
             }
-
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 ingresoRemoved

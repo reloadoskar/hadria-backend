@@ -126,6 +126,7 @@ var controller = {
 
             venta.save( (err, ventaSaved) => {
                 if(err){
+                    conn.close()
                     return res.status(404).send({
                         status: "error",
                         message: "Error al guardar la venta",
@@ -157,6 +158,7 @@ var controller = {
                             })
                             .exec((err, venta) => {
                                 if(err)console.log(err)
+                                conn.close()
                                 return res.status(200).send({
                                     status: "success",
                                     message: "Venta guardada correctamente.",
@@ -179,7 +181,8 @@ var controller = {
         .populate('compras')
         .exec((err, ventas) => {
             if(err)console.log(err)
-            res.status(200).send({
+            conn.close()
+            return res.status(200).send({
                 status: "success",
                 ventas
             })
@@ -205,12 +208,14 @@ var controller = {
         .populate('cliente')
         .exec((err, venta) => {
             if(err){
+                conn.close()
                 return res.status(500).send({
                     status: "error",
                     err
                 })
             }
             else{
+                conn.close()
                 return res.status(200).send({
                     status: "success",
                     venta
@@ -230,6 +235,7 @@ var controller = {
             .match({"items.item": productId})
             .exec((err, ventas) => {
                 if(err)console.log(err)
+                conn.close()
                 res.status(200).send({
                     status: "success",
                     ventas
@@ -255,6 +261,7 @@ var controller = {
             { $sort: {_id: 1 } }
         ]).exec((err, ventas) => {
             if(err)console.log(err)
+                conn.close()
                 res.status(200).send({
                     status: "success",
                     ventas
@@ -276,6 +283,7 @@ var controller = {
             var validate_costo = !validator.isEmpty(params.costo);
             var validate_precio1 = !validator.isEmpty(params.precio1);
         }catch(err){
+            conn.close()
             return res.status(200).send({
                 status: 'error',
                 message: 'Faltan datos.'
@@ -287,6 +295,7 @@ var controller = {
             // Find and update
             Compra.findOneAndUpdate({_id: compraId}, params, {new:true}, (err, compraUpdated) => {
                 if(err){
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al actualizar'
@@ -294,12 +303,13 @@ var controller = {
                 }
 
                 if(!compraUpdated){
+                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No existe el compra'
                     })
                 }
-
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     compra: compraUpdated
@@ -308,6 +318,7 @@ var controller = {
             })
 
         }else{
+            conn.close()
             return res.status(200).send({
                 status: 'error',
                 message: 'Datos no validos.'
@@ -328,12 +339,14 @@ var controller = {
             })
             .exec((err, venta) => {
                 if(!venta){
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'No se encontró la venta.'
                     })
                 }
                 if(err){
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Ocurrio un error.'
@@ -350,6 +363,7 @@ var controller = {
                     let empUpdated = item.compraItem.stock + item.empaques
                     CompraItem.findById(item.compraItem._id).exec((err, item) => {
                         if(err || !item){
+                            conn.close()
                             return res.status(500).send({
                                 status: 'error',
                                 message: 'No encontré el item.'
@@ -377,12 +391,14 @@ var controller = {
                 
                 venta.save((err, ventaSaved) => {
                     if(err || !ventaSaved){
+                        conn.close()
                         return res.status(200).send({
                             status: 'error',
                             message: 'No se actualizo la venta.',
                         })
                     }
                     else{
+                        conn.close()
                         return res.status(200).send({
                             status: 'success',
                             message: 'Venta cancelada correctamente',

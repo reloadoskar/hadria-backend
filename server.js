@@ -1,5 +1,5 @@
 require('dotenv').config()
-var app = require('./app_client');
+var app = require('./app');
 var mongoose = require('mongoose')
 const PORT = process.env.PORT || 8000
 mongoose.Promise = global.Promise;
