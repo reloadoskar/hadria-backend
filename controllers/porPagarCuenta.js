@@ -1,7 +1,6 @@
 'use strict'
+var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
-// var Compra = require('../models/compra');
-// var Egreso = require('../models/egreso')
 
 var controller = {
     getCuentas: (req, res) => {
@@ -19,14 +18,14 @@ var controller = {
             .populate('provedor')
             .sort('folio')
             .exec( (err, docs) => {
+                mongoose.connection.close()
+                conn.close()
                 if (err){
-                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'No se encontraron items',
                     })
                 }
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: 'Items encontrados',
@@ -72,6 +71,7 @@ var controller = {
                         conn.close()
                     })
                     .catch(err => { console.log(err) } )
+                    mongoose.connection.close()
                     return res.status(200).send({
                         status: 'success',
                         message: 'Pago agregado correctamente.'

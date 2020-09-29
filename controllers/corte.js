@@ -63,8 +63,9 @@ var controller = {
             .exec()
         })
         .then(creditos => {
-            corte.creditos = creditos
             conn.close()
+            mongoose.connection.close()
+            corte.creditos = creditos
             res.status(200).send({
                 corte
             })
@@ -117,15 +118,15 @@ var controller = {
                             ingreso.fecha = data.fecha
                             ingreso.importe = data.total
                             ingreso.save((err, ingresoSaved) => {
+                                mongoose.connection.close()
+                                conn.close()
                                 if(err){
-                                    conn.close()
                                     return res.status(500).send({
                                         status: 'error',
                                         message: "No se pudo registrar el Ingreso.",
                                         err
                                     })
-                                }
-                                conn.close()
+                                }                        
                                 return res.status(200).send({
                                         status: 'success', 
                                         message: 'Corte guardado correctamente',
@@ -149,10 +150,11 @@ var controller = {
         
         Corte.find({"ubicacion": ubicacion, "fecha": fecha}).
         exec((err, corte)=>{
+            conn.close()
+            mongoose.connection.close()
             if(err || !corte) res.status(404).send({
                 status: "error",
             })
-            conn.close()
             res.status(200).send({
                 status: 'success',
                 corte: corte
@@ -169,13 +171,14 @@ var controller = {
         var Egreso = conn.model('Egreso',require('../schemas/egreso') )
         Egreso.find({"ubicacion": ubicacion, "fecha": fecha})
             .exec((err, egresos) => {
-            if(err) console.log(err)
-            conn.close()
-            res.status(200).send({
-                status: 'success',
-                message: 'se encontraron resultados:',
-                egresos: egresos
-            })
+                mongoose.connection.close()
+                conn.close()
+                if(err) console.log(err)
+                res.status(200).send({
+                    status: 'success',
+                    message: 'se encontraron resultados:',
+                    egresos: egresos
+                })
         })
 
     },
@@ -189,8 +192,9 @@ var controller = {
         var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         Ingreso.find({"ubicacion": ubicacion, "fecha": fecha, concepto: {$ne: 'VENTA'}})
             .exec((err, ingresos) => {
-                if(err)console.log(err)
                 conn.close()
+                mongoose.connection.close()
+                if(err)console.log(err)
                 res.status(200).send({
                     status: 'success',
                     ingresos: ingresos

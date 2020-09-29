@@ -1,9 +1,7 @@
 'use strict'
 var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
-// var Venta = require('../models/venta');
-// var Ingreso = require('../models/ingreso');
-// var Cliente = require('../models/cliente');
+
 var controller = {
     save: (req, res) => {
         const bd = req.params.bd
@@ -32,8 +30,9 @@ var controller = {
             })
 
             venta.save( (err, ventaSaved) => {
+                mongoose.connection.close()
+                conn.close()
                 if(err){
-                    conn.close()
                     return res.status(404).send({
                         status: "error",
                         message: "Error al guardar la venta",
@@ -41,7 +40,6 @@ var controller = {
                     })
                 }
                 else{
-                    conn.close()
                     return res.status(200).send({
                         status: "success",
                         message: "Venta guardada correctamente.",
@@ -61,14 +59,14 @@ var controller = {
             .select("cliente importe saldo fecha acuenta folio")
             .populate("cliente")
             .exec((err, docs) => {
+                mongoose.connection.close()
+                conn.close()
                 if (err){
-                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'No se encontraron cuentas',
                     })
                 }
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: 'Cuentas encontradas',
@@ -117,6 +115,8 @@ var controller = {
                 cliente.credito_disponible += parseFloat(params.importe)
 
                 cliente.save()
+
+                mongoose.connection.close()
                 conn.close()
                 res.status(200).send({
                     status: 'success',

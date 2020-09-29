@@ -1,4 +1,5 @@
 'use strict'
+var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
 
 var controller = {
@@ -32,14 +33,14 @@ var controller = {
                 ingreso.fecha = params.fecha
                 ingreso.importe = params.importe
                 ingreso.save((err, ingresoSaved) => {
+                    mongoose.connection.close()
+                    conn.close()
                     if(err){
-                        conn.close()
                         return res.status(500).send({
                             status: 'error',
                             message: "No se pudo registrar el Ingreso."
                         })
                     }
-                    conn.close()
                     return res.status(200).send({
                         status: 'success',
                         message: "Retiro registrado correctamente.",
@@ -63,21 +64,20 @@ var controller = {
         var Egreso = conn.model('Egreso',require('../schemas/egreso') )
         var Ingreso = conn.model('Egreso',require('../schemas/ingreso') )
         Ingreso.findOneAndDelete({_id: ingresoId}, (err, ingresoRemoved) => {
+            mongoose.connection.close()
+            conn.close()
             if(!ingresoRemoved){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar el ingreso.'
                 })
             }
             if(err){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 ingresoRemoved

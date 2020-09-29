@@ -1,14 +1,6 @@
 'use strict'
-const con = require('../conections/hadriaUser')
-var validator = require('validator');
-// var Compra = require('../models/compra');
-// var Venta = require('../models/venta');
-// var CompraItem = require('../models/compra_item');
-// var VentaItem = require('../models/venta_item');
-// var Cliente = require('../models/cliente');
-// var Ingreso = require('../models/ingreso');
-
 var mongoose = require('mongoose');
+const con = require('../conections/hadriaUser')
 
 var controller = {
     save: (req, res) => {
@@ -112,6 +104,8 @@ var controller = {
                             compra.save()
                         })
                     }else{
+                        mongoose.connection.close()
+                        conn.close()
                         console.log("Ocurrió algo, y no se actualizó el item :(")
                     }
                 })
@@ -126,7 +120,6 @@ var controller = {
 
             venta.save( (err, ventaSaved) => {
                 if(err){
-                    conn.close()
                     return res.status(404).send({
                         status: "error",
                         message: "Error al guardar la venta",
@@ -157,8 +150,9 @@ var controller = {
                                 populate: { path: 'ubicacion'},
                             })
                             .exec((err, venta) => {
-                                if(err)console.log(err)
+                                mongoose.connection.close()
                                 conn.close()
+                                if(err)console.log(err)
                                 return res.status(200).send({
                                     status: "success",
                                     message: "Venta guardada correctamente.",
@@ -180,8 +174,9 @@ var controller = {
         Venta.find({})
         .populate('compras')
         .exec((err, ventas) => {
-            if(err)console.log(err)
+            mongoose.connection.close()
             conn.close()
+            if(err)console.log(err)
             return res.status(200).send({
                 status: "success",
                 ventas
@@ -207,15 +202,15 @@ var controller = {
         .populate('ubicacion')
         .populate('cliente')
         .exec((err, venta) => {
+            mongoose.connection.close()
+            conn.close()
             if(err){
-                conn.close()
                 return res.status(500).send({
                     status: "error",
                     err
                 })
             }
             else{
-                conn.close()
                 return res.status(200).send({
                     status: "success",
                     venta
@@ -234,8 +229,9 @@ var controller = {
             // .sort("items.item")
             .match({"items.item": productId})
             .exec((err, ventas) => {
-                if(err)console.log(err)
+                mongoose.connection.close()
                 conn.close()
+                if(err)console.log(err)
                 res.status(200).send({
                     status: "success",
                     ventas
@@ -260,8 +256,9 @@ var controller = {
             },
             { $sort: {_id: 1 } }
         ]).exec((err, ventas) => {
+            mongoose.connection.close()
+            conn.close()
             if(err)console.log(err)
-                conn.close()
                 res.status(200).send({
                     status: "success",
                     ventas
@@ -277,25 +274,12 @@ var controller = {
         var Venta = conn.model('Venta',require('../schemas/venta') )
         //recoger datos actualizados y validarlos
         var params = req.body;
-        try{
-            var validate_clave = !validator.isEmpty(params.clave);
-            var validate_descripcion = !validator.isEmpty(params.descripcion);
-            var validate_costo = !validator.isEmpty(params.costo);
-            var validate_precio1 = !validator.isEmpty(params.precio1);
-        }catch(err){
-            conn.close()
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if(validate_clave && validate_descripcion && validate_costo, validate_precio1){
             
             // Find and update
             Compra.findOneAndUpdate({_id: compraId}, params, {new:true}, (err, compraUpdated) => {
+                mongoose.connection.close()
+                conn.close()
                 if(err){
-                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al actualizar'
@@ -303,27 +287,17 @@ var controller = {
                 }
 
                 if(!compraUpdated){
-                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No existe el compra'
                     })
                 }
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     compra: compraUpdated
                 })
 
             })
-
-        }else{
-            conn.close()
-            return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
-            })
-        }
 
     },
 
@@ -339,14 +313,12 @@ var controller = {
             })
             .exec((err, venta) => {
                 if(!venta){
-                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'No se encontró la venta.'
                     })
                 }
                 if(err){
-                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Ocurrio un error.'
@@ -390,15 +362,15 @@ var controller = {
                 })
                 
                 venta.save((err, ventaSaved) => {
+                    mongoose.connection.close()
+                    conn.close()
                     if(err || !ventaSaved){
-                        conn.close()
                         return res.status(200).send({
                             status: 'error',
                             message: 'No se actualizo la venta.',
                         })
                     }
                     else{
-                        conn.close()
                         return res.status(200).send({
                             status: 'success',
                             message: 'Venta cancelada correctamente',

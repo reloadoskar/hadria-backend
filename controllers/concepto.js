@@ -18,6 +18,8 @@ var controller = {
 
         //Guardar objeto
         concepto.save((err, conceptoStored) => {
+            mongoose.connection.close()
+            conn.close()
             if(err || !conceptoStored){
                 return res.status(404).send({
                     status: 'error',
@@ -25,7 +27,6 @@ var controller = {
                     err
                 })
             }
-            conn.close()
             //Devolver respuesta
             return res.status(200).send({
                 status: 'success',
@@ -41,13 +42,14 @@ var controller = {
         const conn = con(bd)
         var Concepto = conn.model('Concepto',require('../schemas/concepto') )
         Concepto.find({}).sort('concepto').exec( (err, conceptos) => {
+            conn.close()
+            mongoose.connection.close()
             if(err || !conceptos){
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los conceptos'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 conceptos: conceptos
@@ -62,21 +64,20 @@ var controller = {
         var Concepto = conn.model('Concepto',require('../schemas/concepto') )
 
         Concepto.findOneAndDelete({_id: conceptoId}, (err, conceptoRemoved) => {
+            mongoose.connection.close()
+            conn.close()
             if(!conceptoRemoved){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar la concepto.'
                 })
             }
             if(err){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Concepto eliminado correctamente.',

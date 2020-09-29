@@ -1,7 +1,7 @@
 'use strict'
+var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
 var validator = require('validator');
-// var Provedor = require('../models/provedor');
 
 var controller = {
     save: (req, res) => {
@@ -20,6 +20,8 @@ var controller = {
             //var validate_dias = !validator.isEmpty(params.diasDeCredito).toString();
             // var validate_comision = !validator.isEmpty(params.comision);
         }catch(err){
+            mongoose.connection.close()
+            conn.close()
             return res.status(200).send({
                 status: 'error',
                 message: 'Faltan datos: '+err
@@ -42,15 +44,14 @@ var controller = {
 
             //Guardar objeto
             provedor.save((err, provedorStored) => {
+                mongoose.connection.close()
+                conn.close()
                 if(err || !provedorStored){
-                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'El provedor no se guardó' + err
                     })
                 }
-                //Devolver respuesta
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: 'Productor guardado correctamente.',
@@ -60,6 +61,7 @@ var controller = {
 
 
         }else{
+            mongoose.connection.close()
             conn.close()
             return res.status(200).send({
                 status: 'error',
@@ -74,14 +76,14 @@ var controller = {
         const conn = con(bd)
         var Provedor = conn.model('Provedor',require('../schemas/provedor') )
         Provedor.find({}).sort('clave').exec( (err, provedors) => {
+            mongoose.connection.close()
+            conn.close()
             if(err || !provedors){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los provedores'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 provedors: provedors
@@ -95,6 +97,7 @@ var controller = {
         const conn = con(bd)
         var Provedor = conn.model('Provedor',require('../schemas/provedor') )
         if(!provedorId){
+            mongoose.connection.close()
             conn.close()
             return res.status(404).send({
                 status: 'error',
@@ -103,14 +106,14 @@ var controller = {
         }
 
         Provedor.findById(provedorId, (err, provedor) => {
+            mongoose.connection.close()
+            conn.close()
             if(err || !provedor){
-                conn.close()
                 return res.status(404).send({
                     status: 'error',
                     message: 'No existe el provedor.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 provedor
@@ -134,6 +137,7 @@ var controller = {
             var validate_dias = !validator.isEmpty(params.dias_de_credito);
             var validate_comision = !validator.isEmpty(params.comision);
         }catch(err){
+            mongoose.connection.close()
             conn.close()
             return res.status(200).send({
                 status: 'error',
@@ -145,8 +149,9 @@ var controller = {
             
             // Find and update
             Provedor.findOneAndUpdate({_id: provedorId}, params, {new:true}, (err, provedorUpdated) => {
+                mongoose.connection.close()
+                conn.close()
                 if(err){
-                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al actualizar'
@@ -154,13 +159,11 @@ var controller = {
                 }
 
                 if(!provedorUpdated){
-                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No existe el provedor'
                     })
                 }
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     provedor: provedorUpdated
@@ -169,6 +172,7 @@ var controller = {
             })
 
         }else{
+            mongoose.connection.close()
             conn.close()
             return res.status(200).send({
                 status: 'error',
@@ -184,21 +188,20 @@ var controller = {
         const conn = con(bd)
         var Provedor = conn.model('Provedor',require('../schemas/provedor') )
         Provedor.findOneAndDelete({_id: provedorId}, (err, provedorRemoved) => {
+            mongoose.connection.close()
+            conn.close()
             if(!provedorRemoved){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar el provedor.'
                 })
             }
             if(err){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'El Proveedor se eliminó correctamente',

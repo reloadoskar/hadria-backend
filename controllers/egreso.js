@@ -27,6 +27,7 @@ var controller = {
             }
             egreso.save((err, egreso) => {
                 if( err || !egreso){
+                    mongoose.connection.close()
                     conn.close()
                     return res.status(404).send({
                         status: 'error',
@@ -35,11 +36,14 @@ var controller = {
                 }
                 if(params.compra !== 1){
                     Compra.findById(params.compra).exec((err, compra) => {
+                        mongoose.connection.close()
+                        conn.close()
                         if(err)console.log(err)
                         compra.saldo -= egreso.importe
                         compra.save()
                     })
                 }
+                mongoose.connection.close()
                 conn.close()
                 return res.status(200).send({
                     status: 'success',
@@ -60,14 +64,14 @@ var controller = {
             .populate('compra', 'clave')
             .sort({concepto: 'asc'})
             .exec((err, egresos) => {
+                conn.close()
+                mongoose.connection.close()
                 if (err || !egresos) {
-                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al devolver los egresos' + err
                     })
                 }
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     egresos
@@ -81,6 +85,7 @@ var controller = {
         const conn = con(bd)
         var Egreso = conn.model('Egreso',require('../schemas/egreso') )
         if (!egresoId) {
+            mongoose.connection.close()
             conn.close()
             return res.status(404).send({
                 status: 'error',
@@ -89,14 +94,14 @@ var controller = {
         }
 
         Egreso.findById(egresoId, (err, egreso) => {
+            mongoose.connection.close()
+            conn.close()
             if (err || !egreso) {
-                conn.close()
                 return res.status(404).send({
                     status: 'success',
                     message: 'No existe el egreso.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 egreso
@@ -119,6 +124,7 @@ var controller = {
             var validate_importe = !validator.isEmpty(params.importe);
             var validate_tipo_pago = !validator.isEmpty(params.tipo_pago);
         } catch (err) {
+            mongoose.connection.close()
             conn.close()
             return res.status(200).send({
                 status: 'error',
@@ -130,8 +136,9 @@ var controller = {
 
             // Find and update
             Egreso.findOneAndUpdate({ _id: egresoId }, params, { new: true }, (err, egresoUpdated) => {
+                mongoose.connection.close()
+                conn.close()
                 if (err) {
-                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al actualizar'
@@ -139,13 +146,11 @@ var controller = {
                 }
 
                 if (!egresoUpdated) {
-                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No existe el egreso'
                     })
                 }
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     egreso: egresoUpdated
@@ -154,6 +159,7 @@ var controller = {
             })
 
         } else {
+            mongoose.connection.close()
             conn.close()
             return res.status(200).send({
                 status: 'error',
@@ -185,14 +191,14 @@ var controller = {
             //     })
             // }
             Egreso.findOneAndDelete({ _id: egresoId }, (err, egresoRemoved) => {
+                mongoose.connection.close()
+                conn.close()
                 if (err || !egresoRemoved) {
-                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'No se pudo borrar el egreso.'
                     })
                 }
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     egresoRemoved

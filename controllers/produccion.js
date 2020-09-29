@@ -1,8 +1,6 @@
 'use strict'
+var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
-
-// var Produccion = require('../models/produccion');
-// var ProduccionItem = require('../models/produccionItem')
 
 var controller = {
     save: (req, res) => {
@@ -26,14 +24,14 @@ var controller = {
 
             //Guardar objeto
             produccion.save((err, produccionStored) => {
+                mongoose.connection.close()
+                conn.close()
                 if (err || !produccionStored) {
-                    conn.close()
                     return res.status(200).send({
                         status: 'error',
                         message: 'La produccion no se creó'
                     })
                 }
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: 'Producción creada correctamente.',
@@ -50,14 +48,14 @@ var controller = {
         const conn = con(bd)
         var Produccion = conn.model('Produccion',require('../schemas/produccion') )
         Produccion.find({}).sort('folio').exec((err, produccions) => {
+            mongoose.connection.close()
+            conn.close()
             if (err || !produccions) {
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los produccions'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 produccions: produccions
@@ -71,6 +69,7 @@ var controller = {
         const conn = con(bd)
         var Produccion = conn.model('Produccion',require('../schemas/produccion') )
         if (!produccionId) {
+            mongoose.connection.close()
             conn.close()
             return res.status(404).send({
                 status: 'error',
@@ -85,15 +84,15 @@ var controller = {
         .populate('items')
         .populate('ventas')
         .exec( (err, produccion) => {
+            mongoose.connection.close()
+            conn.close()
             if (err || !produccion) {
-                conn.close()
                 return res.status(404).send({
                     status: 'success',
                     message: 'Ocurrio un error.',
                     err
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 produccion
@@ -125,8 +124,9 @@ var controller = {
 
             // Find and update
             Produccion.findOneAndUpdate({ _id: produccionId }, params, { new: true }, (err, produccionUpdated) => {
+                mongoose.connection.close()
+                conn.close()
                 if (err) {
-                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al actualizar'
@@ -134,13 +134,11 @@ var controller = {
                 }
 
                 if (!produccionUpdated) {
-                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No existe el produccion'
                     })
                 }
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     produccion: produccionUpdated
@@ -149,6 +147,7 @@ var controller = {
             })
 
         } else {
+            mongoose.connection.close()
             conn.close()
             return res.status(200).send({
                 status: 'error',
@@ -164,21 +163,20 @@ var controller = {
         const conn = con(bd)
         var Produccion = conn.model('Produccion',require('../schemas/produccion') )
         Produccion.findOneAndDelete({ _id: produccionId }, (err, produccionRemoved) => {
+            mongoose.connection.close()
+            conn.close()
             if (!produccionRemoved) {
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar el produccion.'
                 })
             }
             if (err) {
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Produccion eliminado correctamente.',

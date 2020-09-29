@@ -2,7 +2,6 @@
 
 var express = require('express');
 var ProduccionController = require('../controllers/produccion');
-
 var router = express.Router();
 
 //Rutas

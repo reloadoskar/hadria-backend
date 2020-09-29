@@ -10,23 +10,22 @@ process.env.SECRET_KEY = 'secret'
 
 var controller = {
     save: (req, res) => {
+        const curDateISO = new Date().toISOString()
+        const {email, password, nombre, apellido} = req.body;
         const conn = conexion_app()
         var User = conn.model('User', require('../schemas/user') );
-        //recoger parametros
-        const {email, password, nombre, apellido} = req.body;
-        //Crear el objeto a guardar
-
+        
         User.estimatedDocumentCount((err, count) => {
-            // .then((err, count) =>{
             if (err) console.log(err)
-            const nDocuments = count
-
             const user = new User();
             user.nombre = nombre
             user.apellido = apellido
             user.email = email
             user.password = password
             user.database = count+1
+            user.fechaInicio = curDateISO
+            user.tryPeriodEnds = curDateISO
+            user.paydPeriodEnds = curDateISO
 
             User.findOne({
                 email: email
@@ -37,6 +36,8 @@ var controller = {
                         user.password = hash
                         
                         user.save((err, user) => {
+                            conn.close()
+                            mongoose.connection.close()
                             if(err || !user) {
                                 return res.status(404).send({
                                     status: 'error',
@@ -44,7 +45,6 @@ var controller = {
                                     err
                                 })
                             }else{
-                                conn.close()
                                 return res.status(200).send({
                                     status: 'success',
                                     message:"Registrado.",
@@ -55,6 +55,8 @@ var controller = {
 
                     })
                 }else{
+                    mongoose.connection.close()
+                    conn.close()
                     return res.status(200).send({
                         status: 'error',
                         message:"El Usuario ya existe."
@@ -81,6 +83,8 @@ var controller = {
             email: email
         })
         .then(user => {
+            mongoose.connection.close()
+            conn.close()
             if(user){
                 if(bcrypt.compareSync(password, user.password)){
                     const payload = {
@@ -90,11 +94,12 @@ var controller = {
                         email: user.email,
                         database: user.database,
                         level: user.level,
+                        tryPeriodEnds: user.tryPeriodEnds,
+                        paidPeriodEnds: user.paidPeriodEnds,
                     }
                     let token = jwt.sign(payload, process.env.SECRET_KEY, {
                         expiresIn: 1440
                     })
-                    conn.close()
                     return res.status(200).send({
                         status: 'success',
                         message: 'Bienvenido '+payload.nombre,
@@ -128,6 +133,8 @@ var controller = {
             _id: decoded._id
         })
         .then(user => {
+            conn.close()
+            mongoose.connection.close()
             if(user){
                 res.send({
                     message: "success",

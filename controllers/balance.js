@@ -1,5 +1,5 @@
 'use strict'
-
+var mongoose = require('mongoose')
 const con = require('../conections/hadriaUser')
 
 var controller = {
@@ -75,6 +75,7 @@ var controller = {
         .then( inventario => {
             balance.inventario = inventario
             conn.close()
+            mongoose.connection.close()
             res.status(200).send({
                 balance
             })

@@ -1,69 +1,52 @@
 'use strict'
-
+var mongoose = require('mongoose');
+const con = require('../conections/hadriaUser')
 var validator = require('validator');
-var Status = require('../models/status');
 
 var controller = {
     save: (req, res) => {
-        //recoger parametros
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Status = conn.model('Status',require('../schemas/status') )
         var params = req.body;
 
-        //validar datos
-        try{
-            var validate_nombre = !validator.isEmpty(params.nombre);
-        }catch(err){
-            conn.close()
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if(validate_nombre){
-            //Crear el objeto a guardar
-            var status = new Status();
+        //Crear el objeto a guardar
+        var status = new Status();
+        //Asignar valores
+        status.nombre = params.nombre;
             
-            //Asignar valores
-            status.nombre = params.nombre;
 
-            //Guardar objeto
-            status.save((err, statusStored) => {
+        //Guardar objeto
+        status.save((err, statusStored) => {
+                mongoose.connection.close()
+                conn.close()
                 if(err || !statusStored){
-                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'El status no se guardó'
                     })
                 }
-                //Devolver respuesta
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     status: statusStored
                 })
             })
 
-
-        }else{
-            conn.close()
-            return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
-            })
-        }
-
     },
 
     getStatuss: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Status = conn.model('Status',require('../schemas/status') )
         Status.find({}).sort('_id').exec( (err, statuss) => {
+            mongoose.connection.close()
+            conn.close()
             if(err || !statuss){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los statuss'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 statuss
@@ -73,8 +56,12 @@ var controller = {
 
     getStatus: (req, res) => {
         var statusId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Status = conn.model('Status',require('../schemas/status') )
 
         if(!statusId){
+            mongoose.connection.close()
             conn.close()
             return res.status(404).send({
                 status: 'error',
@@ -83,14 +70,14 @@ var controller = {
         }
 
         Status.findById(statusId, (err, status) => {
+            mongoose.connection.close()
+            conn.close()
             if(err || !status){
-                conn.close()
                 return res.status(404).send({
                     status: 'success',
                     message: 'No existe el status.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 status
@@ -100,12 +87,15 @@ var controller = {
 
     update: (req, res) => {
         var statusId = req.params.id;
-        
-        //recoger datos actualizados y validarlos
+        const bd = req.params.bd
+        const conn = con(bd)
         var params = req.body;
+        var Status = conn.model('Status',require('../schemas/status') )
+        //recoger datos actualizados y validarlos
         try{
             var validate_nombre = !validator.isEmpty(params.nombre);
         }catch(err){
+            mongoose.connection.close()
             conn.close()
             return res.status(200).send({
                 status: 'error',
@@ -117,8 +107,9 @@ var controller = {
             
             // Find and update
             Status.findOneAndUpdate({_id: statusId}, params, {new:true}, (err, statusUpdated) => {
+                mongoose.connection.close()
+                conn.close()
                 if(err){
-                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al actualizar'
@@ -126,13 +117,11 @@ var controller = {
                 }
 
                 if(!statusUpdated){
-                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No existe el status'
                     })
                 }
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     statusUpdated
@@ -141,6 +130,7 @@ var controller = {
             })
 
         }else{
+            mongoose.connection.close()
             conn.close()
             return res.status(200).send({
                 status: 'error',
@@ -152,23 +142,25 @@ var controller = {
 
     delete: (req, res) => {
         var statusId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Status = conn.model('Status',require('../schemas/status') )
 
         Status.findOneAndDelete({_id: statusId}, (err, statusRemoved) => {
+            mongoose.connection.close()
+            conn.close()
             if(!statusRemoved){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar el status.'
                 })
             }
             if(err){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 statusRemoved

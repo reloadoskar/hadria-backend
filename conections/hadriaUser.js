@@ -1,22 +1,27 @@
 const mongoose = require('mongoose');
+var connections = 0
 const clientOption = {
-  socketTimeoutMS: 30000,
   keepAlive: true,
+  keepAliveInitialDelay: 300000,
   poolSize: 2,
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useCreateIndex: true,
 };
 module.exports = function conexionCliente(bd) {
+
     const conn = mongoose.createConnection('mongodb+srv://reloadoskar:MuffinTop100685@hdra1-qllhk.mongodb.net/HDR_USR_'+bd+'?retryWrites=true&w=majority', clientOption)
     conn.once("open", function() {
-      console.log("H A D R I A Conectado a: USER:"+bd);
+      connections = mongoose.connections.length
+      console.log("Conectado a: USERDB: "+bd);
+      console.log("N. de Conexiones: "+connections);
+
     });
     conn.on('error',(err) =>{
       console.log(err)
     })
     conn.on('close', () => {
-      console.log("Cerrando -- USER:"+bd)
+      console.log("Cerrando -- USERDB: "+bd)
     })
     conn.on('disconnect', () => {
       console.log('Desconectado')
@@ -29,9 +34,9 @@ module.exports = function conexionCliente(bd) {
     conn.model('Concepto', require('../schemas/concepto'));
     conn.model('Corte', require('../schemas/corte'));
     conn.model('Egreso', require('../schemas/egreso'));
-    
     conn.model('Empaque', require('../schemas/empaque'));
     conn.model('Ingreso', require('../schemas/ingreso'));
+    conn.model('Insumo', require('../schemas/insumo'));
     conn.model('Pago', require('../schemas/pago'));
     conn.model('PorCobrarCuenta', require('../schemas/porCobrarCuenta'));
     conn.model('PorPagarCuenta', require('../schemas/porPagarCuenta'));

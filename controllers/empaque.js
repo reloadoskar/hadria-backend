@@ -19,8 +19,9 @@ var controller = {
 
         //Guardar objeto
         empaque.save((err, empaqueStored) => {
+            mongoose.connection.close()
+            conn.close()
             if(err || !empaqueStored){
-                conn.close()
                 return res.status(404).send({
                     status: 'error',
                     message: 'El empaque no se guardó.',
@@ -28,7 +29,6 @@ var controller = {
                 })
             }
             //Devolver respuesta
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Empaque registrado correctamente.',
@@ -43,14 +43,14 @@ var controller = {
         const conn = con(bd)
         var Empaque = conn.model('Empaque',require('../schemas/empaque') )
         Empaque.find({}).sort('_id').exec( (err, empaques) => {
+            conn.close()
+            mongoose.connection.close()
             if(err || !empaques){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los empaques'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 empaques: empaques
@@ -65,21 +65,20 @@ var controller = {
         var empaqueId = req.params.id;
 
         Empaque.findOneAndDelete({_id: empaqueId}, (err, empaqueRemoved) => {
+            mongoose.connection.close()
+            conn.close()
             if(!empaqueRemoved){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar la empaque.'
                 })
             }
             if(err){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Empaque eliminada correctamente.',

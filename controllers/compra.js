@@ -90,13 +90,14 @@ var controller = {
                                             populate: { path: 'producto'},
                                         })
                                         .exec((err, compraCompleta) => {
+                                            conn.close()
+                                            mongoose.connection.close()
                                             if (err || !compraCompleta) {
                                                 return res.status(500).send({
                                                     status: 'error',
                                                     message: 'Error al devolver la compra' + err
                                                 })
                                             }
-                                            conn.close()
                                             return res.status(200).send({
                                                 status: 'success',
                                                 message: 'Compra registrada correctamente.',
@@ -129,13 +130,14 @@ var controller = {
                 populate: { path: 'producto'},
             })
             .exec((err, compras) => {
+                conn.close()
+                mongoose.connection.close()
                 if (err || !compras) {
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al devolver los compras' + err
                     })
                 }
-                conn.close()
                 return res.status(200).send({
     
                     status: 'success',
@@ -174,13 +176,14 @@ var controller = {
                 populate: { path: 'provedor'},
             })
             .exec((err, compras) => {
+                conn.close()
+                mongoose.connection.close()
                 if (err || !compras) {
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al devolver los compras' + err
                     })
                 }
-                conn.close()
                 return res.status(200).send({
 
                     status: 'success',
@@ -249,8 +252,9 @@ var controller = {
                     .exec()
         })
         .then( egresos => {
+            mongoose.connection.close()
+            conn.close()
                 data.egresos = egresos
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     data
@@ -267,6 +271,7 @@ var controller = {
         Compra.findOneAndUpdate({_id: compraId}, {status: "CERRADO"} , (err, compraUpdated) => {
             if(err)console.log(err)
             conn.close()
+            mongoose.connection.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Compra cerrada correctamente.',
@@ -281,6 +286,8 @@ var controller = {
         const conn = con(bd)
         var Compra = conn.model('Compra', require('../schemas/compra') )
             Compra.findByIdAndUpdate(compra._id, compra, { new: true }, (err, compraUpdated) => {
+                conn.close()
+                mongoose.connection.close()
                 if (err) {
                     return res.status(500).send({
                         status: 'error',
@@ -294,7 +301,6 @@ var controller = {
                         message: 'No existe el compra'
                     })
                 }
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: "Compra actualizada",
@@ -311,6 +317,8 @@ var controller = {
         const conn = con(bd)
         var Compra = conn.model('Compra', require('../schemas/compra') )
         Compra.findOneAndDelete({ _id: compraId }, (err, compraRemoved) => {
+            conn.close()
+            mongoose.connection.close()
             if (!compraRemoved) {
                 return res.status(500).send({
                     status: 'error',
@@ -323,7 +331,6 @@ var controller = {
                     message: 'Ocurrio un error.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Compra eliminada correctamente',
@@ -351,6 +358,8 @@ var controller = {
                     })
                 }else{
                     CompraItem.updateMany({"compra": saved._id}, {"stock": 0}, (err, n) => {
+                        mongoose.connection.close()
+                        conn.close()
                         return res.status(200).send({
                             status: 'success',
                             message: 'Compra CANCELADA correctamente.',
@@ -386,7 +395,9 @@ var controller = {
                 })
             }else{
                 Compra.findById(newItem.compra).exec((err,compra) => {
+                
                     if(err){
+                        mongoose.connection.close()
                         return res.status(200).send({
                             status: 'error',
                             message: 'Ocurrio un error.'
@@ -395,6 +406,8 @@ var controller = {
                         compra.items.push(itmSaved._id)
                         compra.save()
                         CompraItem.findById(itmSaved._id).populate('producto').exec((err, item)=> {
+                            mongoose.connection.close()
+                            conn.close()
                             return res.status(200).send({
                                 status: 'success',
                                 message: 'Item Agregado correctamente.',

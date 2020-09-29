@@ -17,14 +17,14 @@ var controller = {
         ingreso.importe = params.importe
 
         ingreso.save((err, ingresoSaved) => {
+            mongoose.connection.close()
+            conn.close()
             if(err){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: "No se pudo registrar el Ingreso."
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: "Ingreso registrado correctamente.",
@@ -43,18 +43,18 @@ var controller = {
             .populate('ubicacion')
             .populate('items.producto')
             .exec( (err, ingresos) => {
-            if(err || !ingresos){
+                mongoose.connection.close()
                 conn.close()
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'Error al devolver los ingresos' + err
+                if(err || !ingresos){
+                    return res.status(500).send({
+                        status: 'error',
+                        message: 'Error al devolver los ingresos' + err
+                    })
+                }
+                return res.status(200).send({
+                    status: 'success',
+                    ingresos
                 })
-            }
-            conn.close()
-            return res.status(200).send({
-                status: 'success',
-                ingresos
-            })
         })
     },
 
@@ -64,6 +64,7 @@ var controller = {
         const conn = con(bd)
         var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         if(!ingresoId){
+            mongoose.connection.close()
             conn.close()
             return res.status(404).send({
                 status: 'error',
@@ -72,14 +73,14 @@ var controller = {
         }
 
         Ingreso.findById(ingresoId, (err, ingreso) => {
+            mongoose.connection.close()
+            conn.close()
             if(err || !ingreso){
-                conn.close()
                 return res.status(404).send({
                     status: 'success',
                     message: 'No existe el ingreso.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 ingreso
@@ -100,6 +101,7 @@ var controller = {
             var validate_costo = !validator.isEmpty(params.costo);
             var validate_precio1 = !validator.isEmpty(params.precio1);
         }catch(err){
+            mongoose.connection.close()
             conn.close()
             return res.status(200).send({
                 status: 'error',
@@ -111,8 +113,9 @@ var controller = {
             
             // Find and update
             Ingreso.findOneAndUpdate({_id: ingresoId}, params, {new:true}, (err, ingresoUpdated) => {
+                mongoose.connection.close()
+                conn.close()
                 if(err){
-                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al actualizar'
@@ -120,13 +123,11 @@ var controller = {
                 }
 
                 if(!ingresoUpdated){
-                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No existe el ingreso'
                     })
                 }
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     ingreso: ingresoUpdated
@@ -135,6 +136,7 @@ var controller = {
             })
 
         }else{
+            mongoose.connection.close()
             conn.close()
             return res.status(200).send({
                 status: 'error',
@@ -150,21 +152,20 @@ var controller = {
         const conn = con(bd)
         var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         Ingreso.findOneAndDelete({_id: ingresoId}, (err, ingresoRemoved) => {
+            mongoose.connection.close()
+            conn.close()
             if(!ingresoRemoved){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar el ingreso.'
                 })
             }
             if(err){
-                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 ingresoRemoved

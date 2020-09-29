@@ -1,4 +1,5 @@
 'use strict'
+var mongoose = require('mongoose')
 const con = require('../conections/hadriaUser')
 var validator = require('validator');
 // var Cliente = require('../models/cliente');
@@ -26,6 +27,8 @@ var controller = {
 
         //Guardar objeto
         cliente.save((err, clienteStored) => {
+            conn.close()
+            mongoose.connection.close()
             if (err || !clienteStored) {
                 return res.status(404).send({
                     status: 'error',
@@ -33,7 +36,6 @@ var controller = {
                     err: err
                 })
             }
-            conn.close()
             //Devolver respuesta
             return res.status(200).send({
                 status: 'success',
@@ -49,13 +51,14 @@ var controller = {
         const conn = con(bd)
         var Cliente = conn.model('Cliente',require('../schemas/cliente') )
         Cliente.find({}).sort('_id').exec((err, clientes) => {
+            conn.close()
+            mongoose.connection.close()
             if (err || !clientes) {
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los clientes'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Ok',
@@ -77,13 +80,14 @@ var controller = {
         }
 
         Cliente.findById(clienteId, (err, cliente) => {
+            conn.close()
+            mongoose.connection.close()
             if (err || !cliente) {
                 return res.status(404).send({
                     status: 'success',
                     message: 'No existe el cliente.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 cliente
@@ -114,6 +118,8 @@ var controller = {
 
             // Find and update
             Cliente.findOneAndUpdate({ _id: clienteId }, params, { new: true }, (err, clienteUpdated) => {
+                conn.close()
+                mongoose.connection.close()
                 if (err) {
                     return res.status(500).send({
                         status: 'error',
@@ -127,7 +133,6 @@ var controller = {
                         message: 'No existe el cliente'
                     })
                 }
-                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     cliente: clienteUpdated
@@ -150,6 +155,8 @@ var controller = {
         const conn = con(bd)
         var Cliente = conn.model('Cliente',require('../schemas/cliente') )
         Cliente.findOneAndDelete({ _id: clienteId }, (err, clienteRemoved) => {
+            conn.close()
+            mongoose.connection.close()
             if (!clienteRemoved) {
                 return res.status(500).send({
                     status: 'error',
@@ -162,7 +169,6 @@ var controller = {
                     message: 'Ocurrio un error.'
                 })
             }
-            conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Cliente eliminado correctamente.',
