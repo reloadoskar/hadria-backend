@@ -7,7 +7,7 @@ var ProduccionSchema = Schema({
     clave: {type: String, unique: true},
     folio: {type: Number, unique: true},
     fecha: String,
-    insumos: [{ type: Schema.ObjectId, ref: 'Compra' }],
+    insumos: [{ type: Schema.ObjectId, ref: 'Insumo' }],
     egresos: [{ type: Schema.ObjectId, ref: 'Egreso' }],
     items: [{ type: Schema.ObjectId, ref: 'ProduccionItem'}],
     ventas: [{ type: Schema.ObjectId, ref: 'Venta'}],

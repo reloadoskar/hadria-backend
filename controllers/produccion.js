@@ -47,19 +47,29 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         var Produccion = conn.model('Produccion',require('../schemas/produccion') )
-        Produccion.find({}).sort('folio').exec((err, produccions) => {
-            mongoose.connection.close()
-            conn.close()
-            if (err || !produccions) {
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'Error al devolver los produccions'
-                })
-            }
-            return res.status(200).send({
-                status: 'success',
-                produccions: produccions
+        Produccion.find({})
+            .populate('insumos')
+            .populate({
+                path:'insumos', 
+                populate: {
+                    path: 'compraItem',
+                    populate: 'producto'
+                }
             })
+            .sort('folio')
+            .exec((err, produccions) => {
+                conn.close()
+                mongoose.connection.close()
+                if (err || !produccions) {
+                    return res.status(500).send({
+                        status: 'error',
+                        message: 'Error al devolver los produccions'
+                    })
+                }
+                return res.status(200).send({
+                    status: 'success',
+                    produccions: produccions
+                })
         })
     },
 
