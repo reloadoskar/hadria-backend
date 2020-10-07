@@ -16,9 +16,11 @@ module.exports = function conexionLobby(){
   });
   conn.on('error',(err) =>{
     console.log(err)
+    conn.close()
   })
   conn.on('close', () => {
     console.log("Cerrando H A D R I A -- Lobby.")
+    conn.close()
   })
   conn.on('disconnect', () => {
     console.log('Desconectado')

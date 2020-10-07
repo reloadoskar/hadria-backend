@@ -1,7 +1,6 @@
 'use strict'
 const con = require('../conections/hadriaUser')
-// var Empaque = require('../models/empaque');
-
+var mongoose = require('mongoose');
 var controller = {    
     save: (req, res) => {
         const bd = req.params.bd

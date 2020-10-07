@@ -1,9 +1,7 @@
 'use strict'
 const con = require('../conections/hadriaUser')
 var validator = require('validator');
-// var Egreso = require('../models/egreso');
-// var Compra = require('../models/compra');
-
+var mongoose = require('mongoose');
 var controller = {
     save: (req, res) => {
         //recoger parametros

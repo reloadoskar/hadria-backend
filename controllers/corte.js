@@ -1,6 +1,6 @@
 'use strict'
 const con = require('../conections/hadriaUser')
-// var mongoose = require('mongoose');
+var mongoose = require('mongoose');
 
 var controller = {
     getData: (req, res) => {

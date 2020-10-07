@@ -1,27 +1,29 @@
 const mongoose = require('mongoose');
 var connections = 0
 const clientOption = {
-  keepAlive: true,
-  keepAliveInitialDelay: 300000,
-  poolSize: 2,
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useCreateIndex: true,
+    keepAlive: true,
+    keepAliveInitialDelay: 300000,
+    poolSize: 2,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
 };
 module.exports = function conexionCliente(bd) {
+    connections = mongoose.connections.length
 
     const conn = mongoose.createConnection('mongodb+srv://reloadoskar:MuffinTop100685@hdra1-qllhk.mongodb.net/HDR_USR_'+bd+'?retryWrites=true&w=majority', clientOption)
     conn.once("open", function() {
-      connections = mongoose.connections.length
       console.log("Conectado a: USERDB: "+bd);
       console.log("N. de Conexiones: "+connections);
 
     });
     conn.on('error',(err) =>{
       console.log(err)
+      conn.close()
     })
     conn.on('close', () => {
       console.log("Cerrando -- USERDB: "+bd)
+      conn.close()
     })
     conn.on('disconnect', () => {
       console.log('Desconectado')
@@ -54,4 +56,4 @@ module.exports = function conexionCliente(bd) {
     conn.model('VentaItem', require('../schemas/venta_item'));
 
     return conn; 
-  };
+}

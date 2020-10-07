@@ -1,6 +1,6 @@
 'use strict'
 const con = require('../conections/hadriaUser')
-// var Concepto = require('../models/concepto');
+var mongoose = require('mongoose');
 
 var controller = {
     save: (req, res) => {

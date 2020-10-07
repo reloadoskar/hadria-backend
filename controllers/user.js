@@ -2,7 +2,7 @@
 var mongoose = require('mongoose')
 
 const conexion_app = require('../conections/hadria')
-const conexion_cliente = require('../conections/hadriaUser')
+
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
@@ -67,8 +67,7 @@ var controller = {
     },
 
     logout: (req, res) => {
-        const conn = conexion_app()
-        conn.close()
+        mongoose.connection.close()
         return res.status(200).send({
             status: 'success',
             message: "Se cerro la sesión."
