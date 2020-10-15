@@ -98,6 +98,55 @@ var controller = {
                 insumoRemoved
             })
         })
+    },
+
+    subtract: (req, res) => {
+        const bd = req.params.bd
+        const params = req.body
+        const conn = con(bd)
+        var Insumo = conn.model('Insumo', require('../schemas/insumo'))
+        Insumo.findById(params.id).exec((err, item) => {
+            if(err||!item){
+                console.log(err)
+            }
+            item.disponible -= params.cantidad
+
+            item.save((err, itemSaved) => {
+                conn.close()
+                return res.status(200).send({
+                    status: "success",
+                    item: itemSaved
+                })
+            })
+        })
+    },
+
+    add: (req, res) => {
+        const bd = req.params.bd
+        const params = req.body
+        const conn = con(bd)
+        var Insumo = conn.model('Insumo', require('../schemas/insumo'))
+        Insumo.findById(params.id).exec((err, item) => {
+            if(err||!item){
+                return res.status(500).send({
+                    status: "error",
+                    err
+                })
+            }else{
+                var actual = parseInt(item.disponible)
+                var cant = parseInt(params.cantidad)
+                
+                item.disponible = actual += cant
+                
+                item.save((err, itemSaved) => {
+                    conn.close()
+                    return res.status(200).send({
+                        status: "success",
+                        item: itemSaved
+                    })
+                })
+            }
+        })
     }
 }
 
