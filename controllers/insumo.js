@@ -7,29 +7,47 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         var Insumo = conn.model('Insumo',require('../schemas/insumo') )
-
+        var Produccion = conn.model('Produccion', require('../schemas/produccion'))
         var insumo = new Insumo()
 
         insumo.fecha = params.fecha
-        insumo.produccion = params.produccion._id
+        insumo.produccion = params.produccion
         // insumo.ubicacion = params.ubicacion._id
         insumo.compraItem = params.compraItem._id
         insumo.cantidad = params.cantidad
+        insumo.disponible = params.cantidad
         insumo.importe = params.importe
 
         insumo.save((err, insumoSaved) => {
-            mongoose.connection.close()
-            conn.close()
             if(err){
                 return res.status(500).send({
                     status: 'error',
                     message: "No se pudo registrar el Insumo."
                 })
             }
-            return res.status(200).send({
-                status: 'success',
-                message: "Insumo registrado correctamente.",
-                insumo: insumoSaved
+            Produccion.findById(insumoSaved.produccion).exec((err, produccion) => {
+                if(err || !produccion){
+                    console.log("que pedo?")
+                    return res.status(500).send({
+                        status: 'error',
+                        message: "Algo salió mal",
+                        insumo: insumoSaved,
+                        produccion: produccion
+                    })
+                }else{
+                    console.log(produccion)
+                    produccion.insumos.push( insumoSaved._id )
+                    produccion.save((err, saved) => {
+                        mongoose.connection.close()
+                        conn.close()
+                        return res.status(200).send({
+                            status: 'success',
+                            message: "Insumo registrado correctamente.",
+                            insumo: insumoSaved,
+                            produccion: saved
+                        })
+                    })
+                }
             })
         })
 

@@ -15,7 +15,7 @@ var controller = {
 
             var produccion = new Produccion();
 
-            produccion.fecha = new Date()
+            produccion.fecha = new Date().toISOString()
             produccion.folio = nDocuments + 1
             produccion.clave = "PRO-"+produccion.folio
             produccion.status = "ACTIVO"

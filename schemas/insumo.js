@@ -9,6 +9,7 @@ var InsumoSchema = Schema({
     compraItem: { type: Schema.ObjectId, ref: 'CompraItem' },
     fecha: String,
     cantidad: Number,
+    disponible: Number,
     importe: Number,
 },{
     timestamps: true

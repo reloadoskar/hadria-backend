@@ -9,7 +9,7 @@ var ProduccionSchema = Schema({
     fecha: String,
     insumos: [{ type: Schema.ObjectId, ref: 'Insumo' }],
     egresos: [{ type: Schema.ObjectId, ref: 'Egreso' }],
-    items: [{ type: Schema.ObjectId, ref: 'ProduccionItem'}],
+    productos: [{ type: Schema.ObjectId, ref: 'ProduccionItem'}],
     ventas: [{ type: Schema.ObjectId, ref: 'Venta'}],
     costo: { type: Number, default: 0},
     valor: { type: Number, default: 0},
