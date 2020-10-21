@@ -239,7 +239,6 @@ var controller = {
             })
     },
 
-
     getVentasSemana: (req, res) => {
         var fecha1 = req.query.f1
         var fecha2 = req.query.f2
@@ -265,7 +264,6 @@ var controller = {
                 })
         })
     },
-
 
     update: (req, res) => {
         var compraId = req.params.id;

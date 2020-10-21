@@ -9,7 +9,7 @@ var ClienteSchema = Schema({
     direccion: String,
     tel1: String,
     tel2: String,
-    email: { type: String, unique: true},
+    email: { type: String },
     dias_de_credito: Number,
     limite_de_credito: Number,
     credito_disponible: Number,
