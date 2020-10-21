@@ -55,24 +55,64 @@ var controller = {
         const bd= req.params.bd
         const conn = con(bd)
         var Venta = conn.model('Venta',require('../schemas/venta') )
-        Venta.find( { "saldo": {$gt: 0} } )
-            .select("cliente importe saldo fecha acuenta folio")
-            .populate("cliente")
-            .exec((err, docs) => {
-                mongoose.connection.close()
-                conn.close()
-                if (err){
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'No se encontraron cuentas',
-                    })
-                }
-                return res.status(200).send({
-                    status: 'success',
-                    message: 'Cuentas encontradas',
-                    cuentas: docs
-                })
+        Venta.aggregate()
+         .match({ saldo: {$gt: 0} })
+         .lookup({from: 'clientes', localField: 'cliente', foreignField: '_id', as: 'cliente'})
+         .lookup({from: 'ventaitems', localField: 'items', foreignField: '_id', as: 'items'})
+         .unwind("items")
+         .lookup({from: 'productos', localField: 'items.producto', foreignField: '_id', as: 'items.producto'})
+         .unwind("items.producto")
+        //  .lookup({form: 'ubicacions', localField:"pagos.ubicacion", foreignField: "_id", as: "pagos.ubicacion" })
+        //  .unwind("pagos.ubicacion")
+         .project({
+             "folio":1,
+             "fecha":1,
+             "importe":1,
+             "saldo":1,
+             "pagos":1,
+            //  "pa":1,
+             "cliente.nombre":1,
+             "items.cantidad":1,
+             "items.precio":1,
+             "items.importe":1,
+             "items.producto.descripcion":1,
             })
+        .group({
+            _id: "$cliente.nombre",
+            saldo: {$sum: "$saldo"},
+            ventas: {$push: {folio: "$folio", fecha: "$fecha", importe: "$importe", saldo: "$saldo", items: "$items", pagos: "$pagos"}}
+
+        })
+         .exec((err, ventas) => {
+             if (err){
+                 return res.status(500).send({
+                     status: "error",
+                     err
+                 })
+             } 
+             return res.status(200).send({
+                 status: "success",
+                 ventas
+             })
+         })
+        // Venta.find( { "saldo": {$gt: 0} } )
+        //     .select("cliente importe saldo fecha acuenta folio")
+        //     .populate("cliente")
+        //     .exec((err, docs) => {
+        //         mongoose.connection.close()
+        //         conn.close()
+        //         if (err){
+        //             return res.status(500).send({
+        //                 status: 'error',
+        //                 message: 'No se encontraron cuentas',
+        //             })
+        //         }
+        //         return res.status(200).send({
+        //             status: 'success',
+        //             message: 'Cuentas encontradas',
+        //             cuentas: docs
+        //         })
+        //     })
     },
 
     savePago: (req, res) => {
