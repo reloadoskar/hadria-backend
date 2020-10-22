@@ -38,12 +38,9 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
-        Ingreso.find({}).sort('-_id')
-            .populate('provedor', 'nombre')
-            .populate('ubicacion')
-            .populate('items.producto')
+        Ingreso.find({importe:{$gt:0}}).sort('-fecha').limit(5)
+            .populate({path: 'ubicacion', select: 'nombre'})
             .exec( (err, ingresos) => {
-                mongoose.connection.close()
                 conn.close()
                 if(err || !ingresos){
                     return res.status(500).send({

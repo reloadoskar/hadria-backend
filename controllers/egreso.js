@@ -57,7 +57,7 @@ var controller = {
         var Egreso = conn.model('Egreso',require('../schemas/egreso') )
         var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
         var Compra = conn.model('Compra',require('../schemas/compra') )
-        Egreso.find({}).sort('_id')
+        Egreso.find({}).sort('-fecha').limit(5)
             .populate('ubicacion')
             .populate('compra', 'clave')
             .sort({concepto: 'asc'})

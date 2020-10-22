@@ -51,6 +51,21 @@ var controller = {
         })
         
     },
+
+    getCuentasCliente: (req,res) => {
+        const bd= req.params.bd
+        const clienteID= req.params.id
+        const conn = con(bd)
+        var Venta = conn.model('Venta',require('../schemas/venta') )
+        Venta.find({cliente: clienteID, saldo: {$gt: 0}})
+        .exec((err, cuentas)=>{
+            return res.status(200).send({
+                status: "success",
+                cuentas
+            })
+        })
+    },
+
     getCuentas: (req, res) => {
         const bd= req.params.bd
         const conn = con(bd)
@@ -58,31 +73,30 @@ var controller = {
         Venta.aggregate()
          .match({ saldo: {$gt: 0} })
          .lookup({from: 'clientes', localField: 'cliente', foreignField: '_id', as: 'cliente'})
-         .lookup({from: 'ventaitems', localField: 'items', foreignField: '_id', as: 'items'})
-         .unwind("items")
-         .lookup({from: 'productos', localField: 'items.producto', foreignField: '_id', as: 'items.producto'})
-         .unwind("items.producto")
-        //  .lookup({form: 'ubicacions', localField:"pagos.ubicacion", foreignField: "_id", as: "pagos.ubicacion" })
-        //  .unwind("pagos.ubicacion")
+        //  .lookup({from: 'ventaitems', localField: 'items', foreignField: '_id', as: 'items'})
+        //  .unwind("items")
+        //  .lookup({from: 'productos', localField: 'items.producto', foreignField: '_id', as: 'items.producto'})
+        //  .unwind("items.producto")
          .project({
              "folio":1,
              "fecha":1,
              "importe":1,
              "saldo":1,
              "pagos":1,
-            //  "pa":1,
              "cliente.nombre":1,
-             "items.cantidad":1,
-             "items.precio":1,
-             "items.importe":1,
-             "items.producto.descripcion":1,
+             "cliente._id":1,
+            //  "items.cantidad":1,
+            //  "items.precio":1,
+            //  "items.importe":1,
+            //  "items.producto.descripcion":1,
             })
         .group({
-            _id: "$cliente.nombre",
+            _id: "$cliente",
             saldo: {$sum: "$saldo"},
-            ventas: {$push: {folio: "$folio", fecha: "$fecha", importe: "$importe", saldo: "$saldo", items: "$items", pagos: "$pagos"}}
+            // ventas: {$push: {folio: "$folio", fecha: "$fecha", importe: "$importe", saldo: "$saldo", items: "$items", pagos: "$pagos"}}
 
         })
+        .sort("_id.nombre")
          .exec((err, ventas) => {
              if (err){
                  return res.status(500).send({
@@ -134,6 +148,10 @@ var controller = {
                 })
 
                 venta.saldo -= parseFloat(params.importe)
+                venta.save((err, venta) => {
+                    if(err){console.log(err)}
+                    console.log(venta)
+                })
 
                 
                 var ingreso = new Ingreso()
@@ -145,7 +163,6 @@ var controller = {
                 ingreso.descripcion = "PAGO DE: " + params.cuenta.cliente.nombre + " " + params.referencia
                 ingreso.tipoPago = params.tipoPago
                 
-                venta.save()
                 ingreso.save()
 
                 return Cliente.findById(params.cuenta.cliente._id)
