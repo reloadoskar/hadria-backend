@@ -5,6 +5,7 @@ var Schema = mongoose.Schema;
 
 var CompraItemSchema = Schema({
     compra: { type: Schema.ObjectId, ref: 'Compra'},
+    ubicacion: { type: Schema.ObjectId, ref: 'Ubicacion' },
     producto: { type: Schema.ObjectId, ref: 'Producto' },
     provedor: { type: Schema.ObjectId, ref: 'Provedor' },
     cantidad: Number,

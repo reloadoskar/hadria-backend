@@ -15,5 +15,6 @@ router.post('/client/register', UserController.save);
 router.post('/user/login', UserController.login)
 router.get('/profile', UserController.profile)
 router.get('/logout', UserController.logout)
+router.get('/:bd/restartApp', UserController.restartApp)
 
 module.exports = router;

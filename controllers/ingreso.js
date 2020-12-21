@@ -14,6 +14,7 @@ var controller = {
         ingreso.concepto = params.concepto
         ingreso.descripcion = params.descripcion
         ingreso.fecha = params.fecha
+        ingreso.tipoPago = params.tipoPago
         ingreso.importe = params.importe
 
         ingreso.save((err, ingresoSaved) => {
@@ -22,7 +23,8 @@ var controller = {
             if(err){
                 return res.status(500).send({
                     status: 'error',
-                    message: "No se pudo registrar el Ingreso."
+                    message: "No se pudo registrar el Ingreso.",
+                    err
                 })
             }
             return res.status(200).send({
@@ -38,7 +40,7 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
-        Ingreso.find({importe:{$gt:0}}).sort('-fecha').limit(5)
+        Ingreso.find({importe:{$gt:0}}).sort({fecha: -1, createdAt: -1})
             .populate({path: 'ubicacion', select: 'nombre'})
             .exec( (err, ingresos) => {
                 conn.close()

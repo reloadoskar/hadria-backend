@@ -6,47 +6,56 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         var Compra = conn.model('Compra',require('../schemas/compra') )
-        var Provedor = conn.model('Provedor',require('../schemas/provedor') )
-        var Producto = conn.model('Producto',require('../schemas/producto') )
-        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
-        var CompraItem = conn.model('CompraItem',require('../schemas/compra_item') )
+        var Produccion = conn.model('Produccion',require('../schemas/produccion') )
+        var inventario = {}
+
         Compra.find({"status": "ACTIVO"})
-            .select('clave folio ubicacion items')
+            .select('clave folio ubicacion items importe')
             .populate({
                 path: 'items',
-                select: 'stock empaques cantidad, empaquesStock producto provedor',
+                select: 'stock empaques cantidad costo empaquesStock producto',
                 populate: {
-                    path: "producto",
-                    select: "descripcion precio1"
-                }, 
-            })
-            .populate({
-                path: 'items',
-                populate: {
-                    path: 'provedor',
-                    select: "clave "
+                    path: 'producto',
+                    select: 'descripcion unidad empaque',
+                    populate: {
+                        path: 'unidad empaque',
+                        select: 'abr'
+                    }
                 }
             })
-            .populate({
-                path: 'ubicacion',
-                select: 'nombre'
-            })
+            .populate('ubicacion')
             .sort('folio')
-            .exec( (err, docs) => {
-                mongoose.connection.close()
-                conn.close()
-                if (err){
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'No se encontraron items',
-                        err
-                    })
-                }
-                return res.status(200).send({
-                    status: 'success',
-                    message: 'Items encontrados',
-                    inventario: docs
+            .exec()
+            .then( inv => {
+                inventario.compras = inv
+                
+                Produccion.find({"status": "ACTIVO" })
+                .select('folio clave productos')
+                .populate({
+                    path: 'productos',
+                    select: 'producto cantidad stock',
+                    populate: {
+                        path: 'producto',
+                        select: 'descripcion'
+                    }
+
                 })
+                .exec( (err, inv ) => {
+                    inventario.produccion = inv
+                        conn.close()
+                        if (err){
+                            return res.status(500).send({
+                                status: 'error',
+                                message: 'No se encontraron items',
+                                err
+                            })
+                        }
+                        return res.status(200).send({
+                            status: 'success',
+                            message: 'Items encontrados',
+                            inventario
+                        })
+                } )
             })
     },
     
@@ -55,14 +64,22 @@ var controller = {
         const conn = con(bd)
         var Compra = conn.model('Compra',require('../schemas/compra') )
         var ubicacion = req.params.ubicacion;
-        Compra.find({ "ubicacion": ubicacion._id, "items.stock": {$gt: 0}})
-            .select('clave items ubicacion')
-            .populate('items.producto')
+        Compra.find({ "ubicacion": ubicacion})
+            .select('clave items ubicacion folio')
             .populate('ubicacion')
-            .exec( (err, docs) => {
-                mongoose.connection.close()
-                conn.close()
-                if (err){
+            .populate('items')
+            .populate({
+                path: 'items',
+                populate: { 
+                    path: 'producto',
+                    populate: {
+                        path: 'unidad empaque',
+                        select: 'abr'
+                    }
+                },
+            })
+            .exec( (err, inventario) => {
+                if (err || !inventario){
                     return res.status(500).send({
                         status: 'error',
                         message: 'No se encontraron items',
@@ -71,7 +88,7 @@ var controller = {
                 return res.status(200).send({
                     status: 'success',
                     message: 'Items encontrados',
-                    inventario: docs
+                    inventario
                 })
             })
     }

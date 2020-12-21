@@ -4,52 +4,35 @@ const con = require('../conections/hadriaUser')
 
 var controller = {
     save: (req, res) => {
+        var params = req.body
         const bd = req.params.bd
         const conn = con(bd)
-        var Venta = conn.model('Venta',require('../schemas/venta') )
-        var Cliente = conn.model('Cliente',require('../schemas/cliente') )
-        var params = req.body
-        var venta = new Venta()
-        Venta.estimatedDocumentCount((err, count) => {
-            venta._id = mongoose.Types.ObjectId(),
-            venta.folio = ++count
-            venta.cliente = params.cliente
-            venta.fecha = params.fecha
-            venta.importe = params.importe 
-            venta.saldo = params.importe
-            venta.tipoPago = 'CRÉDITO'
+        const Ingreso = conn.model('Ingreso')
+        var ingreso = new Ingreso()
+        ingreso.ubicacion = params.ubicacion
+        ingreso.fecha = params.fecha
+        ingreso.concepto = "VENTA"
+        ingreso.tipoPago = params.tipoPago
+        ingreso.importe = params.total
+        if(params.tipoPago === 'CREDITO'){
+            ingreso.acuenta = params.acuenta
+            ingreso.saldo = params.saldo
+        }
 
-            Cliente.findById(params.cliente._id, (err, cliente) => {
-                if(err)console.log(err)
-                let creditoDisponible = cliente.credito_disponible
-                let creditoActualizado = creditoDisponible - venta.saldo
-                cliente.credito_disponible = creditoActualizado
-                cliente.save((err, cliente) => {
-                    if(err)console.log(err)
-                })
-            })
+        if(params.venta){
+            ingreso.descripcion = "CREDTIO A: "+ params.cliente.nombre + " FOLIO: "+ venta.folio
+            ingreso.venta = venta._id
+        }
 
-            venta.save( (err, ventaSaved) => {
-                mongoose.connection.close()
-                conn.close()
-                if(err){
-                    return res.status(404).send({
-                        status: "error",
-                        message: "Error al guardar la venta",
-                        err
-                    })
-                }
-                else{
-                    return res.status(200).send({
-                        status: "success",
-                        message: "Venta guardada correctamente.",
-                        venta: ventaSaved
-                    })
-                }        
+        ingreso.save((err, ingresoSaved) => {
+            if(err){console.log(err)}
+            conn.close()
+            return res.status(500).send({
+                status: "success",
+                message: "Cuenta por cobrar creada correctamente.",
+                cxc: ingresoSaved
             })
-                       
         })
-        
     },
 
     getCuentasCliente: (req,res) => {
@@ -69,119 +52,89 @@ var controller = {
     getCuentas: (req, res) => {
         const bd= req.params.bd
         const conn = con(bd)
-        var Venta = conn.model('Venta',require('../schemas/venta') )
-        Venta.aggregate()
-         .match({ saldo: {$gt: 0} })
-         .lookup({from: 'clientes', localField: 'cliente', foreignField: '_id', as: 'cliente'})
-        //  .lookup({from: 'ventaitems', localField: 'items', foreignField: '_id', as: 'items'})
-        //  .unwind("items")
-        //  .lookup({from: 'productos', localField: 'items.producto', foreignField: '_id', as: 'items.producto'})
-        //  .unwind("items.producto")
-         .project({
-             "folio":1,
-             "fecha":1,
-             "importe":1,
-             "saldo":1,
-             "pagos":1,
-             "cliente.nombre":1,
-             "cliente._id":1,
-            //  "items.cantidad":1,
-            //  "items.precio":1,
-            //  "items.importe":1,
-            //  "items.producto.descripcion":1,
-            })
-        .group({
-            _id: "$cliente",
-            saldo: {$sum: "$saldo"},
-            // ventas: {$push: {folio: "$folio", fecha: "$fecha", importe: "$importe", saldo: "$saldo", items: "$items", pagos: "$pagos"}}
-
+        var Cliente = conn.model('Cliente',require('../schemas/cliente') )
+        Cliente.find({cuentas: {$ne: []}})
+        .select('nombre dias_de_credito cuentas')
+        .populate({
+            path: 'cuentas',
+            match: { saldo: {$gt: 0} },
+            select: 'concepto importe acuenta saldo venta',
+            populate: { path: 'venta', select: 'items folio fecha importe'}
         })
-        .sort("_id.nombre")
-         .exec((err, ventas) => {
-             if (err){
-                 return res.status(500).send({
-                     status: "error",
-                     err
-                 })
-             } 
-             return res.status(200).send({
-                 status: "success",
-                 ventas
-             })
-         })
-        // Venta.find( { "saldo": {$gt: 0} } )
-        //     .select("cliente importe saldo fecha acuenta folio")
-        //     .populate("cliente")
-        //     .exec((err, docs) => {
-        //         mongoose.connection.close()
-        //         conn.close()
-        //         if (err){
-        //             return res.status(500).send({
-        //                 status: 'error',
-        //                 message: 'No se encontraron cuentas',
-        //             })
-        //         }
-        //         return res.status(200).send({
-        //             status: 'success',
-        //             message: 'Cuentas encontradas',
-        //             cuentas: docs
-        //         })
-        //     })
+        .exec((err, clientes)=>{
+            if (err){
+                return res.status(500).send({
+                    status: "error",
+                    err
+                })
+            } 
+            return res.status(200).send({
+                status: "success",
+                clientes
+            })
+        })
     },
 
     savePago: (req, res) => {
         var params = req.body
         const bd = req.params.bd
         const conn = con(bd)
-        var Venta = conn.model('Venta',require('../schemas/venta') )
-        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
-        var Cliente = conn.model('Cliente',require('../schemas/cliente') )
-        Venta.findById(params.cuenta._id)
-            .exec()
-            .then(venta => {
-                venta.pagos.push({
-                    ubicacion: params.ubicacion,
-                    fecha: params.fecha,
-                    importe: params.importe,
-                    tipoPago: params.tipoPago,
-                    referencia: params.referencia,
-                })
+        var Ingreso = conn.model('Ingreso')
+        var Cliente = conn.model('Cliente')
+        var ingreso = new Ingreso()
+        ingreso.importe = params.importe
+        ingreso.ubicacion = params.ubicacion
+        ingreso.fecha = params.fecha                
+        ingreso.concepto = "COBRANZA"
+        ingreso.descripcion = "PAGO DE: " + params.cuenta.nombre + " " + params.referencia
+        ingreso.tipoPago = params.tipoPago
+        
+        var cltId = params.cuenta._id
+        Cliente.findById(cltId).exec((err, cliente)=>{
+            if(err){console.log(err)}
+            cliente.pagos.push(ingreso._id)
+            cliente.credito_disponible += params.importe
 
-                venta.saldo -= parseFloat(params.importe)
-                venta.save((err, venta) => {
+            var pago = params.importe
+            cliente.cuentas.map(cuenta=>{
+                if(pago > 0){
+                    Ingreso.findById(cuenta._id).exec((err, ing) => {
+                        if(err){console.log(err)}
+                        if(pago > ing.saldo){
+                            pago -= ing.saldo
+                            ing.saldo = 0
+                            ing.save((err, saved)=>{
+                                if(err || !saved){console.log(err)}
+                            })
+                        }else{
+                            
+                            ing.saldo -= pago
+                            ing.save((err, saved)=>{
+                                if(err || !saved){console.log(err)}
+                            })
+                            pago = 0
+                        }
+                    })
+                }
+            })
+
+            cliente.save( (err, cliente) => {
+                
+                if(err){console.log(err)}
+                
+                ingreso.save().then((err, ingreso) => {
                     if(err){console.log(err)}
-                    console.log(venta)
-                })
-
-                
-                var ingreso = new Ingreso()
-                ingreso.venta = params.cuenta._id
-                ingreso.importe = params.importe
-                ingreso.ubicacion = params.ubicacion
-                ingreso.fecha = params.fecha                
-                ingreso.concepto = "COBRANZA"
-                ingreso.descripcion = "PAGO DE: " + params.cuenta.cliente.nombre + " " + params.referencia
-                ingreso.tipoPago = params.tipoPago
-                
-                ingreso.save()
-
-                return Cliente.findById(params.cuenta.cliente._id)
-                        .exec()
-            })
-            .then(cliente => {
-                cliente.credito_disponible += parseFloat(params.importe)
-
-                cliente.save()
-
-                mongoose.connection.close()
-                conn.close()
-                res.status(200).send({
-                    status: 'success',
-                    message: 'Cobro agregado correctamente.'
+                    conn.close()
+                    
+                    return res.status(200).send({
+                        status: 'success',
+                        message: 'Pago agregado correctamente.',
+                        ingreso
+                    })                
                 })
             })
+        })
     }
-
 }
 
 module.exports = controller;

@@ -9,8 +9,10 @@ var EgresoSchema = Schema({
     ubicacion: { type: Schema.ObjectId, ref: 'Ubicacion' },
     concepto: String,
     descripcion: String,
+    tipoPago: String,
     fecha: String,
     importe: Number,
+    saldo: Number,
     compra: {type: Schema.ObjectId, ref: 'Compra'},
 },{
     timestamps: true

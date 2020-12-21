@@ -15,6 +15,7 @@ var controller = {
             
             //Asignar valores
             ubicacion.nombre = params.nombre.toUpperCase();
+            ubicacion.tipo = params.tipo.toUpperCase();
 
             //Guardar objeto
             ubicacion.save((err, ubicacionStored) => {
@@ -39,7 +40,7 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
-        Ubicacion.find({}).sort('_id').exec( (err, ubicacions) => {
+        Ubicacion.find({}).sort('nombre').exec( (err, ubicacions) => {
 
             mongoose.connection.close()
             conn.close()
@@ -54,6 +55,10 @@ var controller = {
                 ubicacions: ubicacions
             })
         })
+    },
+
+    getUbicacionsSaldo: (req, res) => {
+
     },
 
     getUbicacion: (req, res) => {

@@ -8,6 +8,7 @@ var router = express.Router();
 //Rutas
 router.post('/:bd/ubicacion/save', UbicacionController.save);
 router.get('/:bd/ubicacions', UbicacionController.getUbicacions);
+router.get('/:bd/ubicacions/saldo', UbicacionController.getUbicacionsSaldo);
 router.get('/:bd/ubicacion/:id', UbicacionController.getUbicacion);
 router.put('/:bd/ubicacion/:id', UbicacionController.update);
 router.delete('/:bd/ubicacion/:id', UbicacionController.delete);

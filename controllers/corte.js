@@ -13,9 +13,8 @@ var controller = {
         var Egreso = conn.model('Egreso',require('../schemas/egreso') )
         var corte = {}
          
-
         Venta.find({"ubicacion": ubicacion, "fecha": fecha })
-        .select('ubicacion cliente tipoPago acuenta saldo importe items folio')
+        .select('ubicacion cliente tipoPago saldo importe items folio')
         .populate({
             path: 'items',
             populate: { path: 'producto'},
@@ -31,7 +30,11 @@ var controller = {
         .then( ventas => {
             if(!ventas){console.log('error en ventas')}
             corte.ventas = ventas
-            return Egreso.find({"ubicacion": ubicacion, "fecha": fecha})
+            return Egreso.find({
+                ubicacion: ubicacion, 
+                fecha: fecha, 
+                tipo: {$ne: 'COMPRA'}
+            })
             .select("ubicacion concepto descripcion fecha importe")
             .populate('ubicacion')
             .sort('ubicacion concepto descripcion fecha importe')
@@ -47,9 +50,11 @@ var controller = {
         })
         .then(ingresos => {
             corte.ingresos = ingresos
+            // return Ingreso.find({"tipoPago": 'CRÉDITO', "ubicacion": ubicacion, "fecha": fecha})
             return Venta.find({"tipoPago": 'CRÉDITO', "ubicacion": ubicacion, "fecha": fecha })
             .select('folio ubicacion cliente tipoPago acuenta items saldo importe')
             .populate('ubicacion')
+            // .populate('venta')
             .populate('cliente')
             .populate({
                 path: 'items',

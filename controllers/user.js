@@ -2,7 +2,7 @@
 var mongoose = require('mongoose')
 
 const conexion_app = require('../conections/hadria')
-
+const con = require('../conections/hadriaUser')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
@@ -147,6 +147,87 @@ var controller = {
             res.send({'error': err})
         })
     },
+
+    restartApp: (req, res) => {
+        const bd= req.params.bd
+        const conn = con(bd)
+        const Cliente = conn.model('Cliente')
+        const CompraItem = conn.model('CompraItem')
+        const Compra = conn.model('Compra')
+        const Corte = conn.model('Corte')
+        const Egreso = conn.model('Egreso')
+        const Ingreso = conn.model('Ingreso')
+        const Insumo = conn.model('Insumo')
+        const ProduccionItem = conn.model('ProduccionItem')
+        const Produccion = conn.model('Produccion')
+        const Producto = conn.model('Producto')
+        const Provedor = conn.model('Provedor')
+        const Ubicacion = conn.model('Ubicacion')
+        const Venta = conn.model('Venta')
+        const VentaItem = conn.model('VentaItem')
+        
+        // Cliente.deleteMany({}).exec((err, docs) => {
+        //     if(err){console.log(err)}
+        //     console.log("Cliente - vaciado")
+        // })
+        CompraItem.deleteMany({}).exec((err, docs) => {
+            if(err){console.log(err)}
+            console.log("Compra items - vaciado")
+        })
+        Compra.deleteMany({}).exec((err, docs)=> {
+            if(err){console.log(err)}
+            console.log("Compra - vaciado")
+        })
+        // Corte.deleteMany({}).exec((err, docs)=> {
+        //     if(err){console.log(err)}
+        //     console.log("Corte - vaciado")
+        // })
+        Egreso.deleteMany({}).exec((err, docs)=> {
+            if(err){console.log(err)}
+            console.log("Egreso - vaciado")
+        })
+        Ingreso.deleteMany({}).exec((err, docs)=> {
+            if(err){console.log(err)}
+            console.log("Ingreso - vaciado")
+        })
+        // Insumo.deleteMany({}).exec((err, docs)=> {
+        //     if(err){console.log(err)}
+        //     console.log("Insumo - vaciado")
+        // })
+        // ProduccionItem.deleteMany({}).exec((err, docs)=> {
+        //     if(err){console.log(err)}
+        //     console.log("ProduccionItem - vaciado")
+        // })
+        // Produccion.deleteMany({}).exec((err, docs)=> {
+        //     if(err){console.log(err)}
+        //     console.log("Produccion - vaciado")
+        // })
+        // Producto.deleteMany({}).exec((err, docs)=> {
+        //     if(err){console.log(err)}
+        //     console.log("Producto - vaciado")
+        // })
+        Provedor.deleteMany({}).exec((err, docs)=> {
+            if(err){console.log(err)}
+            console.log("Provedor - vaciado")
+        })
+        // Ubicacion.deleteMany({}).exec((err, docs)=> {
+        //     if(err){console.log(err)}
+        //     console.log("Ubicacion - vaciado")
+        // })
+        Venta.deleteMany({}).exec((err, docs)=> {
+            if(err){console.log(err)}
+            console.log("Venta - vaciado")
+        })
+        VentaItem.deleteMany({}).exec((err, docs)=> {
+            if(err){console.log(err)}
+            console.log("Venta items - vaciado")
+            return res.status(200).send({
+                message: 'Restart done!'
+            })
+        })
+
+
+    }
 
 }
 

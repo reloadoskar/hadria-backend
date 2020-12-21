@@ -1,87 +1,112 @@
-'use strict'
 var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
 
-var controller = {
-    getCuentas: (req, res) => {
-        const bd = req.params.bd
-        const conn = con(bd)
-        var Compra = conn.model('Compra',require('../schemas/compra') )
-        Compra.find({
-            $and:[
-                {"status": {$ne: "CANCELADO"} }, 
-                {"status": {$ne: "CERRADO"} },
-                {"saldo": {$gt: 0} },
-                ]
+
+exports.cxp_list = (req, res) => {
+    const bd = req.params.bd
+    const conn = con(bd)
+    var Provedor = conn.model('Provedor')
+
+    Provedor.find({cuentas: {$ne: []}})
+    .select('nombre tel1 diasDeCredito cuentas')
+    .populate({
+        path: 'cuentas',
+        match: { saldo: {$gt: 0} },
+        select: 'concepto folio importe saldo compra',
+        populate: { path: 'compra', select: 'clave folio fecha'}
+    })
+    .exec((err, provs) => {
+        if(err){console.log(err)}
+        return res.status(200).send({
+            status: 'success',
+            message: 'Cuentas encontradas',
+            cuentas: provs
         })
-            .select('clave folio importe saldo provedor fecha')
-            .populate('provedor')
-            .sort('folio')
-            .exec( (err, docs) => {
-                mongoose.connection.close()
-                conn.close()
-                if (err){
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'No se encontraron items',
-                    })
-                }
-                return res.status(200).send({
-                    status: 'success',
-                    message: 'Items encontrados',
-                    cuentas: docs
-                })
-            })
-    },
-
-    savePago: (req, res) => {
-        var params = req.body
-        const bd = req.params.bd
-        const conn = con(bd)
-        var Compra = conn.model('Compra',require('../schemas/compra') )
-        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
-        
-        Compra.findById(params.cuenta._id)
-            .exec()
-            .then(compra => {
-                compra.pagos.push({
-                    ubicacion: params.ubicacion,
-                    importe: params.importe,
-                    tipoPago: params.tipoPago,
-                    fecha: params.fecha,
-                    referencia: params.referencia
-                })
-                compra.saldo -= params.importe
-
-                
-                var egreso = new Egreso()
-
-                    egreso.compra = params.cuenta._id
-                    egreso.ubicacion = params.ubicacion
-                    egreso.fecha = params.fecha
-                    egreso.tipoPago = params.tipoPago
-                    egreso.importe = params.importe
-                    egreso.descripcion = "PAGO A: " + params.cuenta.provedor.nombre + "-" + params.cuenta.clave
-                    egreso.concepto = "PAGO"
-                    // console.log(egreso)
-                    // console.log(compra)
-                    egreso.save().catch(err => { console.log(err) } )
-                    compra.save()
-                    .then(()=>{
-                        conn.close()
-                    })
-                    .catch(err => { console.log(err) } )
-                    mongoose.connection.close()
-                    return res.status(200).send({
-                        status: 'success',
-                        message: 'Pago agregado correctamente.'
-                    })
-                // })
-
-
-            })
-
-    },
+    })
 }
 
-module.exports = controller;
+exports.cxp_create_pago = (req, res) => {
+    var params = req.body
+    const bd = req.params.bd
+    const conn = con(bd)
+
+    var Egreso = conn.model('Egreso')
+    var Provedor = conn.model('Provedor')
+
+    Egreso.estimatedDocumentCount()
+    .exec((err,c)=> {
+        if(err){console.log(err)}
+        var nextFolio = c + 1
+        var egreso = new Egreso()
+        egreso.folio = nextFolio
+        egreso.ubicacion = params.ubicacion
+        egreso.fecha = params.fecha
+        egreso.tipo = 'PAGO'
+        egreso.importe = params.importe
+        egreso.saldo = 0
+        egreso.descripcion = "PAGO A: " + params.cuenta.concepto
+        egreso.concepto = "PAGO" 
+        Provedor.findById(params.cuenta.provedor).exec((err, provedor)=> {
+            if(err || !provedor){console.log(err)}
+            // console.log(provedor)
+            provedor.pagos.push(egreso._id)
+            provedor.save((err, saved)=>{
+                if(err){console.log(err)}
+                egreso.save((err, egSaved) => {
+                    if(err){console.log(err)}
+                    Egreso.findById(params.cuenta._id).exec((err, eg)=>{
+                        if(err){
+                            return res.status(500).send({
+                                status: "error",
+                                message: "¡Ups! Ocurrió un Eerror.",
+                                err
+                            })
+                        }
+                        eg.saldo -= params.importe
+                        eg.save((err, saved)=>{
+                            conn.close()
+                            return res.status(200).send({
+                                status: "success",
+                                message: "Todo está bien. :)",
+                                pago: egSaved
+                            })
+                        })
+                    })
+
+
+                })
+            })
+        })
+    })
+}
+
+exports.cxp_update_saldo = (req, res) => {
+    var params = req.body
+    const bd = req.params.bd
+    const conn = con(bd)
+    var compras = params.compras
+    var importe = params.importe
+    var saldoCompra = 0
+    compras.map(compra => {
+        var Egreso = conn.model('Egreso')
+        if(importe>0){
+            if(importe >= compra.saldo) {
+                Egreso.findByIdAndUpdate(compra._id, { saldo: 0 })
+                return importe -= compra.saldo
+    
+            }else{
+                saldoCompra = compra.saldo - importe
+                Egreso.findByIdAndUpdate(compra._id, { saldo: saldoCompra })
+                return importe = 0
+            }
+        }
+    })
+
+
+
+    return res.status(200).send({
+        status: 'success',
+        message: "Saldo actualizaso",
+
+    })
+}

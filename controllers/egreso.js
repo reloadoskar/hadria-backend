@@ -19,33 +19,20 @@ var controller = {
             egreso.descripcion = params.descripcion
             egreso.fecha = params.fecha
             egreso.importe = params.importe
-            if(params.compra !== 1){
-                egreso.compra = params.compra 
-                // Tal vez sea bueno guardar un subdocumento en comrpas con el id de este egreso. talvez........
-            }
+            egreso.saldo = 0
             egreso.save((err, egreso) => {
                 if( err || !egreso){
-                    mongoose.connection.close()
                     conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No se registró el egreso.' + err
                     })
                 }
-                if(params.compra !== 1){
-                    Compra.findById(params.compra).exec((err, compra) => {
-                        mongoose.connection.close()
-                        conn.close()
-                        if(err)console.log(err)
-                        compra.saldo -= egreso.importe
-                        compra.save()
-                    })
-                }
-                mongoose.connection.close()
                 conn.close()
                 return res.status(200).send({
                     status: 'success',
-                    message: 'Egreso registrado correctamente.'
+                    message: 'Egreso registrado correctamente.',
+                    egreso
                 })
             })
         })
@@ -55,12 +42,9 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         var Egreso = conn.model('Egreso',require('../schemas/egreso') )
-        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
-        var Compra = conn.model('Compra',require('../schemas/compra') )
-        Egreso.find({}).sort('-fecha').limit(5)
+        Egreso.find({saldo:{$eq:0}}).sort({fecha: -1, createdAt: -1}).limit(5)
             .populate('ubicacion')
             .populate('compra', 'clave')
-            .sort({concepto: 'asc'})
             .exec((err, egresos) => {
                 conn.close()
                 mongoose.connection.close()

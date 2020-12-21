@@ -13,6 +13,8 @@ var ClienteSchema = Schema({
     dias_de_credito: Number,
     limite_de_credito: Number,
     credito_disponible: Number,
+    cuentas: [{type: Schema.ObjectId, ref: 'Ingreso' }],
+    pagos: [{type: Schema.ObjectId, ref: 'Ingreso' }]
 },{
     timestamps: true
 });

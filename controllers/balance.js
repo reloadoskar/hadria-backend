@@ -52,6 +52,7 @@ var controller = {
                 .aggregate()
                 .lookup({ from: 'ingresos', localField: "_id", foreignField: 'ubicacion', as: 'ingresos' })
                 .lookup({ from: 'egresos', localField: "_id", foreignField: 'ubicacion', as: 'egresos' })
+                // .group({_id: '$nombre', saldo: {$sum: '$ingresos.inporte' } })
                 .exec()
 
         })
