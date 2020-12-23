@@ -11,7 +11,7 @@ exports.cxp_list = (req, res) => {
     .select('nombre tel1 diasDeCredito cuentas')
     .populate({
         path: 'cuentas',
-        match: { saldo: {$gt: 0} },
+        match: { saldo: {$ne: 0} },
         select: 'concepto folio importe saldo compra',
         populate: { path: 'compra', select: 'clave folio fecha'}
     })
@@ -46,7 +46,7 @@ exports.cxp_create_pago = (req, res) => {
         egreso.saldo = 0
         egreso.descripcion = "PAGO A: " + params.cuenta.concepto
         egreso.concepto = "PAGO" 
-        Provedor.findById(params.cuenta.provedor).exec((err, provedor)=> {
+        Provedor.findById(params.provedor).exec((err, provedor)=> {
             if(err || !provedor){console.log(err)}
             // console.log(provedor)
             provedor.pagos.push(egreso._id)

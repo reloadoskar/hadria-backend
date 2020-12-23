@@ -57,7 +57,7 @@ var controller = {
         .select('nombre dias_de_credito cuentas')
         .populate({
             path: 'cuentas',
-            match: { saldo: {$gt: 0} },
+            match: { saldo: {$ne: 0} },
             select: 'concepto importe acuenta saldo venta',
             populate: { path: 'venta', select: 'items folio fecha importe'}
         })
