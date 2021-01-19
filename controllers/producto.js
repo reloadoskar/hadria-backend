@@ -11,22 +11,6 @@ var controller = {
         //recoger parametros
         var params = req.body;
 
-        //validar datos
-        try{
-            var validate_clave = !validator.isEmpty(params.clave);
-            var validate_descripcion = !validator.isEmpty(params.descripcion);
-            var validate_costo = !validator.isEmpty(params.costo);
-            var validate_precio1 = !validator.isEmpty(params.precio1);
-        }catch(err){
-            mongoose.connection.close()
-            conn.close()
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if(validate_clave && validate_descripcion && validate_costo, validate_precio1){
             //Crear el objeto a guardar
             var producto = new Producto();
             
@@ -56,16 +40,6 @@ var controller = {
                     producto: productoStored
                 })
             })
-
-
-        }else{
-            mongoose.connection.close()
-            conn.close()
-            return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
-            })
-        }
 
     },
 

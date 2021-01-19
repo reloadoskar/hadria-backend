@@ -7,6 +7,7 @@ var router = express.Router();
 
 //Rutas
 router.get('/:bd/balance/', BalanceController.getBalance);
+router.get('/:bd/balance/disponiblexubicacion', BalanceController.disponiblexUbicacion);
 // router.get('/clientes', ClienteController.getClientes);
 // router.get('/cliente/:id', ClienteController.getCliente);
 // router.put('/cliente/:id', ClienteController.update);

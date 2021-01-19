@@ -53,6 +53,7 @@ module.exports = function conexionCliente(bd) {
     conn.model('Unidad', require('../schemas/unidad'));
     conn.model('Venta', require('../schemas/venta'));
     conn.model('VentaItem', require('../schemas/venta_item'));
+    conn.model('Balance', require('../schemas/balance'));
 
     return conn; 
 }
