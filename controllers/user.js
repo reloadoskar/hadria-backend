@@ -5,7 +5,9 @@ const conexion_app = require('../conections/hadria')
 const con = require('../conections/hadriaUser')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const curDateISO = new Date().toISOString()
+var curDate = new Date()
+var curDateISO = curDate.toISOString()
+var tryPeriod = curDate.setDate(curDate.getDate() + 30)
 process.env.SECRET_KEY = 'secret'
 
 var controller = {
@@ -73,8 +75,8 @@ var controller = {
             user.password = password
             user.database = count+1
             user.fechaInicio = curDateISO
-            user.tryPeriodEnds = curDateISO
-            user.paydPeriodEnds = curDateISO
+            user.tryPeriodEnds = tryPeriod.toISOString()
+            user.paydPeriodEnds = tryPeriod.toISOString()
 
             User.findOne({
                 email: email
