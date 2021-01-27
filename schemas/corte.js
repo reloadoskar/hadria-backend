@@ -19,11 +19,11 @@ var CorteSchema = Schema({
         // egreso: {type: Schema.ObjectId, ref: 'Egreso'},
     }],
     total: Number,
-    totalAcuenta: Number,
-    totalCreditos: Number,
-    totalIngresos: Number,
-    totalEgresos: Number,
-    totalVentas: Number,
+    tacuenta: Number,
+    tcreditos: Number,
+    tingresos: Number,
+    tegresos: Number,
+    tventas: Number,
     
 },{
     timestamps: true

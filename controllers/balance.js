@@ -28,8 +28,12 @@ var controller = {
         Ubicacion.aggregate()
             .lookup({ from: 'ingresos', localField: "_id", foreignField: 'ubicacion', as: 'ingresos' })
             .lookup({ from: 'egresos', localField: "_id", foreignField: 'ubicacion', as: 'egresos' })
-            .project({"nombre": 1, "ingresos.importe": 1, "egresos.importe": 1})
-            .group({_id: "$nombre", tingresos: {$sum: "$ingresos.importe"}, tegresos: {$sum: "$egresos.importe"}})
+            // .match({'egresos.concepto': {$ne: 'COMPRA'}})
+            // .project({
+            //     nombre:1,
+            //     'ingresos':1,
+            //     egresos:1
+            // })
             .exec((err, disp)=>{
                 if(err){console.log(err)}
                 return res.status(200).send({

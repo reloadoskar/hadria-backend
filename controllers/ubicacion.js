@@ -129,27 +129,40 @@ var controller = {
         var ubicacionId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
-        Ubicacion.findOneAndDelete({_id: ubicacionId}, (err, ubicacionRemoved) => {
-            mongoose.connection.close()
-            conn.close()
-            if(!ubicacionRemoved){
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'No se pudo borrar el ubicacion.'
+        var Ubicacion = conn.model('Ubicacion')
+        var Compra = conn.model('Compra')
+
+        Compra.find({"ubicacion": ubicacionId, "status": "ACTIVO"}).exec((err, compras)=>{
+            if(err){console.log(err)}
+            if(compras.length > 0){
+                return res.status(200).send({
+                    status: "warning",
+                    message: "No se puede eliminar la ubicación, existen COMPRAS ACTIVAS relacionadas a éste.",
+                    compras
+                })
+            }else{
+                Ubicacion.findOneAndDelete({_id: ubicacionId}, (err, ubicacionRemoved) => {
+                    mongoose.connection.close()
+                    conn.close()
+                    if(!ubicacionRemoved){
+                        return res.status(500).send({
+                            status: 'error',
+                            message: 'No se pudo borrar la ubicación.'
+                        })
+                    }
+                    if(err){
+                        return res.status(500).send({
+                            status: 'error',
+                            message: 'Ocurrio un error.'
+                        })
+                    }
+                    return res.status(200).send({
+                        status: 'success',
+                        message: 'Ubicación eliminada correctamente.',
+                        ubicacionRemoved
+                    })
                 })
             }
-            if(err){
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'Ocurrio un error.'
-                })
-            }
-            return res.status(200).send({
-                status: 'success',
-                message: 'Ubicación eliminada correctamente.',
-                ubicacionRemoved
-            })
         })
 
     }

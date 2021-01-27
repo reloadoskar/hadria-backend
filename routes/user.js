@@ -16,5 +16,8 @@ router.post('/user/login', UserController.login)
 router.get('/profile', UserController.profile)
 router.get('/logout', UserController.logout)
 router.get('/:bd/restartApp', UserController.restartApp)
+router.get('/:bd/empleados', UserController.getEmpleados)
+router.post('/:bd/empleados/add', UserController.addEmpleado)
+router.delete('/:bd/empleado/:id', UserController.delEmpleado)
 
 module.exports = router;

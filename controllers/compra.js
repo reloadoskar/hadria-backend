@@ -72,7 +72,7 @@ var controller = {
                             egreso.concepto = gasto.concepto
                             egreso.descripcion = gasto.descripcion
                             egreso.fecha = compra.fecha
-                            egreso.importe = gasto.importe
+                            egreso.importe = 0
                             egreso.saldo = gasto.importe
                             egreso.compra = compra._id
                             compra.gastos.push(egreso._id)
@@ -98,7 +98,7 @@ var controller = {
                                 egItm.ubicacion = compra.ubicacion
                                 egItm.concepto = "COMPRA"
                                 egItm.fecha = compra.fecha
-                                egItm.importe = params.importeItems
+                                egItm.importe = 0
                                 egItm.saldo = params.importeItems
                                 egItm.compra = compra._id
                                 prov.cuentas.push(egItm._id)
@@ -369,7 +369,7 @@ var controller = {
         })
         .then(ventasGroup => {
             data.ventasGroup = ventasGroup        
-                return Egreso.find({compra: data.compra._id, concepto: {$ne: 'PAGO'}})
+                return Egreso.find({compra: data.compra._id, tipo: {$eq: 'GASTO DE COMPRA'}})
                     .populate('ubicacion')
                     .exec()
         })

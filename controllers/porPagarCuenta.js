@@ -44,7 +44,7 @@ exports.cxp_create_pago = (req, res) => {
         egreso.tipo = 'PAGO'
         egreso.importe = params.importe
         egreso.saldo = 0
-        egreso.descripcion = "PAGO A: " + params.cuenta.concepto
+        egreso.descripcion = "PAGO A: " + params.cuenta.concepto + " #"+ params.cuenta.folio
         egreso.concepto = "PAGO" 
         Provedor.findById(params.provedor).exec((err, provedor)=> {
             if(err || !provedor){console.log(err)}
@@ -67,7 +67,7 @@ exports.cxp_create_pago = (req, res) => {
                             conn.close()
                             return res.status(200).send({
                                 status: "success",
-                                message: "Todo está bien. :)",
+                                message: "Pago registrado correctamente",
                                 pago: egSaved
                             })
                         })

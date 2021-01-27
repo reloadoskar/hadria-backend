@@ -61,8 +61,8 @@ var controller = {
                 populate: { path: 'producto'},
             })
             .populate({
-                path: 'items.compra',
-                select: 'clave '
+                path: 'items',
+                populate: {path: 'compra', select: 'clave folio'}
             })
             .sort('ubicacion cliente tipoPago acuenta saldo importe')
             .exec()
@@ -83,12 +83,9 @@ var controller = {
         var data = req.body
         const bd = req.params.bd
         const conn = con(bd)
-        var Venta = conn.model('Venta',require('../schemas/venta') )
-        var Producto = conn.model('Producto',require('../schemas/producto') )
-        var Corte = conn.model('Corte',require('../schemas/corte') )
-        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
-        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
-        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
+        var Corte = conn.model('Corte')
+        var Egreso = conn.model('Egreso')
+        var Ingreso = conn.model('Ingreso')
         Corte.create(data, (err, corte) => {
             if(err || !corte){
                 return res.status(404).send({
@@ -105,6 +102,7 @@ var controller = {
                     egreso.tipo = "CORTE"
                     egreso.fecha = data.fecha
                     egreso.importe = data.total
+                    egreso.saldo = 0
                     egreso.save((err, egreso) => {
                         if( err || !egreso){
                             return res.status(404).send({
@@ -113,16 +111,13 @@ var controller = {
                             })
                         }
                         var ingreso = new Ingreso()
-                        Ubicacion.find({nombre: {$eq: "ADMINISTRACION"}}).exec( (err, uFinded) => {
-                            if(err || !uFinded){
-                                conn.close()
-                                console.log(err)
-                            }
-                            ingreso.ubicacion = uFinded[0]._id
-                            ingreso.concepto = "RECEPCIÓN DE CORTE"
-                            ingreso.fecha = data.fecha
-                            ingreso.importe = data.total
-                            ingreso.save((err, ingresoSaved) => {
+                        
+                        ingreso.ubicacion = data.enviarA._id
+                        ingreso.concepto = "RECEPCIÓN DE CORTE"
+                        ingreso.fecha = data.fecha
+                        ingreso.importe = data.total
+                        ingreso.saldo = 0
+                        ingreso.save((err, ingresoSaved) => {
                                 mongoose.connection.close()
                                 conn.close()
                                 if(err){
@@ -138,7 +133,7 @@ var controller = {
                                         corte 
                                 })
                             })
-                        })
+                        
                     })
                 })
             }

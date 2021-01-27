@@ -26,5 +26,8 @@ module.exports = function conexionLobby(){
     conn.close()
     console.log('Desconectado')
   })
+
+  conn.model('User', require('../schemas/user'));
+  
   return conn
 }

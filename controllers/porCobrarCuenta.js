@@ -97,24 +97,26 @@ var controller = {
 
             var pago = params.importe
             cliente.cuentas.map(cuenta=>{
-                if(pago > 0){
-                    Ingreso.findById(cuenta._id).exec((err, ing) => {
-                        if(err){console.log(err)}
-                        if(pago > ing.saldo){
-                            pago -= ing.saldo
-                            ing.saldo = 0
-                            ing.save((err, saved)=>{
-                                if(err || !saved){console.log(err)}
-                            })
-                        }else{
-                            
-                            ing.saldo -= pago
-                            ing.save((err, saved)=>{
-                                if(err || !saved){console.log(err)}
-                            })
-                            pago = 0
-                        }
-                    })
+                if(cuenta._id !== null){
+                    if(pago > 0){
+                        Ingreso.findById(cuenta._id).exec((err, ing) => {
+                            if(err){console.log(err)}
+                            if(pago > ing.saldo){
+                                pago -= ing.saldo
+                                ing.saldo = 0
+                                ing.save((err, saved)=>{
+                                    if(err || !saved){console.log(err)}
+                                })
+                            }else{
+                                
+                                ing.saldo -= pago
+                                ing.save((err, saved)=>{
+                                    if(err || !saved){console.log(err)}
+                                })
+                                pago = 0
+                            }
+                        })
+                    }
                 }
             })
 

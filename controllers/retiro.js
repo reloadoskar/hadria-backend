@@ -18,6 +18,7 @@ var controller = {
             egreso.descripcion = params.descripcion
             egreso.fecha = params.fecha
             egreso.importe = params.importe
+            egreso.saldo = 0
             egreso.save((err, egreso) => {
                 if( err || !egreso){
                     conn.close()

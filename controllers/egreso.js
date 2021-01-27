@@ -42,7 +42,7 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         var Egreso = conn.model('Egreso',require('../schemas/egreso') )
-        Egreso.find({saldo:{$eq:0}}).sort({fecha: -1, createdAt: -1}).limit(5)
+        Egreso.find({saldo:{$eq:0}}).sort({fecha: -1, createdAt: -1})
             .populate('ubicacion')
             .populate('compra', 'clave')
             .exec((err, egresos) => {
