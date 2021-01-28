@@ -1,6 +1,4 @@
-var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
-
 
 exports.cxp_list = (req, res) => {
     const bd = req.params.bd

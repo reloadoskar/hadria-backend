@@ -130,7 +130,7 @@ var controller = {
                     
                     return res.status(200).send({
                         status: 'success',
-                        message: 'Pago agregado correctamente.',
+                        message: 'Cobro agregado correctamente.',
                         ingreso
                     })                
                 })

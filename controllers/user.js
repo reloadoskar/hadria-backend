@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken')
 var curDate = new Date()
 var curDateISO = curDate.toISOString()
 var tryPeriod = curDate.setDate(curDate.getDate() + 30)
+tryPeriod = new Date(tryPeriod).toISOString()
 process.env.SECRET_KEY = 'secret'
 
 var controller = {
@@ -43,6 +44,8 @@ var controller = {
         nusr.instagram = params.instagram
         nusr.database = bd
         nusr.fechaInicio = curDateISO
+        nusr.tryPeriodEnds = tryPeriod
+        nusr.paidPeriodEnds = tryPeriod
         bcrypt.hash(params.password, 10, (err, hash) =>{
             nusr.password = hash
 
@@ -74,9 +77,10 @@ var controller = {
             user.email = email
             user.password = password
             user.database = count+1
+            user.level = 1
             user.fechaInicio = curDateISO
-            user.tryPeriodEnds = tryPeriod.toISOString()
-            user.paydPeriodEnds = tryPeriod.toISOString()
+            user.tryPeriodEnds = tryPeriod
+            user.paidPeriodEnds = tryPeriod
 
             User.findOne({
                 email: email

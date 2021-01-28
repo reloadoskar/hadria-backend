@@ -7,8 +7,8 @@
     "node": "10.15.1"
   },
   "scripts": {
-    "start": "nodemon server_multi.js",
-    "test": "nodemon server.js"
+    "start": "node server_multi.js",
+    "test": "nodemon server_multi.js"
   },
   "author": "Oskar Rodriguez",
   "license": "MIT",
