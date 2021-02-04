@@ -95,11 +95,32 @@ var controller = {
 
             venta.save((err, ventaSaved) => {
                 if(err){console.log(err)}
-                return res.status(200).send({
+                
+                Venta.findById(ventaSaved._id)
+                            .populate('ubicacion')
+                            .populate('cliente')
+                            .populate({
+                                path: 'items',
+                                populate: { path: 'producto'},
+                            })
+                            .populate({
+                                path: 'items',
+                                populate: { path: 'compra'},
+                            })
+                            .populate({
+                                path: 'pagos',
+                                populate: { path: 'ubicacion'},
+                            })
+                            .exec((err, vnt) => {
+                    if(err){console.log(err)}
+                        return res.status(200).send({
                     status: "success",
                     message: "Venta guardada correctamente.",
                     venta: ventaSaved
+                })    
                 })
+                
+                
             })
         })
 
