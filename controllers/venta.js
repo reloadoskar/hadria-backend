@@ -116,7 +116,7 @@ var controller = {
                         return res.status(200).send({
                     status: "success",
                     message: "Venta guardada correctamente.",
-                    venta: ventaSaved
+                    venta: vnt
                 })    
                 })
                 
