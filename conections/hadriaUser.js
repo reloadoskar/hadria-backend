@@ -1,41 +1,25 @@
+const globals = require('../globals')
 const mongoose = require('mongoose');
-var connections = 0
 const clientOption = {
-    // keepAlive: true,
     poolSize: 5,
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
+    
 };
 module.exports = function conexionCliente(bd) {
 
-    const conn = mongoose.createConnection('mongodb+srv://reloadoskar:MuffinTop100685@hdra1-qllhk.mongodb.net/HDR_USR_'+bd+'?retryWrites=true&w=majority', clientOption)
-    conn.once("open", function() {
-      console.log("Conectado a: USERDB: "+bd);
-      console.log(conn.readyState);
-
-    });
-    conn.on('error',(err) =>{
-      console.log(err)
-      conn.close()
-    })
-    conn.on('close', () => {
-      conn.close()
-      console.log("Cerrando -- USERDB: "+bd)
-      console.log(conn.readyState);
-    })
-    conn.on('disconnect', () => {
-      console.log('Desconectado')
-      conn.close()
-    })
-
+    console.log("Conectando...");
+    const conn = mongoose.createConnection(globals.dbUrl+bd+'?retryWrites=true&w=majority', clientOption)
+    conn.model('Balance', require('../schemas/balance'));
     conn.model('Cliente', require('../schemas/cliente'));
-    conn.model('Compra', require('../schemas/compra'));
     conn.model('CompraItem', require('../schemas/compra_item'));
+    conn.model('Compra', require('../schemas/compra'));
     conn.model('Concepto', require('../schemas/concepto'));
     conn.model('Corte', require('../schemas/corte'));
     conn.model('Egreso', require('../schemas/egreso'));
     conn.model('Empaque', require('../schemas/empaque'));
+    conn.model('Empleado', require('../schemas/empleado'));
     conn.model('Ingreso', require('../schemas/ingreso'));
     conn.model('Insumo', require('../schemas/insumo'));
     conn.model('Pago', require('../schemas/pago'));
@@ -53,7 +37,17 @@ module.exports = function conexionCliente(bd) {
     conn.model('Unidad', require('../schemas/unidad'));
     conn.model('Venta', require('../schemas/venta'));
     conn.model('VentaItem', require('../schemas/venta_item'));
-    conn.model('Balance', require('../schemas/balance'));
-
+    conn.on('connected', function(){
+      console.log("Conectado OK.")
+    })
+    conn.on('error', function(err){
+      console.log(err)
+    })
+    conn.on('disconnected', function(){
+      mongoose.connection.close(() => {
+        console.log("Desconectado.");
+        // process.exit(0)
+      })
+    })
     return conn; 
 }

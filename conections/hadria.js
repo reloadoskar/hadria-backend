@@ -1,5 +1,5 @@
+const globals = require('../globals')
 const mongoose = require('mongoose');
-
 const clientOption = {
     socketTimeoutMS: 30000,
     // keepAlive: 30000,
@@ -7,10 +7,11 @@ const clientOption = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
+    useFindAndModify: false
   };
 
 module.exports = function conexionLobby(){
-  const conn = mongoose.createConnection('mongodb+srv://reloadoskar:MuffinTop100685@hdra1-qllhk.mongodb.net/DB_HADRIA2_MASTER?retryWrites=true&w=majority', clientOption);
+  const conn = mongoose.createConnection(globals.dbMaster, clientOption);
   conn.once("open", function() {
       console.log("Bienvenido, accesando a HADRIA2");
   });

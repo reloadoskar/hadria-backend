@@ -66,22 +66,13 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
-        if(!ubicacionId){
-            mongoose.connection.close()
-            conn.close()
-            return res.status(404).send({
-                status: 'error',
-                message: 'No existe el ubicacion'
-            })
-        }
 
         Ubicacion.findById(ubicacionId, (err, ubicacion) => {
-            mongoose.connection.close()
             conn.close()
             if(err || !ubicacion){
                 return res.status(404).send({
                     status: 'success',
-                    message: 'No existe el ubicacion.'
+                    message: 'No existe la ubicacion.'
                 })
             }
             return res.status(200).send({

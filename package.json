@@ -1,8 +1,8 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "Api RESTful Hadria",
-  "main": "index.js",
+  "description": "Api RESTful HADRIA2",
+  "main": "server_multi.js",
   "engines": {
     "node": "10.15.1"
   },

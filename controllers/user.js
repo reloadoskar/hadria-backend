@@ -12,44 +12,66 @@ tryPeriod = new Date(tryPeriod).toISOString()
 process.env.SECRET_KEY = 'secret'
 
 var controller = {
-    getEmpleados: (req, res) => {
-        const conn = conexion_app()
+    getEmpleados: async (req, res) => {
         const bd= req.params.bd
-
-        var User = conn.model('User')
-
-        User.find({database: bd}).select('nombre level instagram facebook email telefono').exec( (err, users) => {
+        const conn = con(bd)
+        
+        try{
+            var Empleado = conn.model('Empleado', require("../schemas/empleado"))
+            var ubicacion = conn.model('Ubicacion', require("../schemas/ubicacion"))
+            const r = await Empleado.find()
+                .select('nombre sexo level instagram facebook email telefono ubicacion')            
+                .populate('ubicacion')
+                .lean()
+            conn.close()
             return res.status(200).send({
-                status: 'success',
-                message: "Empleados encontrados",
-                users
+                status: "success",
+                message: "Ok",
+                empleados: r
             })
-        })
+        } catch(error){
+            console.error(error)
+        }
     },
     addEmpleado: (req, res) => {
         const conn = conexion_app()
         const bd = req.params.bd
+        const conn2 = con(bd)
         const params = req.body
         // console.log(params)
         var User = conn.model('User')
-
-        var nusr = new User()
-        nusr.level = params.area.level
-        nusr.nombre = params.nombre
-        nusr.edad = params.edad
-        nusr.telefono = params.telefono
-        nusr.email = params.email
-        nusr.direccion = params.direccion
-        nusr.facebook = params.facebook
-        nusr.instagram = params.instagram
-        nusr.database = bd
-        nusr.fechaInicio = curDateISO
-        nusr.tryPeriodEnds = tryPeriod
-        nusr.paidPeriodEnds = tryPeriod
-        bcrypt.hash(params.password, 10, (err, hash) =>{
-            nusr.password = hash
-
-            nusr.save((err, usrSvd) => {
+        var Empleado = conn2.model('Empleado', require("../schemas/empleado"))
+        // Creo un usuario para accesar a BD
+        try{
+            var nusr = new User()
+            if(params.area.level < 5){
+                nusr.level = params.level
+                nusr.nombre = params.nombre
+                nusr.telefono = params.telefono
+                nusr.email = params.email
+                nusr.database = bd
+                nusr.fechaInicio = curDateISO
+                nusr.tryPeriodEnds = tryPeriod
+                nusr.paidPeriodEnds = tryPeriod
+                bcrypt.hash(params.password, 10, (err, hash) =>{
+                    nusr.password = hash
+                    nusr.save()
+                })
+            }
+            //Creo un Empleado en BD local
+            var nempleado = new Empleado()
+            nempleado._id = nusr._id
+            nempleado.nombre = params.nombre
+            nempleado.edad = params.edad
+            nempleado.level = params.area.level
+            nempleado.sexo = params.sexo
+            nempleado.ubicacion = params.ubicacion
+            nempleado.direccion = params.direccion
+            nempleado.telefono = params.telefono
+            nempleado.email = params.email
+            nempleado.instagram = params.instagram
+            nempleado.facebook = params.facebook
+            nempleado.save((err, usrSvd) => {
                 if(err){console.log(err)}
                 return res.status(200).send({
                     status: "success",
@@ -57,7 +79,9 @@ var controller = {
                     usrSvd
                 })
             })
-        })
+        } catch(err){
+            console.error(err)
+        }     
 
     },
     delEmpleado: (req,res) =>{
@@ -68,7 +92,7 @@ var controller = {
         const {email, password, nombre, apellido} = req.body;
         const conn = conexion_app()
         var User = conn.model('User');
-        
+        var Empleado = conn.model('Empleado')
         User.estimatedDocumentCount((err, count) => {
             if (err) console.log(err)
             const user = new User();
@@ -82,11 +106,28 @@ var controller = {
             user.tryPeriodEnds = tryPeriod
             user.paidPeriodEnds = tryPeriod
 
+
+
             User.findOne({
                 email: email
             })
             .then(usr => {
                 if(!usr){
+                    //Creo un Empleado en BD local
+                    var nempleado = new Empleado()
+                    nempleado._id = usr._id
+                    nempleado.nombre = params.area.level
+                    nempleado.edad = params.edad
+                    nempleado.level = params.area.level
+                    nempleado.sexo = params.sexo
+                    nempleado.ubicacion = params.ubicacion
+                    nempleado.direccion = params.direccion
+                    nempleado.telefono = params.telefono
+                    nempleado.email = params.email
+                    nempleado.instagram = params.instagram
+                    nempleado.facebook = params.facebook
+
+                    nempleado.save()
                     bcrypt.hash(password, 10, (err, hash) => {
                         user.password = hash
                         
@@ -137,28 +178,38 @@ var controller = {
             email: email
         })
         .then(user => {
-            mongoose.connection.close()
-            conn.close()
             if(user){
                 if(bcrypt.compareSync(password, user.password)){
-                    const payload = {
-                        _id: user._id,
-                        nombre: user.nombre,
-                        apellido: user.apellido,
-                        email: user.email,
-                        database: user.database,
-                        level: user.level,
-                        tryPeriodEnds: user.tryPeriodEnds,
-                        paidPeriodEnds: user.paidPeriodEnds,
-                    }
-                    let token = jwt.sign(payload, process.env.SECRET_KEY, {
-                        expiresIn: 1440
+
+                    let conn2 = con(user.database)
+
+                    var Empleado = conn2.model('Empleado', require('../schemas/empleado'))
+                    var Ubicacion = conn2.model('Ubicacion', require('../schemas/ubicacion'))
+                    Empleado.findById(user._id).populate('ubicacion').exec((err, emp) => {
+                        if(err || !emp){console.log(err)}
+                        const payload = {
+                            _id: emp._id,
+                            nombre: emp.nombre,
+                            apellido: emp.apellido,
+                            email: emp.email,
+                            ubicacion: emp.ubicacion,
+                            level: emp.level,
+                            database: user.database,
+                            tryPeriodEnds: user.tryPeriodEnds,
+                            paidPeriodEnds: user.paidPeriodEnds,
+                        }
+                        let token = jwt.sign(payload, process.env.SECRET_KEY, {
+                            expiresIn: 1440
+                        })
+                        return res.status(200).send({
+                            status: 'success',
+                            message: 'Bienvenido '+payload.nombre,
+                            token
+                        })
+
                     })
-                    return res.status(200).send({
-                        status: 'success',
-                        message: 'Bienvenido '+payload.nombre,
-                        token
-                    })
+
+
 
                 }else{
                     return res.status(200).send({
@@ -221,10 +272,10 @@ var controller = {
         const Venta = conn.model('Venta')
         const VentaItem = conn.model('VentaItem')
         
-        Cliente.deleteMany({}).exec((err, docs) => {
-            if(err){console.log(err)}
-            console.log("Cliente - vaciado")
-        })
+        // Cliente.deleteMany({}).exec((err, docs) => {
+        //     if(err){console.log(err)}
+        //     console.log("Cliente - vaciado")
+        // })
         CompraItem.deleteMany({}).exec((err, docs) => {
             if(err){console.log(err)}
             console.log("Compra items - vaciado")
@@ -261,14 +312,14 @@ var controller = {
         //     if(err){console.log(err)}
         //     console.log("Producto - vaciado")
         // })
-        Provedor.deleteMany({}).exec((err, docs)=> {
-            if(err){console.log(err)}
-            console.log("Provedor - vaciado")
-        })
-        Ubicacion.deleteMany({}).exec((err, docs)=> {
-            if(err){console.log(err)}
-            console.log("Ubicacion - vaciado")
-        })
+        // Provedor.deleteMany({}).exec((err, docs)=> {
+        //     if(err){console.log(err)}
+        //     console.log("Provedor - vaciado")
+        // })
+        // Ubicacion.deleteMany({}).exec((err, docs)=> {
+        //     if(err){console.log(err)}
+        //     console.log("Ubicacion - vaciado")
+        // })
         Venta.deleteMany({}).exec((err, docs)=> {
             if(err){console.log(err)}
             console.log("Venta - vaciado")

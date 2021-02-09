@@ -242,7 +242,7 @@ var controller = {
         const conn = con(bd)
 
         var Compra = conn.model('Compra', require('../schemas/compra') )
-
+        
         Compra.find({ "status": { $ne: "PRODUCCION" }, "status": { $ne: "CANCELADO"} }).sort('folio')
             .populate('provedor', 'nombre')
             .populate('ubicacion')

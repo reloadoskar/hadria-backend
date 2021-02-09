@@ -3,7 +3,7 @@ const con = require('../conections/hadriaUser')
 exports.cxp_list = (req, res) => {
     const bd = req.params.bd
     const conn = con(bd)
-    var Provedor = conn.model('Provedor')
+    var Provedor = conn.model('Provedor', require("../schemas/provedor"))
 
     Provedor.find({cuentas: {$ne: []}})
     .select('nombre tel1 diasDeCredito cuentas')
