@@ -126,10 +126,14 @@ var controller = {
         const Compra = conn.model('Compra')
         CompraItem.findById(params.itemsel._id).exec((err, item) => {
             if(err || !item){console.log(err)}
+            item.cantidad -= params.itemselcantidad
             item.stock -= params.itemselcantidad
+            item.empaques -= params.itemselempaques
             item.empaquesStock -= params.itemselempaques
-            console.log("ITEM ORIGINAL UPD")
-            console.log(item)
+            item.importe = item.cantidad * item.costo
+
+            // console.log("ITEM ORIGINAL UPD")
+            // console.log(item)
             item.save((err, itemsaved) => {
                 if(err){console.log(err)}
                 
@@ -141,8 +145,8 @@ var controller = {
                 nitem.stock = params.itemselcantidad
                 nitem.empaques = params.itemselempaques
                 nitem.empaquesStock = params.itemselempaques
-                nitem.costo = 0
-                nitem.importe = 0
+                nitem.costo = itemsaved.costo
+                nitem.importe = nitem.cantidad * itemsaved.costo
                 nitem.save((err, nitemsaved) => {
                     if(err|!nitemsaved){console.log(err)}
                     Compra.findById(compraId).exec((err, compra) => {
