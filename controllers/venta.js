@@ -427,6 +427,9 @@ var controller = {
         const bd= req.params.bd
         const conn = con(bd)
         var Venta = conn.model('Venta',require('../schemas/venta') )
+        var VentaItem = conn.model('VentaItem',require('../schemas/venta_item') )
+        var CompraItem = conn.model('CompraItem',require('../schemas/compra_item') )
+        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         Venta.findById(id)
             .populate({
                 path: 'items',
@@ -446,31 +449,21 @@ var controller = {
                     })
                 }
 
-
                 venta.tipoPago = "CANCELADO"
                 venta.saldo = 0
                 venta.importe = 0
 
                 venta.items.map(item => {
                     let stockUpdated = item.compraItem.stock + item.cantidad
-                    let empUpdated = item.compraItem.stock + item.empaques
+                    let empUpdated = item.compraItem.empaquesStock + item.empaques
                     CompraItem.findById(item.compraItem._id).exec((err, item) => {
-                        if(err || !item){
-                            conn.close()
-                            return res.status(500).send({
-                                status: 'error',
-                                message: 'No encontré el item.'
-                            })
-                        }
-                        else{
-                            item.stock = stockUpdated
-                            item.empaquesStock = empUpdated
-
-                            item.save( (err, itemSaved) => {
-                                if(err)console.log(err)
-                            })
+                    
+                        item.stock = stockUpdated
+                        item.empaquesStock = empUpdated
+                        item.save( (err, itemSaved) => {
+                            if(err)console.log(err)
+                        })
                             
-                        }
                     })
                 })
 
