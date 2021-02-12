@@ -9,7 +9,7 @@ var router = express.Router();
 router.post('/:bd/venta/save', VentaController.save);
 router.get('/:bd/ventas', VentaController.getVentas);
 router.get('/:bd/venta/producto/:id', VentaController.getVentasOfProduct);
-router.post('/:bd/venta', VentaController.getVenta);
+router.get('/:bd/venta/:folio', VentaController.getVenta);
 router.delete('/:bd/venta/:id', VentaController.cancel);
 
 router.get('/:bd/ventas/semana', VentaController.getVentasSemana);

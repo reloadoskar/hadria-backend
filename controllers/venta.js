@@ -308,38 +308,37 @@ var controller = {
     },
 
     getVenta: (req, res) => {
-        var folio = req.body.folio
+        var folio = req.params.folio
         const bd= req.params.bd
         const conn = con(bd)
         var Venta = conn.model('Venta',require('../schemas/venta') )
-        Venta.find({"folio": folio })
-        .populate({
-            path: 'items',
-            populate: { path: 'producto'},
-        })
-        .populate({
-            path: 'items',
-            populate: { path: 'compra'},
-        })
-        .populate('pagos.ubicacion')
-        .populate('ubicacion')
-        .populate('cliente')
-        .exec((err, venta) => {
-            mongoose.connection.close()
-            conn.close()
-            if(err){
-                return res.status(500).send({
-                    status: "error",
-                    err
-                })
-            }
-            else{
-                return res.status(200).send({
-                    status: "success",
-                    venta
-                })
-            }
-        })
+        Venta.findOne({"folio": folio })
+            .populate({
+                path: 'items',
+                populate: { path: 'producto'},
+            })
+            .populate({
+                path: 'items',
+                populate: { path: 'compra'},
+            })
+            .populate('pagos.ubicacion')
+            .populate('ubicacion')
+            .populate('cliente')
+            .exec((err, venta) => {            
+                conn.close()
+                if(err){
+                    return res.status(500).send({
+                        status: "error",
+                        err
+                    })
+                }
+                else{
+                    return res.status(200).send({
+                        status: "success",
+                        venta
+                    })
+                }
+            })
     },
 
     getVentasOfProduct: (req, res) => {

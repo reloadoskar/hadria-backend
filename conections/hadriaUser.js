@@ -46,7 +46,14 @@ module.exports = function conexionCliente(bd) {
     conn.on('disconnected', function(){
       mongoose.connection.close(() => {
         console.log("Desconectado.");
-        // process.exit(0)
+
+        // process.on('SIGINT', function(){
+        //   mongoose.connection.close(function(){
+        //     console.log(termination("Mongoose default connection is disconnected due to application termination"))
+        //     process.exit(0)
+        //   })
+        // })
+        
       })
     })
     return conn; 

@@ -171,62 +171,62 @@ var controller = {
     },
 
     login: (req, res) => {
+        try{
         const conn = conexion_app()
-        var User = conn.model('User', require('../schemas/user') );
+        const User = conn.model('User', require('../schemas/user') );
         const {email, password} = req.body;
-        User.findOne({
-            email: email
-        })
-        .then(user => {
-            if(user){
-                if(bcrypt.compareSync(password, user.password)){
-
-                    let conn2 = con(user.database)
-
-                    var Empleado = conn2.model('Empleado', require('../schemas/empleado'))
-                    var Ubicacion = conn2.model('Ubicacion', require('../schemas/ubicacion'))
-                    Empleado.findById(user._id).populate('ubicacion').exec((err, emp) => {
-                        if(err || !emp){console.log(err)}
-                        const payload = {
-                            _id: emp._id,
-                            nombre: emp.nombre,
-                            apellido: emp.apellido,
-                            email: emp.email,
-                            ubicacion: emp.ubicacion,
-                            level: emp.level,
-                            database: user.database,
-                            tryPeriodEnds: user.tryPeriodEnds,
-                            paidPeriodEnds: user.paidPeriodEnds,
-                        }
-                        let token = jwt.sign(payload, process.env.SECRET_KEY, {
-                            expiresIn: '1h'
+            User.findOne({
+                email: email
+            })
+            .then(user => {
+                if(user){
+                    if(bcrypt.compareSync(password, user.password)){
+                        let conn2 = con(user.database)
+                        const Empleado = conn2.model('Empleado', require('../schemas/empleado'))
+                        const Ubicacion = conn2.model('Ubicacion', require('../schemas/ubicacion'))
+                        Empleado.findById(user._id).populate('ubicacion').exec((err, emp) => {
+                            if(err || !emp){console.log(err)}
+                            const payload = {
+                                _id: emp._id,
+                                nombre: emp.nombre,
+                                apellido: emp.apellido,
+                                email: emp.email,
+                                ubicacion: emp.ubicacion,
+                                level: emp.level,
+                                database: user.database,
+                                tryPeriodEnds: user.tryPeriodEnds,
+                                paidPeriodEnds: user.paidPeriodEnds,
+                            }
+                            let token = jwt.sign(payload, process.env.SECRET_KEY, {
+                                expiresIn: '1h'
+                            })
+                            return res.status(200).send({
+                                status: 'success',
+                                message: 'Bienvenido '+payload.nombre,
+                                token
+                            })
                         })
+                    }else{
                         return res.status(200).send({
-                            status: 'success',
-                            message: 'Bienvenido '+payload.nombre,
-                            token
+                            status: 'error',
+                            message: "El usuario o la contraseña son incorrectos."
                         })
-
-                    })
-
-
-
+                    }
                 }else{
                     return res.status(200).send({
                         status: 'error',
-                        message: "El usuario o la contraseña son incorrectos."
+                        message: "El usuario no existe."
                     })
                 }
-            }else{
-                return res.status(200).send({
-                    status: 'error',
-                    message: "El usuario no existe."
-                })
-            }
-        })
-        .catch(err => {
-            res.send('err' + err)
-        })
+            })
+        }catch(err){
+            console.log(err)
+            return res.status(500).send({
+                status: "error",
+                message: "No hay conectividad con la red.",
+                err
+            })
+        }
     },
 
     profile: (req, res) => {
