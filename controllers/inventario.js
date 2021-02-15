@@ -124,6 +124,8 @@ var controller = {
         const conn = con(bd)
         const CompraItem = conn.model('CompraItem')
         const Compra = conn.model('Compra')
+        const Movimiento = conn.model('Movimiento', require('../schemas/movimiento'))
+
         CompraItem.findById(params.itemsel._id).exec((err, item) => {
             if(err || !item){console.log(err)}
             item.cantidad -= params.itemselcantidad
@@ -137,7 +139,7 @@ var controller = {
             item.save((err, itemsaved) => {
                 if(err){console.log(err)}
                 
-                var nitem = new CompraItem()
+                let nitem = new CompraItem()
                 nitem.ubicacion = params.destino._id
                 nitem.compra = params.itemsel.compra[0]._id
                 nitem.producto = params.itemsel.producto[0]._id
@@ -152,8 +154,19 @@ var controller = {
                     Compra.findById(compraId).exec((err, compra) => {
                         if(err){console.log(err)}
                         compra.items.push(nitemsaved._id)
+                        // console.log(compra)
+                        let movimiento = new Movimiento()
+                        movimiento.origen = params.origen
+                        movimiento.destino = params.destino
+                        movimiento.item = params.itemsel
+                        movimiento.cantidad = params.itemselcantidad
+                        movimiento.empaques = params.itemselempaques
+                        movimiento.pesadas = params.pesadas
+                        movimiento.save()
+
+                        compra.movimientos.push(movimiento._id)
+
                         compra.save()
-                        console.log(compra)
                     })
                 })
 

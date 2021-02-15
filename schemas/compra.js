@@ -13,6 +13,7 @@ var CompraSchema = Schema({
     gastos: [{ type: Schema.ObjectId, ref: 'Egreso'}],
     pagos: [{ type: Schema.ObjectId, ref: 'Egreso'}],
     ventas: [{ type: Schema.ObjectId, ref: 'Venta' }],
+    movimientos:[{ type: Schema.ObjectId, ref: 'Movimiento' }],
     fecha: String,
     remision: String,
     saldo: Number,

@@ -271,6 +271,7 @@ var controller = {
         const Ubicacion = conn.model('Ubicacion')
         const Venta = conn.model('Venta')
         const VentaItem = conn.model('VentaItem')
+        const Movimiento = conn.model('Movimiento', require('../schemas/movimiento'))
         
         // Cliente.deleteMany({}).exec((err, docs) => {
         //     if(err){console.log(err)}
@@ -323,6 +324,10 @@ var controller = {
         Venta.deleteMany({}).exec((err, docs)=> {
             if(err){console.log(err)}
             console.log("Venta - vaciado")
+        })
+        Movimiento.deleteMany({}).exec((err, docs)=> {
+            if(err){console.log(err)}
+            console.log("Movimientos - vaciado")
         })
         VentaItem.deleteMany({}).exec((err, docs)=> {
             if(err){console.log(err)}
