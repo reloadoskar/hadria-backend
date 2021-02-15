@@ -119,8 +119,8 @@ var controller = {
         var cantidadm = parseInt(params.itemselcantidad)
         var empaquesm = parseInt(params.itemselempaques)
 
-        console.log("cantm")
-        console.log(cantidadm)
+        // console.log("cantm")
+        // console.log(cantidadm)
         const conn = con(bd)
         const CompraItem = conn.model('CompraItem')
         const Compra = conn.model('Compra')
