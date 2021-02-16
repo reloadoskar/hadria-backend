@@ -330,7 +330,7 @@ var controller = {
         .populate('tipoCompra')
         .populate({
             path: 'items',
-            populate: { path: 'provedor'},
+            populate: { path: 'ubicacion'},
         })
         .populate({
             path: 'items',

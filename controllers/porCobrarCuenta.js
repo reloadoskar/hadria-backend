@@ -52,7 +52,7 @@ var controller = {
     getCuentas: (req, res) => {
         const bd= req.params.bd
         const conn = con(bd)
-        var Cliente = conn.model('Cliente',require('../schemas/cliente') )
+        const Cliente = conn.model('Cliente',require('../schemas/cliente') )
         Cliente.find({cuentas: {$ne: []}})
         .select('nombre dias_de_credito cuentas')
         .populate({
@@ -75,67 +75,72 @@ var controller = {
         })
     },
 
+    getCxcPdv: (req, res) =>{
+        const bd= req.params.bd
+        const conn = con(bd)
+        const Ingreso = conn.model('Ingreso')
+        Ingreso.find({saldo: {$gt: 0}})
+            .populate({path:'venta', select: 'cliente folio', populate: { path: 'cliente', select: 'nombre'}})            
+            .populate('ubicacion')
+            .exec((err, cuentas) => {
+                if(err){console.error(err)}
+                return res.status(200).send({
+                    status:"success",
+                    cuentas
+                })
+            })
+    },
+
     savePago: (req, res) => {
         var params = req.body
         const bd = req.params.bd
         const conn = con(bd)
         var Ingreso = conn.model('Ingreso')
         var Cliente = conn.model('Cliente')
+        var Venta = conn.model('Venta')
+
+        // CREAMOS EL INGRESO
         var ingreso = new Ingreso()
         ingreso.importe = params.importe
         ingreso.ubicacion = params.ubicacion
         ingreso.fecha = params.fecha                
         ingreso.concepto = "COBRANZA"
-        ingreso.descripcion = "PAGO DE: " + params.cuenta.nombre + " " + params.referencia
+        ingreso.descripcion = "PAGO DE: " + params.cuenta.venta.cliente.nombre + " " + params.referencia
         ingreso.tipoPago = params.tipoPago
         
-        var cltId = params.cuenta._id
+        //ACTUALIZAMOS SALDO CLIENTE Y AGREGAMOS PAGO
+        var cltId = params.cuenta.venta.cliente._id
         Cliente.findById(cltId).exec((err, cliente)=>{
             if(err){console.log(err)}
+
             cliente.pagos.push(ingreso._id)
             cliente.credito_disponible += params.importe
 
-            var pago = params.importe
-            cliente.cuentas.map(cuenta=>{
-                if(cuenta._id !== null){
-                    if(pago > 0){
-                        Ingreso.findById(cuenta._id).exec((err, ing) => {
-                            if(err){console.log(err)}
-                            if(pago > ing.saldo){
-                                pago -= ing.saldo
-                                ing.saldo = 0
-                                ing.save((err, saved)=>{
-                                    if(err || !saved){console.log(err)}
-                                })
-                            }else{
-                                
-                                ing.saldo -= pago
-                                ing.save((err, saved)=>{
-                                    if(err || !saved){console.log(err)}
-                                })
-                                pago = 0
-                            }
-                        })
-                    }
-                }
-            })
-
-            cliente.save( (err, cliente) => {
-                
+            cliente.save()
+            
+            let pago = params.importe
+            Ingreso.findById(params.cuenta._id).exec((err, ing)=>{
                 if(err){console.log(err)}
                 
-                ingreso.save().then((err, ingreso) => {
-                    if(err){console.log(err)}
-                    conn.close()
-                    
-                    return res.status(200).send({
-                        status: 'success',
-                        message: 'Cobro agregado correctamente.',
-                        ingreso
-                    })                
+                ing.saldo -= pago
+                ing.save()
+
+                Venta.findById(params.cuenta.venta._id).exec((err, venta)=>{
+                    if(err){console.error(err)}
+                    venta.pagos.push(ingreso._id)
+                    venta.save()
+                    ingreso.save().then((err, ingreso) => {
+                        if(err){console.log(err)}
+                        conn.close()                        
+                        return res.status(200).send({
+                            status: 'success',
+                            message: 'Cobro agregado correctamente.',
+                            ingreso
+                        })                
+                    })
                 })
             })
-        })
+        })            
     }
 }
 

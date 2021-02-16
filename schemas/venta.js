@@ -14,11 +14,7 @@ var VentaSchema = Schema({
     acuenta: Number,
     saldo: Number,
     items: [{type: Schema.ObjectId, ref: 'VentaItem'}],
-    pagos: [{
-        ubicacion: { type: Schema.ObjectId, ref: 'Ubicacion' },
-        fecha: String,
-        importe: Number
-    }],
+    pagos: [{type: Schema.ObjectId, ref: 'Ingreso'}],
     status: String,
 },{
     timestamps: true

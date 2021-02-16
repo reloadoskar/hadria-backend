@@ -126,170 +126,7 @@ var controller = {
 
 
     },
-    // save: (req, res) => {
-    //     const bd= req.params.bd
-    //     const conn = con(bd)
-    //     var Venta = conn.model('Venta')
-    //     var Cliente = conn.model('Cliente')
-    //     var VentaItem = conn.model('VentaItem')
-    //     var Compra = conn.model('Compra')
-    //     var CompraItem = conn.model('CompraItem')
-    //     var Ingreso = conn.model('Ingreso')
-        
-    //     var params = req.body
-    //     var venta = new Venta()
-    //     var ingreso = new Ingreso()
-    //     ingreso._id = mongoose.Types.ObjectId()
-    //     Venta.estimatedDocumentCount((err, count) => {
-    //         venta._id = mongoose.Types.ObjectId(),
-    //         venta.folio = count + 1
-    //         venta.ubicacion = params.ubicacion
-    //         venta.cliente = params.cliente
-    //         venta.fecha = params.fecha
-    //         venta.tipoPago = params.tipoPago
-    //         venta.importe = params.total 
-
-    //         ingreso.importe = params.total
-    //         ingreso.concepto = "VENTA"
-            
-    //         var items = params.items
-    //         var ventaItems = []
-
-    //         if (params.tipoPago === 'CRÉDITO'){
-    //             ingreso.acuenta = params.acuenta
-    //             ingreso.saldo = params.saldo
-    //             ingreso.descripcion = "PAGO A CUENTA DE: "+ params.cliente.nombre + " FOLIO: "+ venta.folio
-    //             ingreso.importe = params.acuenta
     
-    //             Cliente.findById(params.cliente._id, (err, cliente) => {
-    //                 if(err)console.log(err)
-    //                 cliente.cuentas.push(ingreso._id)
-    //                 let creditoDisponible = cliente.credito_disponible
-    //                 let creditoActualizado = creditoDisponible - venta.saldo
-    
-    //                 cliente.credito_disponible = creditoActualizado
-    //                 cliente.save((err, cliente) => {
-    //                     if(err)console.log(err)
-    //                 })
-    //             })
-    //         }
-
-            
-    //         items.map((item) => {
-    //             var newItem = {
-    //             // ventaItems.push({
-    //                 _id: mongoose.Types.ObjectId(),
-    //                 venta: venta._id,
-    //                 ventaFolio: venta.folio,   
-    //                 ubicacion: venta.ubicacion,
-    //                 fecha:venta.fecha,                 
-    //                 compra: item.compra,
-    //                 compraItem: item.item,
-    //                 producto: item.producto._id,
-    //                 cantidad: item.cantidad,
-    //                 empaques: item.empaques,
-    //                 precio: item.precio,
-    //                 importe: item.importe,
-    //             }
-
-    //             venta.items.push(newItem._id)
-    //             ventaItems.push(newItem)
-
-    //             CompraItem.updateOne({_id: item.item },
-    //                 {"$inc": { "stock":  -item.cantidad, "empaquesStock": -item.empaques }},
-    //              (err, doc) => {
-    //                 if(err)console.log(err)
-    //                 // console.log(doc)
-    //                 if(doc.ok > 0){
-    //                     // console.log("Item actualizado", doc)
-    //                     Compra.findById(item.compra)
-    //                     .populate('items')
-    //                     .populate('tipoCompra')
-    //                     .exec( (err, compra) => {
-    //                         if(err)console.log(err)
-    //                         // console.log(compra)
-    //                         if(compra.tipoCompra.tipo === 'CONSIGNACION'){
-    //                             let calc = item.importe - (item.importe * .10)
-    //                             compra.saldo += calc
-    //                         }
-    //                         let stockDisponible = 0
-    //                         compra.items.forEach(el => {
-    //                             // console.log(el)
-    //                             stockDisponible += el.stock
-    //                         });
-    //                         if(stockDisponible === 0){
-    //                             compra.status = "TERMINADO"
-    //                         }
-    //                         compra.save()
-    //                     })
-    //                 }else{
-    //                     mongoose.connection.close()
-    //                     conn.close()
-    //                     console.log("Ocurrió algo, y no se actualizó el item :(")
-    //                 }
-    //             })
-
-
-                
-    //         })
-
-    //         VentaItem.insertMany(ventaItems, (err, itemsSaved) =>{
-    //             if(err)console.log(err)
-    //         })
-
-    //         venta.save( (err, ventaSaved) => {
-    //             if(err){
-    //                 return res.status(404).send({
-    //                     status: "error",
-    //                     message: "Error al guardar la venta",
-    //                     err
-    //                 })
-    //             }
-    //             else{
-    //                 ingreso.venta = ventaSaved._id
-    //                 ingreso.ubicacion = params.ubicacion
-    //                 ingreso.fecha = params.fecha        
-                    
-    //                 ingreso.tipoPago = params.tipoPago
-    //                 ingreso.save((err, ing) =>{
-    //                     if(err)console.log(err)
-
-
-
-
-    //                     Venta.findById(ventaSaved._id)
-    //                         .populate('ubicacion')
-    //                         .populate('cliente')
-    //                         .populate({
-    //                             path: 'items',
-    //                             populate: { path: 'producto'},
-    //                         })
-    //                         .populate({
-    //                             path: 'items',
-    //                             populate: { path: 'compra'},
-    //                         })
-    //                         .populate({
-    //                             path: 'pagos',
-    //                             populate: { path: 'ubicacion'},
-    //                         })
-    //                         .exec((err, venta) => {
-    //                             mongoose.connection.close()
-    //                             conn.close()
-    //                             if(err)console.log(err)
-    //                             return res.status(200).send({
-    //                                 status: "success",
-    //                                 message: "Venta guardada correctamente.",
-    //                                 venta: venta
-    //                         })
-    //                     })
-    //                 })
-    //             }        
-    //         })
-                       
-    //     })
-        
-    // },
-
     getVentas: (req, res) => {
         const bd= req.params.bd
         const conn = con(bd)
@@ -321,7 +158,7 @@ var controller = {
                 path: 'items',
                 populate: { path: 'compra'},
             })
-            .populate('pagos.ubicacion')
+            .populate({path:'pagos', populate: {path: 'ubicacion'}})            
             .populate('ubicacion')
             .populate('cliente')
             .exec((err, venta) => {            
@@ -329,7 +166,13 @@ var controller = {
                 if(err){
                     return res.status(500).send({
                         status: "error",
-                        err
+                        message: err
+                    })
+                }
+                if(!venta){
+                    return res.status(200).send({
+                        status: "error",
+                        message: "No existe la venta."                        
                     })
                 }
                 else{
