@@ -11,8 +11,9 @@ var controller = {
         var Venta = conn.model('Venta', require('../schemas/venta'))
         var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
         var Egreso = conn.model('Egreso',require('../schemas/egreso') )
+        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
         var corte = {}
-         
+        corte.fecha = fecha
         Venta.find({"ubicacion": ubicacion, "fecha": fecha })
         .select('ubicacion cliente tipoPago saldo importe items folio')
         .populate({
@@ -68,10 +69,14 @@ var controller = {
             .exec()
         })
         .then(creditos => {
-            conn.close()
-            mongoose.connection.close()
             corte.creditos = creditos
-            res.status(200).send({
+            return Ubicacion.findById(ubicacion)
+            .exec()
+        })
+        .then(ub => {
+            corte.ubicacion = ub
+            conn.close()
+            return res.status(200).send({
                 corte
             })
         })
@@ -98,7 +103,7 @@ var controller = {
                 Egreso.estimatedDocumentCount((err, count) => {
                     egreso.folio = ++count
                     egreso.ubicacion = data.ubicacion
-                    egreso.concepto = "CIERRE DE CORTE"
+                    egreso.concepto = "ENVIO DE CORTE A " + data.enviarA.nombre
                     egreso.tipo = "CORTE"
                     egreso.fecha = data.fecha
                     egreso.importe = data.total
@@ -113,7 +118,7 @@ var controller = {
                         var ingreso = new Ingreso()
                         
                         ingreso.ubicacion = data.enviarA._id
-                        ingreso.concepto = "RECEPCIÓN DE CORTE"
+                        ingreso.concepto = "RECEPCIÓN DE CORTE "+ data.ubicacion.nombre
                         ingreso.fecha = data.fecha
                         ingreso.importe = data.total
                         ingreso.saldo = 0
