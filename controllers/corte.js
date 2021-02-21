@@ -19,6 +19,7 @@ var controller = {
             const ventas = await
                 Venta.find({"ubicacion": ubicacion, "fecha": fecha })
                     .select('ubicacion cliente tipoPago saldo importe items folio')
+                    .lean() 
                     .populate({
                         path: 'items',
                         populate: { path: 'producto'},
@@ -30,7 +31,6 @@ var controller = {
                     .populate('ubicacion')
                     .populate('cliente')
                     .sort('folio')
-                    .lean() 
             if(ventas.err){ throw new Error("No ventas") }
             corte.ventas = ventas
 
@@ -40,24 +40,25 @@ var controller = {
                     fecha: fecha, 
                     tipo: {$ne: 'COMPRA'}})
                 .select("ubicacion concepto descripcion fecha importe")
+                .lean()
                 .populate('ubicacion')
                 .sort('ubicacion concepto descripcion fecha importe')
-                .lean()
 
             corte.egresos = egresos
 
             const ingresos = await Ingreso
                 .find({"ubicacion": ubicacion, "fecha": fecha, concepto: {$ne: 'VENTA'}})
                 .select('ubicacion concepto descripcion fecha importe')
+                .lean()
                 .populate('ubicacion')
                 .sort('ubicacion concepto descripcion fecha importe')
-                .lean()
             
             corte.ingresos = ingresos
 
             const creditos = await Venta
                 .find({"tipoPago": 'CRÉDITO', "ubicacion": ubicacion, "fecha": fecha })
                 .select('folio ubicacion cliente tipoPago acuenta items saldo importe')
+                .lean()
                 .populate('ubicacion')
                 .populate('cliente')
                 .populate({
@@ -69,7 +70,6 @@ var controller = {
                     populate: {path: 'compra', select: 'clave folio'}
                 })
                 .sort('ubicacion cliente tipoPago acuenta saldo importe')
-                .lean()
 
             corte.creditos = creditos
             
@@ -79,14 +79,14 @@ var controller = {
                 
             corte.ubicacion = ub
 
-            const resumn = VentaItem
+            const resumn = await VentaItem
                     .aggregate()
                     .match({ubicacion: mongoose.Types.ObjectId(ubicacion), fecha: fecha })
                     .group({_id: {producto: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
                     .lookup({ from: 'productos', localField: "_id.producto", foreignField: '_id', as: 'producto' })
                     .sort({"_id.producto": 1, "_id.precio": -1})
                     .unwind('producto')
-                    .lean()
+                    .exec()
                 
             corte.resumenVentas = resumn
             
@@ -99,6 +99,7 @@ var controller = {
             return res.status(404).send({
                 status: 'error',
                 message: 'No se cargó el corte correctamente.',
+                corte,
                 err
             })
         }
