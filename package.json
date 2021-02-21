@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "pm2-runtime start ecosystem.config.js --env production",
-    "test": "nodemon server_multi.js --trace-sync-io"
+    "test": "pm2 start --watch ecosystem.config.js --env development"
   },
   "author": "Oskar Rodriguez",
   "license": "MIT",
@@ -19,6 +19,7 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "helmet": "^4.4.1",
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^2.2.0",
     "mongodb": "^3.3.5",

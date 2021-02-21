@@ -1,13 +1,15 @@
 'use strict'
 const express = require('express')
+const helmet = require('helmet');
 const app = express()
-var bodyParser = require('body-parser')
-var cors = require('cors')
+const bodyParser = require('body-parser')
+const cors = require('cors')
 
 //Middlewares
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
 app.use(cors())
+app.use(helmet())
 
 //cargar rutas
 var producto_routes = require('./routes/producto')
