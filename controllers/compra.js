@@ -272,12 +272,12 @@ var controller = {
     getCompras: (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        var Compra = conn.model('Compra', require('../schemas/compra') )
-        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
-        var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
-        var Provedor = conn.model('Provedor', require('../schemas/provedor') )
-        var Producto = conn.model('Producto', require('../schemas/producto') )
-        var Ubicacion = conn.model('Ubicacion', require('../schemas/ubicacion') )
+        const Compra = conn.model('Compra', require('../schemas/compra') )
+        // var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
+        // var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
+        // var Provedor = conn.model('Provedor', require('../schemas/provedor') )
+        // var Producto = conn.model('Producto', require('../schemas/producto') )
+        // var Ubicacion = conn.model('Ubicacion', require('../schemas/ubicacion') )
 
         Compra.find({
             $and:[
@@ -295,7 +295,7 @@ var controller = {
             })
             .populate({
                 path: 'items',
-                populate: { path: 'provedor'},
+                populate: { path: 'ubicacion'},
             })
             .exec((err, compras) => {
                 conn.close()

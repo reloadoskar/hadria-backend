@@ -204,12 +204,47 @@ var controller = {
             })
     },
 
+    getResumenVentas: async (req, res) =>{
+        const bd= req.params.bd
+        const ubicacion = req.params.ubicacion
+        const fecha = req.params.fecha
+        const conn = con(bd)
+        const VentaItem = conn.model('VentaItem')
+        try{
+            const response = await VentaItem
+                .aggregate()
+                .match({ubicacion: mongoose.Types.ObjectId(ubicacion), fecha: fecha })
+                .group({_id: {producto: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
+                .lookup({ from: 'productos', localField: "_id.producto", foreignField: '_id', as: 'producto' })
+                .sort({"_id.producto": 1, "_id.precio": -1})
+                .unwind('producto')
+                .exec((err, ventas)=>{
+                    if(err){
+                        return res.status(404).send({
+                            status: 'error',
+                            err
+                        })
+                    }
+                    return res.status(200).send({
+                        status: 'success',
+                        ventas,
+                    })
+                })
+        }catch(err){
+            return res.status(200).send({
+                status: 'error',
+                err
+            })
+        }
+        
+    },
+
     getVentasSemana: (req, res) => {
-        var fecha1 = req.query.f1
-        var fecha2 = req.query.f2
+        let fecha1 = req.query.f1
+        let fecha2 = req.query.f2
         const bd= req.params.bd
         const conn = con(bd)
-        var Venta = conn.model('Venta',require('../schemas/venta') )
+        const Venta = conn.model('Venta',require('../schemas/venta') )
         Venta.aggregate([
             { $match: { fecha: { $gte: fecha1, $lte: fecha2 } } },
             { $group: 
@@ -231,12 +266,12 @@ var controller = {
     },
 
     update: (req, res) => {
-        var compraId = req.params.id;
+        let compraId = req.params.id;
         const bd= req.params.bd
         const conn = con(bd)
-        var Venta = conn.model('Venta',require('../schemas/venta') )
+        const Venta = conn.model('Venta',require('../schemas/venta') )
         //recoger datos actualizados y validarlos
-        var params = req.body;
+        let params = req.body;
             
             // Find and update
             Compra.findOneAndUpdate({_id: compraId}, params, {new:true}, (err, compraUpdated) => {

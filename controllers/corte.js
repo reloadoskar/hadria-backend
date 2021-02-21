@@ -3,84 +3,105 @@ const con = require('../conections/hadriaUser')
 var mongoose = require('mongoose');
 
 var controller = {
-    getData: (req, res) => {
-        var ubicacion = req.params.ubicacion;
-        var fecha = req.params.fecha;
+    getData: async (req, res) => {
+        const ubicacion = req.params.ubicacion;
+        const fecha = req.params.fecha;
         const bd = req.params.bd
         const conn = con(bd)
-        var Venta = conn.model('Venta', require('../schemas/venta'))
-        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
-        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
-        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
+        const Venta = conn.model('Venta')
+        const Ingreso = conn.model('Ingreso')
+        const Egreso = conn.model('Egreso')
+        const Ubicacion = conn.model('Ubicacion')
+        const VentaItem = conn.model('VentaItem')
         var corte = {}
         corte.fecha = fecha
-        Venta.find({"ubicacion": ubicacion, "fecha": fecha })
-        .select('ubicacion cliente tipoPago saldo importe items folio')
-        .populate({
-            path: 'items',
-            populate: { path: 'producto'},
-        })
-        .populate({
-            path: 'items',
-            populate: { path: 'compra'},
-        })
-        .populate('ubicacion')
-        .populate('cliente')
-        .sort('folio')
-        .exec() 
-        .then( ventas => {
-            if(!ventas){console.log('error en ventas')}
+        try{
+            const ventas = await
+                Venta.find({"ubicacion": ubicacion, "fecha": fecha })
+                    .select('ubicacion cliente tipoPago saldo importe items folio')
+                    .populate({
+                        path: 'items',
+                        populate: { path: 'producto'},
+                    })
+                    .populate({
+                        path: 'items',
+                        populate: { path: 'compra'},
+                    })
+                    .populate('ubicacion')
+                    .populate('cliente')
+                    .sort('folio')
+                    .lean() 
+            if(ventas.err){ throw new Error("No ventas") }
             corte.ventas = ventas
-            return Egreso.find({
-                ubicacion: ubicacion, 
-                fecha: fecha, 
-                tipo: {$ne: 'COMPRA'}
-            })
-            .select("ubicacion concepto descripcion fecha importe")
-            .populate('ubicacion')
-            .sort('ubicacion concepto descripcion fecha importe')
-            .exec()
-        })
-        .then(egresos => {
-            corte.egresos =egresos
-            return Ingreso.find({"ubicacion": ubicacion, "fecha": fecha, concepto: {$ne: 'VENTA'}})
-            .select('ubicacion concepto descripcion fecha importe')
-            .populate('ubicacion')
-            .sort('ubicacion concepto descripcion fecha importe')
-            .exec()
-        })
-        .then(ingresos => {
+
+            const egresos = await Egreso
+                .find({
+                    ubicacion: ubicacion, 
+                    fecha: fecha, 
+                    tipo: {$ne: 'COMPRA'}})
+                .select("ubicacion concepto descripcion fecha importe")
+                .populate('ubicacion')
+                .sort('ubicacion concepto descripcion fecha importe')
+                .lean()
+
+            corte.egresos = egresos
+
+            const ingresos = await Ingreso
+                .find({"ubicacion": ubicacion, "fecha": fecha, concepto: {$ne: 'VENTA'}})
+                .select('ubicacion concepto descripcion fecha importe')
+                .populate('ubicacion')
+                .sort('ubicacion concepto descripcion fecha importe')
+                .lean()
+            
             corte.ingresos = ingresos
-            // return Ingreso.find({"tipoPago": 'CRÉDITO', "ubicacion": ubicacion, "fecha": fecha})
-            return Venta.find({"tipoPago": 'CRÉDITO', "ubicacion": ubicacion, "fecha": fecha })
-            .select('folio ubicacion cliente tipoPago acuenta items saldo importe')
-            .populate('ubicacion')
-            // .populate('venta')
-            .populate('cliente')
-            .populate({
-                path: 'items',
-                populate: { path: 'producto'},
-            })
-            .populate({
-                path: 'items',
-                populate: {path: 'compra', select: 'clave folio'}
-            })
-            .sort('ubicacion cliente tipoPago acuenta saldo importe')
-            .exec()
-        })
-        .then(creditos => {
+
+            const creditos = await Venta
+                .find({"tipoPago": 'CRÉDITO', "ubicacion": ubicacion, "fecha": fecha })
+                .select('folio ubicacion cliente tipoPago acuenta items saldo importe')
+                .populate('ubicacion')
+                .populate('cliente')
+                .populate({
+                    path: 'items',
+                    populate: { path: 'producto'},
+                })
+                .populate({
+                    path: 'items',
+                    populate: {path: 'compra', select: 'clave folio'}
+                })
+                .sort('ubicacion cliente tipoPago acuenta saldo importe')
+                .lean()
+
             corte.creditos = creditos
-            return Ubicacion.findById(ubicacion)
-            .exec()
-        })
-        .then(ub => {
+            
+            const ub = await Ubicacion
+                .findById(ubicacion)
+                .lean()
+                
             corte.ubicacion = ub
+
+            const resumn = VentaItem
+                    .aggregate()
+                    .match({ubicacion: mongoose.Types.ObjectId(ubicacion), fecha: fecha })
+                    .group({_id: {producto: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
+                    .lookup({ from: 'productos', localField: "_id.producto", foreignField: '_id', as: 'producto' })
+                    .sort({"_id.producto": 1, "_id.precio": -1})
+                    .unwind('producto')
+                    .lean()
+                
+            corte.resumenVentas = resumn
+            
             conn.close()
             return res.status(200).send({
                 corte
             })
-        })
-
+                
+        }catch(err){
+            return res.status(404).send({
+                status: 'error',
+                message: 'No se cargó el corte correctamente.',
+                err
+            })
+        }
 
     },
 
@@ -145,26 +166,36 @@ var controller = {
         })
     },
 
-    exist: (req, res) => {
-        var ubicacion = req.params.ubicacion;
-        var fecha = req.params.fecha;
+    exist: async (req, res) => {
+        const ubicacion = req.params.ubicacion;
+        const fecha = req.params.fecha;
         const bd = req.params.bd
         const conn = con(bd)
+        const Corte = conn.model('Corte')
         
-        var Corte = conn.model('Corte',require('../schemas/corte') )
-        
-        Corte.find({"ubicacion": ubicacion, "fecha": fecha}).
-        exec((err, corte)=>{
-            conn.close()
-            mongoose.connection.close()
-            if(err || !corte) res.status(404).send({
-                status: "error",
+        try{
+            const response = await Corte
+                .aggregate()
+                .match({"ubicacion": ubicacion, "fecha": fecha})
+                .exec((err, corte)=>{
+                    conn.close()
+                    if(err || !corte) {
+                        return res.status(404).send({
+                            status: "error",
+                            err
+                        })
+                    }
+                    return res.status(200).send({
+                        status: 'success',
+                        corte: corte
+                    })
+                })
+        }catch(err){
+            return res.status(200).send({
+                status: 'error',
+                err
             })
-            res.status(200).send({
-                status: 'success',
-                corte: corte
-            })
-        })
+        }
     },
     
     getEgresos: (req, res) => {

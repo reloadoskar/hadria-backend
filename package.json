@@ -7,8 +7,8 @@
     "node": "10.15.1"
   },
   "scripts": {
-    "start": "node server_multi.js",
-    "test": "nodemon server_multi.js"
+    "start": "pm2-runtime start ecosystem.config.js --env production",
+    "test": "nodemon server_multi.js --trace-sync-io"
   },
   "author": "Oskar Rodriguez",
   "license": "MIT",
@@ -25,6 +25,7 @@
     "mongoose": "^5.7.5",
     "nconf": "^0.10.0",
     "nodemon": "^1.19.3",
+    "pm2": "^4.5.4",
     "validator": "^11.1.0"
   },
   "repository": {
