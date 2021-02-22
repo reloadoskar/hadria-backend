@@ -4,17 +4,17 @@ const con = require('../conections/hadriaUser')
 
 var controller = {
     save: (req, res) => {
-        var params = req.body;
+        const params = req.body;
         const bd = req.params.bd
         const conn = con(bd)
-        var Compra = conn.model('Compra', require('../schemas/compra') )
-        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
-        var Egreso = conn.model('Egreso', require('../schemas/egreso') )
-        var Provedor = conn.model('Provedor', require('../schemas/provedor'))
-        Compra.estimatedDocumentCount((err, count) => {
-            if (err) console.log(err)
-            const nDocuments = count
-            var compra = new Compra();
+        const Compra = conn.model( 'Compra')
+        const CompraItem = conn.model('CompraItem')
+        const Egreso = conn.model('Egreso')
+        const Provedor = conn.model('Provedor')
+        
+        Compra.estimatedDocumentCount(count => {
+            let nDocuments = count
+            let compra = new Compra();
             compra._id = mongoose.Types.ObjectId()
             compra.folio = nDocuments + 1
             compra.provedor = params.provedor
@@ -30,8 +30,6 @@ var controller = {
                 if(err){console.log(err)}
                 // prov.cuentas.push(compra._id)
                 // prov.save()
-
-
             Compra.countDocuments({ provedor: params.provedor._id })
             .then(c => {
                 var sigCompra = c +1
@@ -140,110 +138,16 @@ var controller = {
     })
     },
 
-    // save: (req, res) => {
-    //     //recoger parametros
-    //     var params = req.body;
-    //     const bd = req.params.bd
-    //     const conn = con(bd)
-    //     var Compra = conn.model('Compra', require('../schemas/compra') )
-    //     var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
-    //     Compra.estimatedDocumentCount((err, count) => {
-    //         // .then((err, count) =>{
-    //         if (err) console.log(err)
-    //         const nDocuments = count
-    //         var compra = new Compra();
-    //         compra._id = mongoose.Types.ObjectId(),
-    //         compra.folio = nDocuments + 1
-    //         compra.provedor = params.provedor
-    //         compra.ubicacion = params.ubicacion
-    //         compra.tipoCompra = params.tipoCompra
-    //         compra.remision = params.remision
-    //         compra.importe = params.importe
-    //         compra.saldo = params.importe
-    //         compra.fecha = params.fecha
-    //         compra.status = 'ACTIVO'
-
-    //         compra.save((err, compraSaved) => {
-    //             if (err) {
-    //                 return res.status(200).send({
-    //                     status: 'error',
-    //                     message: "No se pudo guardar la compra.",
-    //                     err
-    //                 })
-    //             } else {
-    //                 //Calculamos cuantas compras tiene el provedor... then()...
-    //                 Compra.countDocuments({ provedor: params.provedor._id })
-    //                     .then(c => {
-    //                         var sigCompra = c
-    //                         compraSaved.clave = params.provedor.clave + "-" + sigCompra
-    //                         var i = params.items
-    //                         var itmsToSave = []
-    //                         i.map((item) => {
-    //                             var compraItem = {}
-    //                             if(item.provedor === ''){
-    //                                 compraItem.provedor = compra.provedor
-    //                             }else{
-    //                                 compraItem.provedor = item.provedor
-    //                             }
-    //                             compraItem.compra = compraSaved._id
-    //                             compraItem.producto = item.producto._id
-    //                             compraItem.cantidad = item.cantidad
-    //                             compraItem.stock = item.cantidad
-    //                             compraItem.empaques = item.empaques
-    //                             compraItem.empaquesStock = item.empaques
-    //                             compraItem.costo = item.costo
-    //                             compraItem.importe = item.importe
-    //                             itmsToSave.push(compraItem)
-    //                         })
-    //                         CompraItem.insertMany(itmsToSave, (err, items) => {
-    //                             if (err) console.log(err)
-    //                             items.map(itm => {
-    //                                 compraSaved.items.push(itm._id)
-    //                             })
-    //                             compraSaved.save((err, compra) => {
-    //                                 if(err)console.log(err)
-    //                                 //Devolver respuesta
-    //                                 Compra.findById(compra._id)
-    //                                     .populate('provedor', 'nombre')
-    //                                     .populate('ubicacion')
-    //                                     .populate('tipoCompra')
-    //                                     .populate({
-    //                                         path: 'items',
-    //                                         populate: { path: 'producto'},
-    //                                     })
-    //                                     .exec((err, compraCompleta) => {
-    //                                         conn.close()
-    //                                         mongoose.connection.close()
-    //                                         if (err || !compraCompleta) {
-    //                                             return res.status(500).send({
-    //                                                 status: 'error',
-    //                                                 message: 'Error al devolver la compra' + err
-    //                                             })
-    //                                         }
-    //                                         return res.status(200).send({
-    //                                             status: 'success',
-    //                                             message: 'Compra registrada correctamente.',
-    //                                             compra: compraCompleta
-    //                                         })
-    //                                     })
-    //                             })
-    //                         });
-
-
-    //                     })
-
-    //             }
-    //         })
-    //     })
-    // },
-
-    getComprasDash: (req, res) => {
+    getComprasDash: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
 
-        var Compra = conn.model('Compra', require('../schemas/compra') )
+        const Compra = conn.model('Compra')
         
-        Compra.find({ "status": { $ne: "PRODUCCION" }, "status": { $ne: "CANCELADO"} }).sort('folio')
+        const resp = await Compra
+            .find({ "status": { $ne: "PRODUCCION" }, "status": { $ne: "CANCELADO"} })
+            .sort('folio')
+            .lean()
             .populate('provedor', 'nombre')
             .populate('ubicacion')
             .populate('tipoCompra')
@@ -251,41 +155,37 @@ var controller = {
                 path: 'items',
                 populate: { path: 'producto'},
             })
-            .exec((err, compras) => {
+            .then(compras => {
                 conn.close()
-                mongoose.connection.close()
-                if (err || !compras) {
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al devolver los compras' + err
-                    })
-                }
-                return res.status(200).send({
-    
+                return res.status(200).send({    
                     status: 'success',
                     compras: compras
                 })
-    
+            })
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al devolver los compras' + err
+                })
             })
     },
 
-    getCompras: (req, res) => {
+    getCompras: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        const Compra = conn.model('Compra', require('../schemas/compra') )
-        // var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
-        // var TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
-        // var Provedor = conn.model('Provedor', require('../schemas/provedor') )
-        // var Producto = conn.model('Producto', require('../schemas/producto') )
-        // var Ubicacion = conn.model('Ubicacion', require('../schemas/ubicacion') )
-
-        Compra.find({
-            $and:[
-                {"status": {$ne: "CANCELADO"} }, 
-                {"status": {$ne: "CERRADO"} },
-                {"status": {$ne: "PRODUCCION"} },
-                ]
-        }).sort('folio')
+        const Compra = conn.model('Compra')
+        
+        const resp = await Compra
+            .find({
+                $and:[
+                    {"status": {$ne: "CANCELADO"} }, 
+                    {"status": {$ne: "CERRADO"} },
+                    {"status": {$ne: "PRODUCCION"} },
+                    ]
+            })
+            .sort('folio')
+            .lean()
             .populate('provedor', 'nombre')
             .populate('ubicacion')
             .populate('tipoCompra')
@@ -297,117 +197,122 @@ var controller = {
                 path: 'items',
                 populate: { path: 'ubicacion'},
             })
-            .exec((err, compras) => {
+            .then(compras => {
                 conn.close()
-                mongoose.connection.close()
-                if (err || !compras) {
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al devolver los compras' + err
-                    })
-                }
                 return res.status(200).send({
-
                     status: 'success',
                     compras: compras
                 })
-
+            })
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al devolver los compras' + err
+                })
             })
     },
 
-    getCompra: (req, res) => {
-        var compraId = req.params.id;
+    getCompra: async (req, res) => {
+        const compraId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Compra = conn.model('Compra', require('../schemas/compra') )
-        var VentaItem = conn.model('VentaItem', require('../schemas/venta_item') )
-        var Egreso = conn.model('Egreso', require('../schemas/egreso') )
-        var data = {}
-        Compra
-        .findById(compraId)
-        .populate('provedor', 'clave nombre tel1 cta1 email diasDeCredito comision')
-        .populate('ubicacion')
-        .populate('tipoCompra')
-        .populate({
-            path: 'items',
-            populate: { path: 'ubicacion'},
-        })
-        .populate({
-            path: 'items',
-            populate: { path: 'producto'},
-        })
-        .populate({
-            path: 'items',
-            populate: { path: 'producto', populate: { path: 'unidad'} },
-        })
-        .populate({
-            path: 'items',
-            populate: { path: 'producto', populate: { path: 'empaque'} },
-        })
-        .populate('pagos.ubicacion')
-        .exec()
-        .then( (compra) => {
-            
-            data.compra = compra
+        const Compra = conn.model('Compra')
+        const VentaItem = conn.model('VentaItem')
+        const Egreso = conn.model('Egreso')
+        let data = {}
+
+        const compra = await Compra
+            .findById(compraId)
+            .lean()
+            .populate('provedor', 'clave nombre tel1 cta1 email diasDeCredito comision')
+            .populate('ubicacion')
+            .populate('tipoCompra')
+            .populate({
+                path: 'items',
+                populate: { path: 'ubicacion'},
+            })
+            .populate({
+                path: 'items',
+                populate: { path: 'producto'},
+            })
+            .populate({
+                path: 'items',
+                populate: { path: 'producto', populate: { path: 'unidad'} },
+            })
+            .populate({
+                path: 'items',
+                populate: { path: 'producto', populate: { path: 'empaque'} },
+            })
+            .populate('pagos.ubicacion')
+            .catch( err => {
+                return res.status(404).send({
+                    status: 'error',
+                    err
+                })
+            })
+        data.compra = compra
                 
-            return VentaItem.find({compra: compra._id})
+        const ventas = await VentaItem.find({compra: compra._id})
+                .lean()
                 .populate('venta')
                 .populate('producto')
-                .exec()
 
-        })
-        .then((ventas) => {
-            data.ventas = ventas
-            return VentaItem
+        data.ventas = ventas
+
+        const ventasGroup = await VentaItem
                 .aggregate()
                 .match({compra: data.compra._id})
                 .group({_id: {producto: "$producto", precio: "$precio"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
                 .lookup({ from: 'productos', localField: "_id.producto", foreignField: '_id', as: 'producto' })
                 .sort({"_id.producto": 1, "_id.precio": -1})
                 .exec()
+    
+        data.ventasGroup = ventasGroup        
 
+        const egresos = await Egreso
+            .find({compra: data.compra._id, tipo: {$eq: 'GASTO DE COMPRA'}})
+            .lean()
+            .populate('ubicacion')
+
+        data.egresos = egresos
+        
+        return res.status(200).send({
+            status: 'success',
+            data
         })
-        .then(ventasGroup => {
-            data.ventasGroup = ventasGroup        
-                return Egreso.find({compra: data.compra._id, tipo: {$eq: 'GASTO DE COMPRA'}})
-                    .populate('ubicacion')
-                    .exec()
-        })
-        .then( egresos => {
-            mongoose.connection.close()
-            conn.close()
-                data.egresos = egresos
+    },
+
+    close: async (req, res) => {
+        const compraId = req.params.id
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Compra = conn.model('Compra')
+        const resp = await Compra
+            .findOneAndUpdate({_id: compraId}, {status: "CERRADO"} )
+            .then(compraUpdated => {
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
-                    data
+                    message: 'Compra cerrada correctamente.',
+                    compraUpdated
                 })
-
-        })
-    },
-
-    close: (req, res) => {
-        var compraId = req.params.id
-        const bd = req.params.bd
-        const conn = con(bd)
-        var Compra = conn.model('Compra', require('../schemas/compra') )
-        Compra.findOneAndUpdate({_id: compraId}, {status: "CERRADO"} , (err, compraUpdated) => {
-            if(err)console.log(err)
-            conn.close()
-            mongoose.connection.close()
-            return res.status(200).send({
-                status: 'success',
-                message: 'Compra cerrada correctamente.',
-                compraUpdated
             })
-        })
+            .catch(err => {
+                return res.status(404).send({
+                    status: "error",
+                    err
+                })
+            })
     },
 
-    update: (req, res) => {
-        var compra = req.body
+    update: async (req, res) => {
+        const compra = req.body
         const bd = req.params.bd
         const conn = con(bd)
-        var Compra = conn.model('Compra', require('../schemas/compra') )
-            Compra.findByIdAndUpdate(compra._id, compra, { new: true }, (err, compraUpdated) => {
+        const Compra = conn.model('Compra')
+        const resp = await Compra
+            .findByIdAndUpdate(compra._id, compra, { new: true }, (err, compraUpdated) => {
                 conn.close()
                 mongoose.connection.close()
                 if (err) {
@@ -545,11 +450,11 @@ var controller = {
     },
 
     updateCompraItem: (req, res) => {
-        var item = req.body;
+        const item = req.body;
         const bd = req.params.bd
         const conn = con(bd)
         
-        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
+        const CompraItem = conn.model('CompraItem')
 
         CompraItem.findById(item.item_id).exec( (err, compraItem) => {
             if(err || !compraItem){

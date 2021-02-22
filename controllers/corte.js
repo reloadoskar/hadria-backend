@@ -13,7 +13,7 @@ var controller = {
         const Egreso = conn.model('Egreso')
         const Ubicacion = conn.model('Ubicacion')
         const VentaItem = conn.model('VentaItem')
-        var corte = {}
+        let corte = {}
         corte.fecha = fecha
         try{
             const ventas = await
@@ -31,7 +31,9 @@ var controller = {
                     .populate('ubicacion')
                     .populate('cliente')
                     .sort('folio')
-            if(ventas.err){ throw new Error("No ventas") }
+                    .catch(err => {
+                        throw new Error("No ventas " + err)
+                    })
             corte.ventas = ventas
 
             const egresos = await Egreso
@@ -104,8 +106,8 @@ var controller = {
             })
                 
         }catch(err){
-            return res.status(404).send({
-                status: 'error',
+            return res.status(500).send({
+                status: "error",
                 message: 'No se cargó el corte correctamente.',
                 corte,
                 err
@@ -115,12 +117,12 @@ var controller = {
     },
 
     save: (req, res) => {
-        var data = req.body
+        const data = req.body
         const bd = req.params.bd
         const conn = con(bd)
-        var Corte = conn.model('Corte')
-        var Egreso = conn.model('Egreso')
-        var Ingreso = conn.model('Ingreso')
+        const Corte = conn.model('Corte')
+        const Egreso = conn.model('Egreso')
+        const Ingreso = conn.model('Ingreso')
         Corte.create(data, (err, corte) => {
             if(err || !corte){
                 return res.status(404).send({
@@ -129,7 +131,7 @@ var controller = {
                 })
             }else{
                 // guardar egreso e ingreso, definir a donde se va el corte...
-                var egreso = new Egreso()
+                let egreso = new Egreso()
                 Egreso.estimatedDocumentCount((err, count) => {
                     egreso.folio = ++count
                     egreso.ubicacion = data.ubicacion
@@ -145,7 +147,7 @@ var controller = {
                                 message: 'No se registró el egreso.' + err
                             })
                         }
-                        var ingreso = new Ingreso()
+                        let ingreso = new Ingreso()
                         
                         ingreso.ubicacion = data.enviarA._id
                         ingreso.concepto = "RECEPCIÓN DE CORTE "+ data.ubicacion.nombre
@@ -153,7 +155,6 @@ var controller = {
                         ingreso.importe = data.total
                         ingreso.saldo = 0
                         ingreso.save((err, ingresoSaved) => {
-                                mongoose.connection.close()
                                 conn.close()
                                 if(err){
                                     return res.status(500).send({
@@ -168,7 +169,6 @@ var controller = {
                                         corte 
                                 })
                             })
-                        
                     })
                 })
             }
@@ -184,19 +184,20 @@ var controller = {
         
         try{
             const response = await Corte
-                .aggregate()
-                .match({"ubicacion": ubicacion, "fecha": fecha})
-                .exec((err, corte)=>{
+                .find({ubicacion: ubicacion, fecha: fecha})
+                .lean()
+                .then(corte => {
                     conn.close()
-                    if(err || !corte) {
-                        return res.status(404).send({
-                            status: "error",
-                            err
-                        })
-                    }
                     return res.status(200).send({
                         status: 'success',
                         corte: corte
+                    })
+                })
+                .catch(err => {
+                    conn.close()
+                    return res.status(404).send({
+                        status: "error",
+                        err
                     })
                 })
         }catch(err){

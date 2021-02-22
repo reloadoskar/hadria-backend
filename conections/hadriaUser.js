@@ -1,12 +1,15 @@
 const globals = require('../globals')
 const mongoose = require('mongoose');
 const clientOption = {
-    poolSize: 10,
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true, // DEBE SER FALSE EN PRODUCCION FIX IT!!!!!!
     useFindAndModify: true,
-};
+    poolSize: 10,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+    family: 4
+  }
 module.exports = function conexionCliente(bd) {
 
     console.log("Conectando...");

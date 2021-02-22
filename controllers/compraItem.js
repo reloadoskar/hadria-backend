@@ -9,26 +9,28 @@ var controller = {
         const conn = con(bd)
     },
 
-    getItems: (req, res) => {
+    getItems: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
 
-        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item'))
-        CompraItem.find({stock: {$gt: 0}})
+        const CompraItem = conn.model('CompraItem')
+        const resp = await CompraItem
+            .find({stock: {$gt: 0}})
+            .lean()
             .populate("compra")
             .populate("producto")
-            .exec((err, items) => {
+            .then(items => {
                 conn.close()
-                mongoose.connection.close()
-                if(err || !items) {
-                    return res.status(500).send({
-                        status: "error",
-                        message: "Error al devolver items"
-                    })
-                }
                 return res.status(200).send({
                     status: "success",
                     items: items
+                })
+            })
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status: "error",
+                    message: "Error al devolver items"
                 })
             })
     },
