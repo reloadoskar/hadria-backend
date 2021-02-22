@@ -82,14 +82,18 @@ var controller = {
             const resumn = await VentaItem
                     .aggregate()
                     .match({ubicacion: mongoose.Types.ObjectId(ubicacion), fecha: fecha })
-                    .group({_id: {producto: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
-                    .lookup({ from: 'productos', localField: "_id.producto", foreignField: '_id', as: 'producto' })
-                    .sort({"_id.producto": 1, "_id.precio": -1})
+                    .group({_id: "$compraItem", compra: {$first:"$compra"}, producto: {$first: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
+                    .lookup({ from: 'productos', localField: "producto", foreignField: '_id', as: 'producto' })
+                    .lookup({ from: 'compras', localField: "compra", foreignField: '_id', as: 'compra' })
                     .unwind('producto')
+                    .unwind('compra')                    
+                    .sort({"_id": 1})
                     .exec()
                 
             corte.resumenVentas = resumn
-            
+
+            const items = await VentaItem.find({ubicacion: ubicacion, fecha: fecha}).lean()
+            corte.items = items
             conn.close()
             return res.status(200).send({
                 corte
