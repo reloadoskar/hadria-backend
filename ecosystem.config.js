@@ -1,7 +1,7 @@
 module.exports = {
-  apps = [{
+  apps : [{
     name: "HADRIA2",
-    script: 'server_multi.js',
+    script: "./server_multi.js",
     instances: "max",
     env: {
       NODE_ENV: "development",
@@ -12,5 +12,4 @@ module.exports = {
     exec_mode: "cluster",
     max_memory_restart: "90M"
   }]
-} 
-  
+}
