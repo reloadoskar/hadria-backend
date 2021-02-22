@@ -92,7 +92,11 @@ var controller = {
                 
             corte.resumenVentas = resumn
 
-            const items = await VentaItem.find({ubicacion: ubicacion, fecha: fecha}).lean()
+            const items = await VentaItem.find({ubicacion: ubicacion, fecha: fecha})
+                .lean()
+                .populate({path: 'venta', populate: {path: "cliente"} })
+                .populate('compra')
+                .populate('producto')
             corte.items = items
             conn.close()
             return res.status(200).send({

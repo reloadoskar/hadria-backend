@@ -4,7 +4,7 @@ var controller = {
     getInventario: (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        var Compra = conn.model('Compra', require("../schemas/compra"))
+        const Compra = conn.model('Compra', require("../schemas/compra"))
 
         Compra.find({"status": "ACTIVO"})
             .select('clave folio ubicacion items importe')

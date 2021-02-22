@@ -3,30 +3,28 @@ var mongoose = require('mongoose')
 const con = require('../conections/hadriaUser')
 
 var controller = {
-    getBalance: (req, res) => {
-        var bd = req.params.bd
+    getBalance: async (req, res) => {
+        const bd = req.params.bd
         const conn = con(bd)
-        var Balance = conn.model('Balance', require('../schemas/balance'))
+        const Balance = conn.model('Balance', require('../schemas/balance'))
     
-        Balance.findOne().sort('-fecha').exec((err, doc) => {
-            if(err){console.log(err)}
-            return res.status(200).send({
-                status: 'success',
-                message: 'Ok',
-                doc
+        const resp = await Balance.findOne().sort('-fecha')
+            .lean()
+            .then(doc => {
+                return res.status(200).send({
+                    status: "success",
+                    doc
+                })
             })
-        })
-
+            .catch(err => {
+                return res.status(500).send({status:"error", err})
+            })
     },
 
     disponiblexUbicacion: (req, res) => {
-        var bd = req.params.bd
+        const bd = req.params.bd
         const conn = con(bd)
-
-        var Ubicacion = conn.model('Ubicacion', require("../schemas/ubicacion"))
-        var Ingreso = conn.model('Ingreso', require("../schemas/ingreso"))
-        var Egreso = conn.model('Egreso', require("../schemas/egreso"))
-
+        const Ubicacion = conn.model('Ubicacion')
         Ubicacion.aggregate()
             .lookup({ from: 'ingresos', localField: "_id", foreignField: 'ubicacion', as: 'ingresos' })
             .lookup({ from: 'egresos', localField: "_id", foreignField: 'ubicacion', as: 'egresos' })

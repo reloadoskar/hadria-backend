@@ -18,12 +18,11 @@ var controller = {
         
         try{
             var Empleado = conn.model('Empleado', require("../schemas/empleado"))
-            var ubicacion = conn.model('Ubicacion', require("../schemas/ubicacion"))
             const r = await Empleado.find()
                 .select('nombre sexo level instagram facebook email telefono ubicacion')            
                 .populate('ubicacion')
                 .lean()
-            conn.close()
+                conn.close()
             return res.status(200).send({
                 status: "success",
                 message: "Ok",
@@ -33,6 +32,7 @@ var controller = {
             console.error(error)
         }
     },
+    
     addEmpleado: (req, res) => {
         const conn = conexion_app()
         const bd = req.params.bd

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "pm2-runtime start ecosystem.config.js --env production",
-    "test": "pm2 start --watch ecosystem.config.js --env development"
+    "test": "pm2-runtime start --watch ecosystem.config.js --env development"
   },
   "author": "Oskar Rodriguez",
   "license": "MIT",

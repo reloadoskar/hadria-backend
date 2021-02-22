@@ -1,11 +1,11 @@
 const globals = require('../globals')
 const mongoose = require('mongoose');
 const clientOption = {
-    poolSize: 5,
+    poolSize: 10,
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useCreateIndex: true,
-    
+    useCreateIndex: true, // DEBE SER FALSE EN PRODUCCION FIX IT!!!!!!
+    useFindAndModify: true,
 };
 module.exports = function conexionCliente(bd) {
 
@@ -46,14 +46,6 @@ module.exports = function conexionCliente(bd) {
     conn.on('disconnected', function(){
       mongoose.connection.close(() => {
         console.log("Desconectado.");
-
-        // process.on('SIGINT', function(){
-        //   mongoose.connection.close(function(){
-        //     console.log(termination("Mongoose default connection is disconnected due to application termination"))
-        //     process.exit(0)
-        //   })
-        // })
-        
       })
     })
     return conn; 
