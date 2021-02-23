@@ -7,12 +7,10 @@ var controller = {
     save: (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        var Producto = conn.model('Producto',require('../schemas/producto') )
-        //recoger parametros
-        var params = req.body;
+        const params = req.body;
+        const Producto = conn.model('Producto')
 
-            //Crear el objeto a guardar
-            var producto = new Producto();
+        let producto = new Producto();
             
             //Asignar valores
             producto.clave = params.clave.toUpperCase();
@@ -43,32 +41,36 @@ var controller = {
 
     },
 
-    getProductos: (req, res) => {
+    getProductos: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        var Producto = conn.model('Producto',require('../schemas/producto') )
-        Producto.find({}).sort('clave').exec( (err, productos) => {
-            mongoose.connection.close()
-            conn.close()
-            if(err || !productos){
+        const Producto = conn.model('Producto')
+        const resp = await Producto
+            .find({})
+            .sort('clave')
+            .lean()
+            .then( productos => {
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    products: productos
+                })
+            })
+            .catch(err => {
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
-                    message: 'Error al devolver los productos'
+                    message: 'Error al devolver los productos',
+                    err
                 })
-            }
-            return res.status(200).send({
-                status: 'success',
-                products: productos
             })
-        })
     },
 
-    getProducto: (req, res) => {
-        var productoId = req.params.id;
+    getProducto: async (req, res) => {
+        const productoId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Producto = conn.model('Producto',require('../schemas/producto') )
-
+        const Producto = conn.model('Producto')
         if(!productoId){
             mongoose.connection.close()
             conn.close()
@@ -77,21 +79,23 @@ var controller = {
                 message: 'No existe el producto'
             })
         }
-
-        Producto.findById(productoId, (err, producto) => {
-            mongoose.connection.close()
-            conn.close()
-            if(err || !producto){
+        const resp = await Producto
+            .findById(productoId)
+            .lean()
+            .then( producto => {
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    producto
+                })
+            })
+            .catch(err => {
                 return res.status(404).send({
                     status: 'success',
-                    message: 'No existe el producto.'
+                    mesage: 'No existe el producto.',
+                    err
                 })
-            }
-            return res.status(200).send({
-                status: 'success',
-                producto
-            })
-        })
+            })        
     },
 
     update: (req, res) => {

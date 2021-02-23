@@ -4,11 +4,11 @@ const con = require('../conections/hadriaUser')
 
 var controller = {
     save: (req, res) => {
-        var params = req.body
+        const params = req.body
         const bd = req.params.bd
         const conn = con(bd)
         const Ingreso = conn.model('Ingreso')
-        var ingreso = new Ingreso()
+        let ingreso = new Ingreso()
         ingreso.ubicacion = params.ubicacion
         ingreso.fecha = params.fecha
         ingreso.concepto = "VENTA"
@@ -35,59 +35,81 @@ var controller = {
         })
     },
 
-    getCuentasCliente: (req,res) => {
+    getCuentasCliente: async (req,res) => {
         const bd= req.params.bd
         const clienteID= req.params.id
         const conn = con(bd)
-        var Venta = conn.model('Venta',require('../schemas/venta') )
-        Venta.find({cliente: clienteID, saldo: {$gt: 0}})
-        .exec((err, cuentas)=>{
-            return res.status(200).send({
-                status: "success",
-                cuentas
+        const Venta = conn.model('Venta')
+        const resp = await Venta
+            .find({cliente: clienteID, saldo: {$gt: 0}})
+            .lean()
+            .then( cuentas => {
+                conn.close()
+                return res.status(200).send({
+                    status: "success",
+                    cuentas
+                })
             })
-        })
+            .catch(err=>{
+                conn.close()
+                return res.status(500).send({
+                    status: "error",                    
+                    err
+                })
+            })
     },
 
-    getCuentas: (req, res) => {
+    getCuentas: async (req, res) => {
         const bd= req.params.bd
         const conn = con(bd)
-        const Cliente = conn.model('Cliente',require('../schemas/cliente') )
-        Cliente.find({cuentas: {$ne: []}})
-        .select('nombre dias_de_credito cuentas')
-        .populate({
-            path: 'cuentas',
-            match: { saldo: {$ne: 0} },
-            select: 'concepto importe acuenta saldo venta',
-            populate: { path: 'venta', select: 'items folio fecha importe'}
-        })
-        .exec((err, clientes)=>{
-            if (err){
+        const Cliente = conn.model('Cliente')
+        const resp = await Cliente
+            .find({cuentas: {$ne: []}})
+            .select('nombre dias_de_credito cuentas')
+            .populate({
+                path: 'cuentas',
+                match: { saldo: {$ne: 0} },
+                select: 'concepto importe acuenta saldo venta',
+                populate: { path: 'venta', select: 'items folio fecha importe'}
+            })
+            .lean()
+            .then( clientes => {
+                conn.close()
+                return res.status(200).send({
+                    status: "success",
+                    clientes
+                })
+            })
+            .catch(err=>{
                 return res.status(500).send({
                     status: "error",
                     err
                 })
-            } 
-            return res.status(200).send({
-                status: "success",
-                clientes
             })
-        })
     },
 
-    getCxcPdv: (req, res) =>{
+    getCxcPdv: async (req, res) =>{
         const bd= req.params.bd
         const conn = con(bd)
         const Ingreso = conn.model('Ingreso')
-        Ingreso.find({saldo: {$gt: 0}})
+        const resp = await Ingreso
+            .find({saldo: {$gt: 0}})
             .populate({path:'venta', select: 'cliente folio', populate: { path: 'cliente', select: 'nombre'}})            
             .populate('ubicacion')
-            .exec((err, cuentas) => {
-                if(err){console.error(err)}
+            .lean()
+            .then(cuentas => {
+                conn.close()
                 return res.status(200).send({
                     status:"success",
                     cuentas
                 })
+            })
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status:"error",
+                    err
+                })                
             })
     },
 

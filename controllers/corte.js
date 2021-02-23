@@ -208,42 +208,56 @@ var controller = {
         }
     },
     
-    getEgresos: (req, res) => {
-        var ubicacion = req.params.ubicacion;
-        var fecha = req.params.fecha;
+    getEgresos: async (req, res) => {
+        const ubicacion = req.params.ubicacion;
+        const fecha = req.params.fecha;
         const bd = req.params.bd
         const conn = con(bd)
         
-        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
-        Egreso.find({"ubicacion": ubicacion, "fecha": fecha})
-            .exec((err, egresos) => {
-                mongoose.connection.close()
+        const Egreso = conn.model('Egreso',require('../schemas/egreso') )
+        const resp = await Egreso
+            .find({"ubicacion": ubicacion, "fecha": fecha})
+            .lean()
+            .then(egresos=> {
                 conn.close()
-                if(err) console.log(err)
-                res.status(200).send({
+                return res.status(200).send({
                     status: 'success',
                     message: 'se encontraron resultados:',
                     egresos: egresos
                 })
-        })
-
+            })
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'No se encontraron resultados',
+                    err
+                })
+            })
     },
 
-    getIngresos: (req, res) => {
-        var ubicacion = req.params.ubicacion
-        var fecha = req.params.fecha
+    getIngresos: async (req, res) => {
+        const ubicacion = req.params.ubicacion
+        const fecha = req.params.fecha
         const bd = req.params.bd
         const conn = con(bd)
         
-        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
-        Ingreso.find({"ubicacion": ubicacion, "fecha": fecha, concepto: {$ne: 'VENTA'}})
-            .exec((err, ingresos) => {
+        const Ingreso = conn.model('Ingreso')
+        const resp = await Ingreso
+            .find({"ubicacion": ubicacion, "fecha": fecha, concepto: {$ne: 'VENTA'}})
+            .$where(lean)
+            .then(ingresos => {
                 conn.close()
-                mongoose.connection.close()
-                if(err)console.log(err)
-                res.status(200).send({
+                return res.status(200).send({
                     status: 'success',
-                    ingresos: ingresos
+                    ingresos
+                })
+            })
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    err
                 })
             }) 
     }

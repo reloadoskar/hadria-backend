@@ -5,13 +5,13 @@ const con = require('../conections/hadriaUser')
 var controller = {
     save: (req, res) => {
         //recoger parametros
-        var params = req.body;
+        const params = req.body;
         const bd = req.params.bd
         const conn = con(bd)
-        var Ubicacion = conn.model('Ubicacion',require('../schemas/ubicacion') )
+        const Ubicacion = conn.model('Ubicacion')
 
             //Crear el objeto a guardar
-            var ubicacion = new Ubicacion();
+            let ubicacion = new Ubicacion();
             
             //Asignar valores
             ubicacion.nombre = params.nombre.toUpperCase();

@@ -60,6 +60,7 @@ var controller = {
                     message: 'Ok',
                     clientes
                 })
+            })
             .catch(err => {
                 return res.status(500).send({
                     status: 'error',
@@ -67,7 +68,6 @@ var controller = {
                     err
                 })
             })
-        })
     },
 
     getCliente: async (req, res) => {

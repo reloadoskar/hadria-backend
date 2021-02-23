@@ -1,12 +1,13 @@
 'use strict'
 const con = require('../conections/hadriaUser')
 var controller = {
-    getInventario: (req, res) => {
+    getInventario: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        const Compra = conn.model('Compra', require("../schemas/compra"))
+        const Compra = conn.model('Compra')
 
-        Compra.find({"status": "ACTIVO"})
+        const resp = await Compra
+            .find({"status": "ACTIVO"})
             .select('clave folio ubicacion items importe')
             .populate({
                 path: 'items',
@@ -24,25 +25,33 @@ var controller = {
             .populate({path: 'provedor', select: "nombre clave"})
             .populate('ubicacion')
             .sort('folio')
-            .exec((err,inv) => {
+            .lean()
+            .then( inv => {
                 conn.close()
-                if (err){
-                    console.log(err)
-                }
                 return res.status(200).send({
                     status: 'success',
                     message: 'Items encontrados',
                     inventario: inv
                 })
+                
+            })
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    message: "No se encontraron items.",
+                    err
+                })
             })
     },
     
-    getInventarioBy: (req, res) => {
+    getInventarioBy: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        var Compra = conn.model('Compra', require('../schemas/compra'))
-        var ubicacion = req.params.ubicacion;
-        Compra.find({ "ubicacion": ubicacion})
+        const ubicacion = req.params.ubicacion;
+        const Compra = conn.model('Compra')
+        const resp = await Compra
+            .find({ "ubicacion": ubicacion})
             .select('clave items ubicacion folio')
             .populate('ubicacion')
             .populate('items')
@@ -56,17 +65,20 @@ var controller = {
                     }
                 },
             })
-            .exec( (err, inventario) => {
-                if (err || !inventario){
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'No se encontraron items',
-                    })
-                }
+            .lean()
+            .then( inventario => {
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: 'Items encontrados',
                     inventario
+                })
+            })
+            .catch(err => {
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'No se encontraron items',
+                    err
                 })
             })
     },
@@ -74,7 +86,7 @@ var controller = {
     getInventarioUbicacion: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        const CompraItem = conn.model('CompraItem', require('../schemas/compra_item'))
+        const CompraItem = conn.model('CompraItem')
         try{
             const inventario = await CompraItem.aggregate()
                 .match({stock: {$gt: 0}})
@@ -113,18 +125,15 @@ var controller = {
     moveInventario: (req, res) => {
         const bd = req.params.bd
         const params = req.body;
-        var destinoId = params.destino._id
-        var compraId = params.itemsel.compra[0]._id
-        var productoId = params.itemsel.producto[0]._id
-        var cantidadm = parseInt(params.itemselcantidad)
-        var empaquesm = parseInt(params.itemselempaques)
-
-        // console.log("cantm")
-        // console.log(cantidadm)
+        const destinoId = params.destino._id
+        const compraId = params.itemsel.compra[0]._id
+        const productoId = params.itemsel.producto[0]._id
+        const cantidadm = parseInt(params.itemselcantidad)
+        const empaquesm = parseInt(params.itemselempaques)
         const conn = con(bd)
         const CompraItem = conn.model('CompraItem')
         const Compra = conn.model('Compra')
-        const Movimiento = conn.model('Movimiento', require('../schemas/movimiento'))
+        const Movimiento = conn.model('Movimiento')
 
         CompraItem.findById(params.itemsel._id).exec((err, item) => {
             if(err || !item){console.log(err)}
@@ -163,13 +172,10 @@ var controller = {
                         movimiento.empaques = params.itemselempaques
                         movimiento.pesadas = params.pesadas
                         movimiento.save()
-
                         compra.movimientos.push(movimiento._id)
-
                         compra.save()
                     })
                 })
-
             })
         })
         return res.status(200).send({

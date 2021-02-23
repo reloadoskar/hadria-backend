@@ -1,26 +1,36 @@
 const con = require('../conections/hadriaUser')
 
-exports.cxp_list = (req, res) => {
+exports.cxp_list = async (req, res) => {
     const bd = req.params.bd
     const conn = con(bd)
-    var Provedor = conn.model('Provedor', require("../schemas/provedor"))
+    const Provedor = conn.model('Provedor')
 
-    Provedor.find({cuentas: {$ne: []}})
-    .select('nombre tel1 diasDeCredito cuentas')
-    .populate({
-        path: 'cuentas',
-        match: { saldo: {$ne: 0} },
-        select: 'concepto folio importe saldo compra',
-        populate: { path: 'compra', select: 'clave folio fecha'}
-    })
-    .exec((err, provs) => {
-        if(err){console.log(err)}
-        return res.status(200).send({
-            status: 'success',
-            message: 'Cuentas encontradas',
-            cuentas: provs
+    const resp = await Provedor
+        .find({cuentas: {$ne: []}})
+        .select('nombre tel1 diasDeCredito cuentas')
+        .populate({
+            path: 'cuentas',
+            match: { saldo: {$ne: 0} },
+            select: 'concepto folio importe saldo compra',
+            populate: { path: 'compra', select: 'clave folio fecha'}
         })
-    })
+        .lean()
+        .then( provs => {
+            conn.close()
+            return res.status(200).send({
+                status: 'success',
+                message: 'Cuentas encontradas',
+                cuentas: provs
+            })
+        })
+        .catch(err => {
+            conn.close()
+            return res.status(500).send({
+                status: 'error',
+                message: 'Cuentas encontradas',
+                err
+            })
+        })
 }
 
 exports.cxp_create_pago = (req, res) => {

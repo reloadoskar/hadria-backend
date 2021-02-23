@@ -10,6 +10,6 @@ module.exports = {
       NODE_ENV: "production",
     },
     exec_mode: "cluster",
-    max_memory_restart: "90M"
+    max_memory_restart: "254M"
   }]
 }

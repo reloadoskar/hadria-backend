@@ -4,13 +4,12 @@ const con = require('../conections/hadriaUser')
 
 var controller = {
     save: (req, res) => {
-        //recoger parametros
-        var params = req.body;
+        const params = req.body;
         const bd = req.params.bd
         const conn = con(bd)
-        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
-        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
-        var egreso = new Egreso()
+        const Egreso = conn.model('Egreso')
+        const Ingreso = conn.model('Ingreso')
+        let egreso = new Egreso()
         Egreso.estimatedDocumentCount((err, count) => {
             egreso.folio = ++count
             egreso.ubicacion = params.ubicacion
@@ -27,14 +26,13 @@ var controller = {
                         message: 'No se registró el egreso.' + err
                     })
                 }
-                var ingreso = new Ingreso()
+                let ingreso = new Ingreso()
                 ingreso.ubicacion = params.ubicacionReceptora
                 ingreso.concepto = "RECEPCION"
                 ingreso.descripcion = params.descripcion
                 ingreso.fecha = params.fecha
                 ingreso.importe = params.importe
                 ingreso.save((err, ingresoSaved) => {
-                    mongoose.connection.close()
                     conn.close()
                     if(err){
                         return res.status(500).send({
@@ -59,11 +57,11 @@ var controller = {
 
 
     delete: (req, res) => {
-        var ingresoId = req.params.id;
+        const ingresoId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
-        var Ingreso = conn.model('Egreso',require('../schemas/ingreso') )
+        const Egreso = conn.model('Egreso')
+        const Ingreso = conn.model('Egreso')
         Ingreso.findOneAndDelete({_id: ingresoId}, (err, ingresoRemoved) => {
             mongoose.connection.close()
             conn.close()

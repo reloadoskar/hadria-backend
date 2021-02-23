@@ -2,89 +2,79 @@
 const con = require('../conections/hadriaUser')
 var mongoose = require('mongoose');
 var controller = {    
-    save: (req, res) => {
+    save: async (req, res) => {
+        const params = req.body;
         const bd = req.params.bd
         const conn = con(bd)
-        var Empaque = conn.model('Empaque',require('../schemas/empaque') )
-        //recoger parametros
-        var params = req.body;
+        const Empaque = conn.model('Empaque')
 
-        //Crear el objeto a guardar
-        var empaque = new Empaque();
-            
-        //Asignar valores
-        empaque.empaque = params.empaque;
-        empaque.abr = params.abr;
-
-        //Guardar objeto
-        empaque.save((err, empaqueStored) => {
-            mongoose.connection.close()
-            conn.close()
-            if(err || !empaqueStored){
+        const resp = await Empaque
+            .create(params)
+            .then(empaqueStored => {
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    message: 'Empaque registrado correctamente.',
+                    empaque: empaqueStored
+                })
+            })
+            .catch(err => {
+                conn.close()
                 return res.status(404).send({
                     status: 'error',
                     message: 'El empaque no se guardó.',
                     err
                 })
-            }
-            //Devolver respuesta
-            return res.status(200).send({
-                status: 'success',
-                message: 'Empaque registrado correctamente.',
-                empaque: empaqueStored
-            })
-        })
-
+            })            
     },
 
-    getEmpaques: (req, res) => {
+    getEmpaques: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        var Empaque = conn.model('Empaque',require('../schemas/empaque') )
-        Empaque.find({}).sort('_id').exec( (err, empaques) => {
-            conn.close()
-            mongoose.connection.close()
-            if(err || !empaques){
+        const Empaque = conn.model('Empaque')
+        const resp = await Empaque.find({})
+            .sort('_id')
+            .lean()
+            .then(empaques => {
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    empaques: empaques
+                })
+            })
+            .catch(err => {
+                conn.close()            
                 return res.status(500).send({
                     status: 'error',
-                    message: 'Error al devolver los empaques'
+                    message: 'Error al devolver los empaques',
+                    err
                 })
-            }
-            return res.status(200).send({
-                status: 'success',
-                empaques: empaques
             })
-        })
     },
 
-    delete: (req, res) => {
+    delete: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        var Empaque = conn.model('Empaque',require('../schemas/empaque') )
-        var empaqueId = req.params.id;
+        const empaqueId = req.params.id;
+        const Empaque = conn.model('Empaque')
 
-        Empaque.findOneAndDelete({_id: empaqueId}, (err, empaqueRemoved) => {
-            mongoose.connection.close()
-            conn.close()
-            if(!empaqueRemoved){
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'No se pudo borrar la empaque.'
+        const resp = await Empaque
+            .findOneAndDelete({_id: empaqueId})
+            .then(empaqueRemoved => {
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    message: 'Empaque eliminada correctamente.',
+                    empaqueRemoved
                 })
-            }
-            if(err){
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'Ocurrio un error.'
-                })
-            }
-            return res.status(200).send({
-                status: 'success',
-                message: 'Empaque eliminada correctamente.',
-                empaqueRemoved
             })
-        })
-
+            .catch(err => {
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Ocurrio un error.',
+                    err
+                })
+            })
     }
 
 }

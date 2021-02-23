@@ -17,7 +17,7 @@ var controller = {
         const conn = con(bd)
         
         try{
-            var Empleado = conn.model('Empleado', require("../schemas/empleado"))
+            const Empleado = conn.model('Empleado')
             const r = await Empleado.find()
                 .select('nombre sexo level instagram facebook email telefono ubicacion')            
                 .populate('ubicacion')
@@ -39,8 +39,8 @@ var controller = {
         const conn2 = con(bd)
         const params = req.body
         // console.log(params)
-        var User = conn.model('User')
-        var Empleado = conn2.model('Empleado', require("../schemas/empleado"))
+        const User = conn.model('User')
+        const Empleado = conn2.model('Empleado')
         // Creo un usuario para accesar a BD
         try{
             var nusr = new User()
@@ -88,11 +88,10 @@ var controller = {
         return false
     },
     save: (req, res) => {
-        
         const {email, password, nombre, apellido} = req.body;
         const conn = conexion_app()
-        var User = conn.model('User');
-        var Empleado = conn.model('Empleado')
+        const User = conn.model('User');
+        const Empleado = conn.model('Empleado')
         User.estimatedDocumentCount((err, count) => {
             if (err) console.log(err)
             const user = new User();
@@ -105,9 +104,6 @@ var controller = {
             user.fechaInicio = curDateISO
             user.tryPeriodEnds = tryPeriod
             user.paidPeriodEnds = tryPeriod
-
-
-
             User.findOne({
                 email: email
             })
@@ -231,15 +227,14 @@ var controller = {
 
     profile: (req, res) => {
         const conn = conexion_app()
-        var User = conn.model('User', require('../schemas/user') );
-        var decoded = jwt.verify(req.headers['authorization'], process.env.SECRET_KEY)
+        const User = conn.model('User', require('../schemas/user') );
+        let decoded = jwt.verify(req.headers['authorization'], process.env.SECRET_KEY)
 
         User.findOne({
             _id: decoded._id
         })
         .then(user => {
             conn.close()
-            mongoose.connection.close()
             if(user){
                 res.send({
                     message: "success",
@@ -271,7 +266,7 @@ var controller = {
         const Ubicacion = conn.model('Ubicacion')
         const Venta = conn.model('Venta')
         const VentaItem = conn.model('VentaItem')
-        const Movimiento = conn.model('Movimiento', require('../schemas/movimiento'))
+        const Movimiento = conn.model('Movimiento')
         
         // Cliente.deleteMany({}).exec((err, docs) => {
         //     if(err){console.log(err)}
@@ -309,10 +304,10 @@ var controller = {
         //     if(err){console.log(err)}
         //     console.log("Produccion - vaciado")
         // })
-        // Producto.deleteMany({}).exec((err, docs)=> {
-        //     if(err){console.log(err)}
-        //     console.log("Producto - vaciado")
-        // })
+        Producto.deleteMany({}).exec((err, docs)=> {
+            if(err){console.log(err)}
+            console.log("Producto - vaciado")
+        })
         // Provedor.deleteMany({}).exec((err, docs)=> {
         //     if(err){console.log(err)}
         //     console.log("Provedor - vaciado")

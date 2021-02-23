@@ -3,71 +3,73 @@ const con = require('../conections/hadriaUser')
 var validator = require('validator');
 var mongoose = require('mongoose');
 var controller = {
-    save: (req, res) => {
+    save: async (req, res) => {
         //recoger parametros
-        var params = req.body;
+        const params = req.body;
         const bd = req.params.bd
         const conn = con(bd)
-        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
-        var Compra = conn.model('Compra',require('../schemas/compra') )
-        var egreso = new Egreso()
-        Egreso.estimatedDocumentCount((err, count) => {
-            egreso.folio = ++count
-            egreso.ubicacion = params.ubicacion
-            egreso.concepto = params.concepto
-            egreso.tipo = params.tipo
-            egreso.descripcion = params.descripcion
-            egreso.fecha = params.fecha
-            egreso.importe = params.importe
-            egreso.saldo = 0
-            egreso.save((err, egreso) => {
-                if( err || !egreso){
+        const Egreso = conn.model('Egreso')
+        let egreso = new Egreso()
+        const resp = await Egreso
+            .estimatedDocumentCount()
+            .then(count => {
+                egreso.folio = ++count
+                egreso.ubicacion = params.ubicacion
+                egreso.concepto = params.concepto
+                egreso.tipo = params.tipo
+                egreso.descripcion = params.descripcion
+                egreso.fecha = params.fecha
+                egreso.importe = params.importe
+                egreso.saldo = 0
+                egreso.save((err, egreso) => {
+                    if( err || !egreso){
                     conn.close()
                     return res.status(404).send({
                         status: 'error',
                         message: 'No se registró el egreso.' + err
                     })
-                }
-                conn.close()
-                return res.status(200).send({
-                    status: 'success',
-                    message: 'Egreso registrado correctamente.',
-                    egreso
+                    }
+                    conn.close()
+                    return res.status(200).send({
+                        status: 'success',
+                        message: 'Egreso registrado correctamente.',
+                        egreso
+                    })
                 })
             })
-        })
     },
 
-    getEgresos: (req, res) => {
+    getEgresos: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
-        Egreso.find({saldo:{$eq:0}}).sort({fecha: -1, createdAt: -1})
+        const Egreso = conn.model('Egreso')
+        const resp = await Egreso
+            .find({saldo:{$eq:0}}).sort({fecha: -1, createdAt: -1})
+            .lean()
             .populate('ubicacion')
             .populate('compra', 'clave')
-            .exec((err, egresos) => {
+            .then(egresos=> {
                 conn.close()
-                mongoose.connection.close()
-                if (err || !egresos) {
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al devolver los egresos' + err
-                    })
-                }
                 return res.status(200).send({
                     status: 'success',
                     egresos
                 })
             })
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al devolver los egresos' + err
+                })
+            })
     },
 
-    getEgreso: (req, res) => {
-        var egresoId = req.params.id;
+    getEgreso: async (req, res) => {
+        const egresoId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
+        const Egreso = conn.model('Egreso')
         if (!egresoId) {
-            mongoose.connection.close()
             conn.close()
             return res.status(404).send({
                 status: 'error',
@@ -75,87 +77,59 @@ var controller = {
             })
         }
 
-        Egreso.findById(egresoId, (err, egreso) => {
-            mongoose.connection.close()
-            conn.close()
-            if (err || !egreso) {
+        const resp = await Egreso
+            .findById(egresoId)
+            .lean()
+            .populate('compra', 'clave')
+            .then( egreso => {
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    egreso
+                })
+            })
+            .catch(err => {
+                conn.close()            
                 return res.status(404).send({
                     status: 'success',
-                    message: 'No existe el egreso.'
+                    message: 'No existe el egreso.',
+                    err
                 })
-            }
-            return res.status(200).send({
-                status: 'success',
-                egreso
             })
-        })
-            .populate('compra', 'clave')
     },
 
-    update: (req, res) => {
-        var egresoId = req.params.id;
+    update: async (req, res) => {
+        const egresoId = req.params.id;
+        const params = req.body;
         const bd = req.params.bd
         const conn = con(bd)
-        var Egreso = conn.model('Egreso',require('../schemas/egreso') )        
-        //recoger datos actualizados y validarlos
-        var params = req.body;
-        try {
-            var validate_ubicacion = !validator.isEmpty(params.ubicacion);
-            var validate_descripcion = !validator.isEmpty(params.descripcion);
-            var validate_fecha = !validator.isEmpty(params.fecha);
-            var validate_importe = !validator.isEmpty(params.importe);
-            var validate_tipo_pago = !validator.isEmpty(params.tipo_pago);
-        } catch (err) {
-            mongoose.connection.close()
-            conn.close()
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if (validate_ubicacion && validate_descripcion && validate_fecha && validate_importe && validate_tipo_pago) {
+        const Egreso = conn.model('Egreso')
 
             // Find and update
-            Egreso.findOneAndUpdate({ _id: egresoId }, params, { new: true }, (err, egresoUpdated) => {
-                mongoose.connection.close()
+        const resp = await Egreso
+            .findOneAndUpdate({ _id: egresoId }, params, { new: true })
+            .then(egresoUpdated => {
                 conn.close()
-                if (err) {
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al actualizar'
-                    })
-                }
-
-                if (!egresoUpdated) {
-                    return res.status(404).send({
-                        status: 'error',
-                        message: 'No existe el egreso'
-                    })
-                }
                 return res.status(200).send({
                     status: 'success',
                     egreso: egresoUpdated
                 })
-
             })
-
-        } else {
-            mongoose.connection.close()
-            conn.close()
-            return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al actualizar',
+                    err
+                })                
             })
-        }
-
     },
 
     delete: (req, res) => {
-        var egresoId = req.params.id;
+        const egresoId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Egreso = conn.model('Egreso',require('../schemas/egreso') )
+        const Egreso = conn.model('Egreso')
         Egreso.findById(egresoId, (err, egreso) => {
             if(egreso.compra){
                 return res.status(500).send({
