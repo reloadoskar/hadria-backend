@@ -1,9 +1,7 @@
 'use strict'
-var mongoose = require('mongoose')
 const con = require('../conections/hadriaUser')
-var validator = require('validator');
 
-var controller = {
+const controller = {
     save: (req, res) => {
         //recoger parametros
         const params = req.body;
@@ -27,7 +25,6 @@ var controller = {
         //Guardar objeto
         cliente.save((err, clienteStored) => {
             conn.close()
-            mongoose.connection.close()
             if (err || !clienteStored) {
                 return res.status(404).send({
                     status: 'error',
@@ -62,6 +59,7 @@ var controller = {
                 })
             })
             .catch(err => {
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los clientes',

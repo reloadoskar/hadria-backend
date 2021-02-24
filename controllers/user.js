@@ -1,17 +1,15 @@
 'use strict'
-var mongoose = require('mongoose')
-
 const conexion_app = require('../conections/hadria')
 const con = require('../conections/hadriaUser')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-var curDate = new Date()
-var curDateISO = curDate.toISOString()
-var tryPeriod = curDate.setDate(curDate.getDate() + 30)
+const curDate = new Date()
+let curDateISO = curDate.toISOString()
+let tryPeriod = curDate.setDate(curDate.getDate() + 30)
 tryPeriod = new Date(tryPeriod).toISOString()
-process.env.SECRET_KEY = 'secret'
+process.env.SECRET_KEY = 'muffintop'
 
-var controller = {
+const controller = {
     getEmpleados: async (req, res) => {
         const bd= req.params.bd
         const conn = con(bd)
@@ -43,7 +41,7 @@ var controller = {
         const Empleado = conn2.model('Empleado')
         // Creo un usuario para accesar a BD
         try{
-            var nusr = new User()
+            let nusr = new User()
             if(params.area.level < 5){
                 nusr.level = params.level
                 nusr.nombre = params.nombre
@@ -59,7 +57,7 @@ var controller = {
                 })
             }
             //Creo un Empleado en BD local
-            var nempleado = new Empleado()
+            let nempleado = new Empleado()
             nempleado._id = nusr._id
             nempleado.nombre = params.nombre
             nempleado.edad = params.edad
@@ -72,6 +70,7 @@ var controller = {
             nempleado.instagram = params.instagram
             nempleado.facebook = params.facebook
             nempleado.save((err, usrSvd) => {
+                conn.close()
                 if(err){console.log(err)}
                 return res.status(200).send({
                     status: "success",
@@ -80,6 +79,7 @@ var controller = {
                 })
             })
         } catch(err){
+            conn.close()
             console.error(err)
         }     
 
@@ -110,7 +110,7 @@ var controller = {
             .then(usr => {
                 if(!usr){
                     //Creo un Empleado en BD local
-                    var nempleado = new Empleado()
+                    let nempleado = new Empleado()
                     nempleado._id = usr._id
                     nempleado.nombre = params.area.level
                     nempleado.edad = params.edad
@@ -129,7 +129,6 @@ var controller = {
                         
                         user.save((err, user) => {
                             conn.close()
-                            mongoose.connection.close()
                             if(err || !user) {
                                 return res.status(404).send({
                                     status: 'error',
@@ -147,7 +146,6 @@ var controller = {
 
                     })
                 }else{
-                    mongoose.connection.close()
                     conn.close()
                     return res.status(200).send({
                         status: 'error',
@@ -159,7 +157,6 @@ var controller = {
     },
 
     logout: (req, res) => {
-        mongoose.connection.close()
         return res.status(200).send({
             status: 'success',
             message: "Se cerro la sesión."
@@ -177,10 +174,11 @@ var controller = {
             .then(user => {
                 if(user){
                     if(bcrypt.compareSync(password, user.password)){
-                        let conn2 = con(user.database)
-                        const Empleado = conn2.model('Empleado', require('../schemas/empleado'))
-                        const Ubicacion = conn2.model('Ubicacion', require('../schemas/ubicacion'))
+                        const conn2 = con(user.database)
+                        const Empleado = conn2.model('Empleado')
                         Empleado.findById(user._id).populate('ubicacion').exec((err, emp) => {
+                            conn2.close()
+                            conn.close()
                             if(err || !emp){console.log(err)}
                             const payload = {
                                 _id: emp._id,

@@ -13,7 +13,8 @@ const clientOption = {
 module.exports = function conexionCliente(bd) {
 
     console.log("Conectando...");
-    const conn = mongoose.createConnection(globals.dbUrl+bd+'?retryWrites=true&w=majority', clientOption)
+    // const conn = mongoose.createConnection(globals.dbUrl+bd+'?retryWrites=true&w=majority', clientOption)
+    const conn = mongoose.createConnection(globals.dbUrl+bd, clientOption)
     conn.model('Balance', require('../schemas/balance'));
     conn.model('Cliente', require('../schemas/cliente'));
     conn.model('CompraItem', require('../schemas/compra_item'));

@@ -64,6 +64,7 @@ exports.cxp_create_pago = (req, res) => {
                     if(err){console.log(err)}
                     Egreso.findById(params.cuenta._id).exec((err, eg)=>{
                         if(err){
+                            conn.close()
                             return res.status(500).send({
                                 status: "error",
                                 message: "¡Ups! Ocurrió un Eerror.",
@@ -89,14 +90,14 @@ exports.cxp_create_pago = (req, res) => {
 }
 
 exports.cxp_update_saldo = (req, res) => {
-    var params = req.body
+    const params = req.body
     const bd = req.params.bd
     const conn = con(bd)
-    var compras = params.compras
-    var importe = params.importe
-    var saldoCompra = 0
+    const compras = params.compras
+    const importe = params.importe
+    const Egreso = conn.model('Egreso')
+    let saldoCompra = 0
     compras.map(compra => {
-        var Egreso = conn.model('Egreso')
         if(importe>0){
             if(importe >= compra.saldo) {
                 Egreso.findByIdAndUpdate(compra._id, { saldo: 0 })
@@ -109,9 +110,7 @@ exports.cxp_update_saldo = (req, res) => {
             }
         }
     })
-
-
-
+    conn.close()
     return res.status(200).send({
         status: 'success',
         message: "Saldo actualizaso",

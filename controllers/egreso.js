@@ -1,8 +1,6 @@
 'use strict'
 const con = require('../conections/hadriaUser')
-var validator = require('validator');
-var mongoose = require('mongoose');
-var controller = {
+const controller = {
     save: async (req, res) => {
         //recoger parametros
         const params = req.body;
@@ -22,14 +20,13 @@ var controller = {
                 egreso.importe = params.importe
                 egreso.saldo = 0
                 egreso.save((err, egreso) => {
+                    conn.close()
                     if( err || !egreso){
-                    conn.close()
-                    return res.status(404).send({
-                        status: 'error',
-                        message: 'No se registró el egreso.' + err
-                    })
+                        return res.status(404).send({
+                            status: 'error',
+                            message: 'No se registró el egreso.' + err
+                        })
                     }
-                    conn.close()
                     return res.status(200).send({
                         status: 'success',
                         message: 'Egreso registrado correctamente.',
@@ -147,7 +144,6 @@ var controller = {
             //     })
             // }
             Egreso.findOneAndDelete({ _id: egresoId }, (err, egresoRemoved) => {
-                mongoose.connection.close()
                 conn.close()
                 if (err || !egresoRemoved) {
                     return res.status(500).send({

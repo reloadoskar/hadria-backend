@@ -1,8 +1,7 @@
 'use strict'
-var mongoose = require('mongoose')
 const con = require('../conections/hadriaUser')
 
-var controller = {
+const controller = {
     getBalance: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
@@ -19,6 +18,8 @@ var controller = {
             .catch(err => {
                 return res.status(500).send({status:"error", err})
             })
+        
+        conn.close()
     },
 
     disponiblexUbicacion: (req, res) => {
@@ -28,13 +29,8 @@ var controller = {
         Ubicacion.aggregate()
             .lookup({ from: 'ingresos', localField: "_id", foreignField: 'ubicacion', as: 'ingresos' })
             .lookup({ from: 'egresos', localField: "_id", foreignField: 'ubicacion', as: 'egresos' })
-            // .match({'egresos.concepto': {$ne: 'COMPRA'}})
-            // .project({
-            //     nombre:1,
-            //     'ingresos':1,
-            //     egresos:1
-            // })
             .exec((err, disp)=>{
+                conn.close()
                 if(err){console.log(err)}
                 return res.status(200).send({
                     status: "success",

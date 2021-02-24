@@ -1,14 +1,13 @@
 const con = require('../conections/hadriaUser')
-var mongoose = require('mongoose');
-var controller = {
+const controller = {
     save: (req, res) => {
         //recoger parametros
-        var params = req.body;
+        const params = req.body;
         const bd = req.params.bd
         const conn = con(bd)
-        var Produccion = conn.model('Produccion', require('../schemas/produccion'))
-        var ProduccionItem = conn.model('ProduccionItem',require('../schemas/produccionItem') )
-        var item = new ProduccionItem()
+        const Produccion = conn.model('Produccion', require('../schemas/produccion'))
+        const ProduccionItem = conn.model('ProduccionItem',require('../schemas/produccionItem') )
+        let item = new ProduccionItem()
 
         item.produccion = params.produccion._id
         item.producto = params.producto._id
@@ -22,6 +21,7 @@ var controller = {
 
         item.save((err, itemSaved) => {
             if(err){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: "No se pudo registrar el Producto."
@@ -29,7 +29,7 @@ var controller = {
             }
             Produccion.findById(itemSaved.produccion).exec((err, produccion) => {
                 if(err || !produccion){
-                    console.log("que pedo?")
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: "Algo salió mal",
@@ -37,7 +37,6 @@ var controller = {
                         produccion: produccion
                     })
                 }else{
-                    // console.log(produccion)
                     produccion.productos.push( itemSaved._id )
                     produccion.save((err, saved) => {                        
                         conn.close()
@@ -59,7 +58,7 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
 
-        var ProduccionItem = conn.model('ProduccionItem',require('../schemas/produccionItem') )
+        const ProduccionItem = conn.model('ProduccionItem',require('../schemas/produccionItem') )
 
         ProduccionItem.find({produccion: produccionID})
             .populate({ path: 'produccion', select: 'clave' })            
@@ -80,13 +79,12 @@ var controller = {
     },
 
     delete: (req, res) => {
-        var params = req.body;
+        const params = req.body;
         const id = req.body._id
-        // console.log(params)
         const prodId = params.produccion._id
         const bd = req.params.bd
         const conn = con(bd)
-        var ProduccionItem = conn.model('ProduccionItem',require('../schemas/produccionItem') )
+        const ProduccionItem = conn.model('ProduccionItem',require('../schemas/produccionItem') )
         ProduccionItem.findOneAndDelete({ _id: id }, (err, insumoRemoved) => {
             if(err|| !insumoRemoved){
                 console.log(err)
@@ -105,7 +103,7 @@ var controller = {
         const bd = req.params.bd
         const params = req.body
         const conn = con(bd)
-        var ProduccionItem = conn.model('ProduccionItem', require('../schemas/produccionItem'))
+        const ProduccionItem = conn.model('ProduccionItem', require('../schemas/produccionItem'))
         ProduccionItem.findById(params.id).exec((err, item) => {
             if(err||!item){
                 console.log(err)

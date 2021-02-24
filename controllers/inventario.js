@@ -75,6 +75,7 @@ var controller = {
                 })
             })
             .catch(err => {
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se encontraron items',
@@ -106,17 +107,27 @@ var controller = {
                     "producto._id": 1,
                     "producto.descripcion": 1,
                 })
+                .unwind('compra')
+                .unwind('producto')
                 .group({
                     _id: "$ubicacion",
                     items: {$push: {_id: "$_id", compra: "$compra", producto: "$producto", stock: "$stock", empaquesStock: "$empaquesStock", empaques: "$empaques"}},
                 })
-                .unwind('compra')
-                .unwind('producto')
-                .exec()
-                return res.status(200).send({
-                    status: "success",
-                    message: "Encontrado",
-                    inventario
+                .unwind('_id')
+                .then(inventario => {
+                    conn.close()
+                    return res.status(200).send({
+                        status: "success",
+                        message: "Encontrado",
+                        inventario
+                    })
+                })
+                .catch(err => {
+                    conn.close()
+                    return res.status(500).send({
+                        status: "error",
+                        err
+                    })
                 })
 
         } catch(err){
@@ -145,8 +156,6 @@ var controller = {
             item.empaquesStock -= params.itemselempaques
             item.importe = item.cantidad * item.costo
 
-            // console.log("ITEM ORIGINAL UPD")
-            // console.log(item)
             item.save((err, itemsaved) => {
                 if(err){console.log(err)}
                 
@@ -176,6 +185,7 @@ var controller = {
                         movimiento.save()
                         compra.movimientos.push(movimiento._id)
                         compra.save()
+                        conn.close()
                     })
                 })
             })

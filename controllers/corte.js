@@ -90,7 +90,9 @@ var controller = {
                     .unwind('producto')
                     .unwind('compra')                    
                     .sort({"_id": 1})
-                    .exec()
+                    .catch( err => {
+                        throw new Error("No se cargaron los items: "+ err)
+                    })
                 
             corte.resumenVentas = resumn
 
@@ -106,6 +108,7 @@ var controller = {
             })
                 
         }catch(err){
+            conn.close()
             return res.status(500).send({
                 status: "error",
                 message: 'No se cargó el corte correctamente.',
@@ -125,6 +128,7 @@ var controller = {
         const Ingreso = conn.model('Ingreso')
         Corte.create(data, (err, corte) => {
             if(err || !corte){
+                conn.close()
                 return res.status(404).send({
                     status: 'error',
                     message: 'No se puedo guardar el corte.'+err,
@@ -201,6 +205,7 @@ var controller = {
                     })
                 })
         }catch(err){
+            conn.close()
             return res.status(200).send({
                 status: 'error',
                 err

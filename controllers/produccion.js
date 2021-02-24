@@ -1,19 +1,18 @@
 'use strict'
-var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
 
-var controller = {
+const controller = {
     save: (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        var Produccion = conn.model('Produccion',require('../schemas/produccion') )
+        const Produccion = conn.model('Produccion')
         //Crear el objeto a guardar
 
         Produccion.estimatedDocumentCount((err, count) => {
             if (err) console.log(err)
             const nDocuments = count
 
-            var produccion = new Produccion();
+            let produccion = new Produccion();
 
             produccion.fecha = new Date().toISOString()
             produccion.folio = nDocuments + 1
@@ -24,7 +23,6 @@ var controller = {
 
             //Guardar objeto
             produccion.save((err, produccionStored) => {
-                mongoose.connection.close()
                 conn.close()
                 if (err || !produccionStored) {
                     return res.status(200).send({
@@ -46,7 +44,7 @@ var controller = {
     getProduccions: (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        var Produccion = conn.model('Produccion',require('../schemas/produccion') )
+        const Produccion = conn.model('Produccion')
         Produccion.find({})
             .populate('insumos')
             .populate({
@@ -59,7 +57,6 @@ var controller = {
             .sort('folio')
             .exec((err, produccions) => {
                 conn.close()
-                mongoose.connection.close()
                 if (err || !produccions) {
                     return res.status(500).send({
                         status: 'error',
@@ -74,10 +71,10 @@ var controller = {
     },
 
     getProduccion: (req, res) => {
-        var produccionId = req.params.id;
+        const produccionId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Produccion = conn.model('Produccion',require('../schemas/produccion') )
+        const Produccion = conn.model('Produccion')
         if (!produccionId) {
             mongoose.connection.close()
             conn.close()
@@ -93,85 +90,58 @@ var controller = {
         .populate('egresos')
         .populate('items')
         .populate('ventas')
-        .exec( (err, produccion) => {
-            mongoose.connection.close()
+        .lean()
+        .then(produccion => {
             conn.close()
-            if (err || !produccion) {
-                return res.status(404).send({
-                    status: 'success',
-                    message: 'Ocurrio un error.',
-                    err
-                })
-            }
             return res.status(200).send({
                 status: 'success',
                 produccion
             })
         })
+        .catch( err => {            
+            return res.status(404).send({
+                status: 'success',
+                message: 'Ocurrio un error.',
+                err
+            })            
+        })
     },
 
     update: (req, res) => {
-        var produccionId = req.params.id;
+        const produccionId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Produccion = conn.model('Produccion',require('../schemas/produccion') )
-        //recoger datos actualizados y validarlos
-        var params = req.body;
-        try {
-            var validate_clave = !validator.isEmpty(params.clave);
-            var validate_descripcion = !validator.isEmpty(params.descripcion);
-            var validate_costo = !validator.isEmpty(params.costo);
-            var validate_precio1 = !validator.isEmpty(params.precio1);
-        } catch (err) {
+        const params = req.body;
+        const Produccion = conn.model('Produccion',require('../schemas/produccion') )
+
+        Produccion.findOneAndUpdate({ _id: produccionId }, params, { new: true }, (err, produccionUpdated) => {
             conn.close()
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if (validate_clave && validate_descripcion && validate_costo, validate_precio1) {
-
-            // Find and update
-            Produccion.findOneAndUpdate({ _id: produccionId }, params, { new: true }, (err, produccionUpdated) => {
-                mongoose.connection.close()
-                conn.close()
-                if (err) {
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al actualizar'
-                    })
-                }
-
-                if (!produccionUpdated) {
-                    return res.status(404).send({
-                        status: 'error',
-                        message: 'No existe el produccion'
-                    })
-                }
-                return res.status(200).send({
-                    status: 'success',
-                    produccion: produccionUpdated
+            if (err) {
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al actualizar'
                 })
+            }
 
-            })
+            if (!produccionUpdated) {
+                return res.status(404).send({
+                    status: 'error',
+                    message: 'No existe el produccion'
+                })
+            }
 
-        } else {
-            mongoose.connection.close()
-            conn.close()
             return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
+                status: 'success',
+                produccion: produccionUpdated
             })
-        }
-
+        })
     },
 
     delete: (req, res) => {
-        var produccionId = req.params.id;
+        const produccionId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Produccion = conn.model('Produccion',require('../schemas/produccion') )
+        const Produccion = conn.model('Produccion',require('../schemas/produccion') )
         Produccion.findOneAndDelete({ _id: produccionId }, (err, produccionRemoved) => {
             mongoose.connection.close()
             conn.close()

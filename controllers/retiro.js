@@ -1,8 +1,7 @@
 'use strict'
-var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
 
-var controller = {
+const controller = {
     save: (req, res) => {
         const params = req.body;
         const bd = req.params.bd
@@ -63,7 +62,6 @@ var controller = {
         const Egreso = conn.model('Egreso')
         const Ingreso = conn.model('Egreso')
         Ingreso.findOneAndDelete({_id: ingresoId}, (err, ingresoRemoved) => {
-            mongoose.connection.close()
             conn.close()
             if(!ingresoRemoved){
                 return res.status(500).send({

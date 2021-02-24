@@ -1,10 +1,10 @@
 const con = require('../conections/hadriaUser')
-var mongoose = require('mongoose');
-var controller = {
+const mongoose = require('mongoose');
+const controller = {
 
     save: (req, res) => {
         //recoger parametros
-        var params = req.body;
+        const params = req.body;
         const bd = req.params.bd
         const conn = con(bd)
     },
@@ -39,7 +39,7 @@ var controller = {
         const bd = req.params.bd
         const params = req.body
         const conn = con(bd)
-        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item'))
+        const CompraItem = conn.model('CompraItem', require('../schemas/compra_item'))
         CompraItem.findById(params.id).exec((err, item) => {
             if(err||!item){
                 console.log(err)
@@ -62,9 +62,10 @@ var controller = {
         const bd = req.params.bd
         const params = req.body
         const conn = con(bd)
-        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item'))
+        const CompraItem = conn.model('CompraItem', require('../schemas/compra_item'))
         CompraItem.findById(params.id).exec((err, item) => {
             if(err||!item){
+                conn.close()
                 return res.status(500).send({
                     status: "error",
                 })
@@ -74,7 +75,6 @@ var controller = {
                 item.empaquesStock += params.cantidad
                 
                 item.save((err, itemSaved) => {
-                    mongoose.connection.close()
                     conn.close()
                     return res.status(200).send({
                         status: "success",

@@ -1,9 +1,7 @@
 'use strict'
-var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
-var validator = require('validator');
 
-var controller = {
+const controller = {
     save: (req, res) => {
         //recoger parametros
         const params = req.body;
@@ -71,7 +69,6 @@ var controller = {
         const conn = con(bd)
         const Provedor = conn.model('Provedor')
         if(!provedorId){
-            mongoose.connection.close()
             conn.close()
             return res.status(404).send({
                 status: 'error',
@@ -100,73 +97,39 @@ var controller = {
     },
 
     update: (req, res) => {
-        var provedorId = req.params.id;
+        const provedorId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Provedor = conn.model('Provedor',require('../schemas/provedor') )
-        //recoger datos actualizados y validarlos
-        var params = req.body;
-        try{
-            var validate_nombre = !validator.isEmpty(params.nombre);
-            var validate_clave = !validator.isEmpty(params.clave);
-            var validate_direccion = !validator.isEmpty(params.direccion);
-            var validate_tel1 = !validator.isEmpty(params.tel1);
-            var validate_cta1 = !validator.isEmpty(params.cta1);
-            var validate_dias = !validator.isEmpty(params.dias_de_credito);
-            var validate_comision = !validator.isEmpty(params.comision);
-        }catch(err){
-            mongoose.connection.close()
+        const params = req.body;
+        const Provedor = conn.model('Provedor',require('../schemas/provedor') )
+
+        Provedor.findOneAndUpdate({_id: provedorId}, params, {new:true}, (err, provedorUpdated) => {
             conn.close()
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if(validate_nombre && validate_direccion && validate_tel1 && validate_clave && validate_cta1 && validate_dias && validate_comision){
-            
-            // Find and update
-            Provedor.findOneAndUpdate({_id: provedorId}, params, {new:true}, (err, provedorUpdated) => {
-                mongoose.connection.close()
-                conn.close()
-                if(err){
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al actualizar'
-                    })
-                }
-
-                if(!provedorUpdated){
-                    return res.status(404).send({
-                        status: 'error',
-                        message: 'No existe el provedor'
-                    })
-                }
-                return res.status(200).send({
-                    status: 'success',
-                    provedor: provedorUpdated
+            if(err){
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al actualizar'
                 })
-
-            })
-
-        }else{
-            mongoose.connection.close()
-            conn.close()
+            }
+            if(!provedorUpdated){
+                return res.status(404).send({
+                    status: 'error',
+                    message: 'No existe el provedor'
+                })
+            }
             return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
+                status: 'success',
+                provedor: provedorUpdated
             })
-        }
-
+        })
     },
 
     delete: (req, res) => {
-        var provedorId = req.params.id;
+        const provedorId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Provedor = conn.model('Provedor',require('../schemas/provedor') )
+        const Provedor = conn.model('Provedor',require('../schemas/provedor') )
         Provedor.findOneAndDelete({_id: provedorId}, (err, provedorRemoved) => {
-            mongoose.connection.close()
             conn.close()
             if(!provedorRemoved){
                 return res.status(500).send({

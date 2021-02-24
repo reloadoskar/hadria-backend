@@ -81,6 +81,7 @@ var controller = {
                 })
             })
             .catch(err=>{
+                conn.close()
                 return res.status(500).send({
                     status: "error",
                     err
@@ -152,8 +153,8 @@ var controller = {
                     venta.pagos.push(ingreso._id)
                     venta.save()
                     ingreso.save().then((err, ingreso) => {
-                        if(err){console.log(err)}
                         conn.close()                        
+                        if(err){console.log(err)}
                         return res.status(200).send({
                             status: 'success',
                             message: 'Cobro agregado correctamente.',

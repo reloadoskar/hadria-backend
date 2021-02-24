@@ -1,7 +1,6 @@
 'use strict'
 const con = require('../conections/hadriaUser')
-var mongoose = require('mongoose');
-var controller = {    
+const controller = {    
     save: async (req, res) => {
         const params = req.body;
         const bd = req.params.bd
@@ -69,6 +68,7 @@ var controller = {
                 })
             })
             .catch(err => {
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Ocurrio un error.',

@@ -1,17 +1,15 @@
 'use strict'
-var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
 
-var controller = {
+const controller = {
     save: (req, res) => {
         const bd= req.params.bd
         const conn = con(bd)
-        var Unidad = conn.model('Unidad',require('../schemas/unidad') )
-        //recoger parametros
-        var params = req.body;
+        const params = req.body;
+        const Unidad = conn.model('Unidad')
 
         //Crear el objeto a guardar
-        var unidad = new Unidad();
+        let unidad = new Unidad();
             
         //Asignar valores
         unidad.unidad = params.unidad;
@@ -19,7 +17,6 @@ var controller = {
 
         //Guardar objeto
         unidad.save((err, unidadStored) => {
-            mongoose.connection.close()
             conn.close()
             if(err || !unidadStored){
                 return res.status(404).send({
@@ -40,9 +37,8 @@ var controller = {
     getUnidades: (req, res) => {
         const bd= req.params.bd
         const conn = con(bd)
-        var Unidad = conn.model('Unidad',require('../schemas/unidad') )
+        const Unidad = conn.model('Unidad')
         Unidad.find({}).sort('_id').exec( (err, unidads) => {
-            mongoose.connection.close()
             conn.close()
             if(err || !unidads){
                 return res.status(500).send({
@@ -59,12 +55,11 @@ var controller = {
 
     delete: (req, res) => {
         const bd= req.params.bd
+        const unidadId = req.params.id;
         const conn = con(bd)
-        var Unidad = conn.model('Unidad',require('../schemas/unidad') )
-        var unidadId = req.params.id;
+        const Unidad = conn.model('Unidad',require('../schemas/unidad') )
 
         Unidad.findOneAndDelete({_id: unidadId}, (err, unidadRemoved) => {
-            mongoose.connection.close()
             conn.close()
             if(!unidadRemoved){
                 return res.status(500).send({

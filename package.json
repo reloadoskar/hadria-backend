@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "pm2-runtime start ecosystem.config.js --env production",
-    "test": "pm2-runtime start --watch ecosystem.config.js --env development"
+    "test": "nodemon server_multi.js"
   },
   "author": "Oskar Rodriguez",
   "license": "MIT",

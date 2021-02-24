@@ -1,9 +1,7 @@
 'use strict'
-var mongoose = require('mongoose');
-var validator = require('validator');
 const con = require('../conections/hadriaUser')
 
-var controller = {
+const controller = {
     save: (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
@@ -24,7 +22,6 @@ var controller = {
 
             //Guardar objeto
             producto.save((err, productoStored) => {
-                mongoose.connection.close()
                 conn.close()
                 if(err || !productoStored){
                     return res.status(200).send({
@@ -90,6 +87,7 @@ var controller = {
                 })
             })
             .catch(err => {
+                conn.close()
                 return res.status(404).send({
                     status: 'success',
                     mesage: 'No existe el producto.',
@@ -99,71 +97,39 @@ var controller = {
     },
 
     update: (req, res) => {
-        var productoId = req.params.id;
+        const productoId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Producto = conn.model('Producto',require('../schemas/producto') )
-        
-        //recoger datos actualizados y validarlos
-        var params = req.body;
-        try{
-            var validate_clave = !validator.isEmpty(params.clave);
-            var validate_descripcion = !validator.isEmpty(params.descripcion);
-            var validate_costo = !validator.isEmpty(params.costo);
-            var validate_precio1 = !validator.isEmpty(params.precio1);
-        }catch(err){
-            mongoose.connection.close()
+        const params = req.body;
+        const Producto = conn.model('Producto')
+
+        Producto.findOneAndUpdate({_id: productoId}, params, {new:true}, (err, productoUpdated) => {
             conn.close()
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if(validate_clave && validate_descripcion && validate_costo, validate_precio1){
-            
-            // Find and update
-            Producto.findOneAndUpdate({_id: productoId}, params, {new:true}, (err, productoUpdated) => {
-                mongoose.connection.close()
-                conn.close()
-                if(err){
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al actualizar'
-                    })
-                }
-
-                if(!productoUpdated){
-                    return res.status(404).send({
-                        status: 'error',
-                        message: 'No existe el producto'
-                    })
-                }
-                return res.status(200).send({
-                    status: 'success',
-                    producto: productoUpdated
+            if(err){
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al actualizar'
                 })
-
-            })
-
-        }else{
-            mongoose.connection.close()
-            conn.close()
+            }
+            if(!productoUpdated){
+                return res.status(404).send({
+                    status: 'error',
+                    message: 'No existe el producto'
+                })
+            }
             return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
+                status: 'success',
+                producto: productoUpdated
             })
-        }
-
+        })
     },
 
     delete: (req, res) => {
-        var productoId = req.params.id;
+        const productoId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Producto = conn.model('Producto',require('../schemas/producto') )
+        const Producto = conn.model('Producto')
         Producto.findOneAndDelete({_id: productoId}, (err, productoRemoved) => {
-            mongoose.connection.close()
             conn.close()
             if(!productoRemoved){
                 return res.status(500).send({

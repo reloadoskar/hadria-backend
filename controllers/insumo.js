@@ -1,14 +1,13 @@
 const con = require('../conections/hadriaUser')
-var mongoose = require('mongoose');
-var controller = {
+const controller = {
     save: (req, res) => {
         //recoger parametros
-        var params = req.body;
+        const params = req.body;
         const bd = req.params.bd
         const conn = con(bd)
-        var Insumo = conn.model('Insumo',require('../schemas/insumo') )
-        var Produccion = conn.model('Produccion', require('../schemas/produccion'))
-        var insumo = new Insumo()
+        const Insumo = conn.model('Insumo')
+        const Produccion = conn.model('Produccion')
+        let insumo = new Insumo()
 
         insumo.fecha = params.fecha
         insumo.produccion = params.produccion
@@ -20,6 +19,7 @@ var controller = {
 
         insumo.save((err, insumoSaved) => {
             if(err){
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: "No se pudo registrar el Insumo."
@@ -27,7 +27,7 @@ var controller = {
             }
             Produccion.findById(insumoSaved.produccion).exec((err, produccion) => {
                 if(err || !produccion){
-                    console.log("que pedo?")
+                    conn.close()
                     return res.status(500).send({
                         status: 'error',
                         message: "Algo salió mal",
@@ -35,10 +35,8 @@ var controller = {
                         produccion: produccion
                     })
                 }else{
-                    console.log(produccion)
                     produccion.insumos.push( insumoSaved._id )
                     produccion.save((err, saved) => {
-                        mongoose.connection.close()
                         conn.close()
                         return res.status(200).send({
                             status: 'success',
@@ -58,13 +56,12 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
 
-        var Insumo = conn.model('Insumo',require('../schemas/insumo') )
+        const Insumo = conn.model('Insumo',require('../schemas/insumo') )
 
         Insumo.find({produccion: produccionID})
             .populate({ path: 'produccion', select: 'clave' })            
             .populate({ path: 'compraItem', populate: 'producto' })
             .exec( (err, insumos) => {
-                mongoose.connection.close()
                 conn.close()
                 if(err || !insumos){
                     return res.status(500).send({
@@ -84,7 +81,7 @@ var controller = {
         const id = req.body._id
         const bd = req.params.bd
         const conn = con(bd)
-        var Insumo = conn.model('Insumo',require('../schemas/insumo') )
+        const Insumo = conn.model('Insumo',require('../schemas/insumo') )
 
         Insumo.findOneAndDelete({ _id: id }, (err, insumoRemoved) => {
             mongoose.connection.close()
@@ -104,9 +101,10 @@ var controller = {
         const bd = req.params.bd
         const params = req.body
         const conn = con(bd)
-        var Insumo = conn.model('Insumo', require('../schemas/insumo'))
+        const Insumo = conn.model('Insumo', require('../schemas/insumo'))
         Insumo.findById(params.id).exec((err, item) => {
             if(err||!item){
+                conn.close()
                 console.log(err)
             }
             item.disponible -= params.cantidad
@@ -125,16 +123,17 @@ var controller = {
         const bd = req.params.bd
         const params = req.body
         const conn = con(bd)
-        var Insumo = conn.model('Insumo', require('../schemas/insumo'))
+        const Insumo = conn.model('Insumo', require('../schemas/insumo'))
         Insumo.findById(params.id).exec((err, item) => {
             if(err||!item){
+                conn.close()
                 return res.status(500).send({
                     status: "error",
                     err
                 })
             }else{
-                var actual = parseInt(item.disponible)
-                var cant = parseInt(params.cantidad)
+                let actual = parseInt(item.disponible)
+                let cant = parseInt(params.cantidad)
                 
                 item.disponible = actual += cant
                 

@@ -2,7 +2,7 @@
 var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
 
-var controller = {
+const controller = {
     save: (req, res) => {
         const params = req.body;
         const bd = req.params.bd
@@ -32,13 +32,13 @@ var controller = {
                 // prov.save()
             Compra.countDocuments({ provedor: params.provedor._id })
             .then(c => {
-                var sigCompra = c +1
+                let sigCompra = c +1
                 compra.clave = params.provedor.clave + "-" + sigCompra
                 
-                var i = params.items
-                var itmsToSave = []
+                let i = params.items
+                let itmsToSave = []
                 i.map((item) => {
-                    var compraItem = {}
+                    let compraItem = {}
                     compraItem._id = mongoose.Types.ObjectId()
                     compraItem.ubicacion = params.ubicacion
                     compraItem.compra = compra._id
@@ -59,8 +59,8 @@ var controller = {
                     })
                     
                     Egreso.estimatedDocumentCount().then( c => {
-                        var g = params.gastos
-                        var cgastos = []
+                        let g = params.gastos
+                        let cgastos = []
                         g.map((gasto) => {
                             var egreso = new Egreso()
                             egreso._id = mongoose.Types.ObjectId()
@@ -89,7 +89,7 @@ var controller = {
                                 })
                             }
                             Egreso.estimatedDocumentCount().then( c => {
-                                var egItm = new Egreso()
+                                let egItm = new Egreso()
                                 egItm._id = mongoose.Types.ObjectId()
                                 egItm.folio = c + 1
                                 egItm.tipo = "COMPRA"
@@ -246,6 +246,7 @@ var controller = {
             })
             .populate('pagos.ubicacion')
             .catch( err => {
+                conn.close()
                 return res.status(404).send({
                     status: 'error',
                     err
@@ -276,7 +277,7 @@ var controller = {
             .populate('ubicacion')
 
         data.egresos = egresos
-        
+        conn.close()
         return res.status(200).send({
             status: 'success',
             data
@@ -299,6 +300,7 @@ var controller = {
                 })
             })
             .catch(err => {
+                conn.close()
                 return res.status(404).send({
                     status: "error",
                     err
@@ -314,14 +316,12 @@ var controller = {
         const resp = await Compra
             .findByIdAndUpdate(compra._id, compra, { new: true }, (err, compraUpdated) => {
                 conn.close()
-                mongoose.connection.close()
                 if (err) {
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al actualizar'
                     })
                 }
-
                 if (!compraUpdated) {
                     return res.status(404).send({
                         status: 'error',
@@ -333,16 +333,14 @@ var controller = {
                     message: "Compra actualizada",
                     compra: compraUpdated
                 })
-
             })
-
     },
 
     delete: (req, res) => {
-        var compraId = req.params.id;
+        const compraId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var Compra = conn.model('Compra', require('../schemas/compra') )
+        const Compra = conn.model('Compra')
         Compra.findOneAndDelete({ _id: compraId }, (err, compraRemoved) => {
             conn.close()
             mongoose.connection.close()
@@ -368,11 +366,11 @@ var controller = {
     },
 
     cancel: (req, res) => {
-        var compraId = req.params.id
+        const compraId = req.params.id
         const bd = req.params.bd
         const conn = con(bd)
-        var Compra = conn.model('Compra', require('../schemas/compra') )
-        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
+        const Compra = conn.model('Compra')
+        const CompraItem = conn.model('CompraItem')
         Compra.findById(compraId).exec((err, compra) => {
             compra.status = "CANCELADO"
 
@@ -401,10 +399,10 @@ var controller = {
     addCompraItem: (req,res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        var Compra = conn.model('Compra', require('../schemas/compra') )
-        var CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
-        var item = req.body
-        var newItem = new CompraItem()
+        const Compra = conn.model('Compra', require('../schemas/compra') )
+        const CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
+        let item = req.body
+        let newItem = new CompraItem()
         newItem.compra = item.compra
         newItem.producto = item.producto
         newItem.cantidad = item.cantidad
@@ -458,6 +456,7 @@ var controller = {
 
         CompraItem.findById(item.item_id).exec( (err, compraItem) => {
             if(err || !compraItem){
+                conn.close()
                 return res.status(200).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
@@ -472,6 +471,7 @@ var controller = {
                 compraItem.stock -= cantDiff
                 compraItem.empaquesStock -= empDiff
                 compraItem.save((err, compraItemSaved) => {
+                    conn.close()
                     if(err || !compraItemSaved){
                         return res.status(200).send({
                             status: 'error',

@@ -8,14 +8,14 @@ var controller = {
         const params = req.body
         const conn = con(bd)
 
-        var Ingreso = conn.model('Ingreso')
-        var Venta = conn.model('Venta')
-        var VentaItem = conn.model('VentaItem')
-        var CompraItem = conn.model('CompraItem')
-        var Cliente = conn.model('Cliente')
+        const Ingreso = conn.model('Ingreso')
+        const Venta = conn.model('Venta')
+        const VentaItem = conn.model('VentaItem')
+        const CompraItem = conn.model('CompraItem')
+        const Cliente = conn.model('Cliente')
 
-        var ingreso = new Ingreso()
-        var venta = new Venta()
+        let ingreso = new Ingreso()
+        let venta = new Venta()
 
         ingreso.concepto = "VENTA"
         ingreso.venta = venta._id
@@ -63,10 +63,10 @@ var controller = {
             venta.importe = params.total
             venta.tipoPago = params.tipoPago
             
-            var items = params.items
+            let items = params.items
 
             items.map(item => {
-                var ventaItem = new VentaItem()
+                let ventaItem = new VentaItem()
                     ventaItem.venta = venta._id
                     ventaItem.ventaFolio = venta.folio 
                     ventaItem.ubicacion = venta.ubicacion
@@ -134,7 +134,6 @@ var controller = {
         Venta.find({})
         .populate('compras')
         .exec((err, ventas) => {
-            mongoose.connection.close()
             conn.close()
             if(err)console.log(err)
             return res.status(200).send({
@@ -145,10 +144,10 @@ var controller = {
     },
 
     getVenta: (req, res) => {
-        var folio = req.params.folio
+        const folio = req.params.folio
         const bd= req.params.bd
         const conn = con(bd)
-        var Venta = conn.model('Venta',require('../schemas/venta') )
+        const Venta = conn.model('Venta',require('../schemas/venta') )
         Venta.findOne({"folio": folio })
             .populate({
                 path: 'items',
@@ -185,16 +184,15 @@ var controller = {
     },
 
     getVentasOfProduct: (req, res) => {
-        var productId = req.params.id;
+        const productId = req.params.id;
         const bd= req.params.bd
         const conn = con(bd)
-        var Venta = conn.model('Venta',require('../schemas/venta') )
+        const Venta = conn.model('Venta',require('../schemas/venta') )
         Venta.aggregate()
             .project({"items": 1, fecha: 1, cliente: 1, tipoPago:1, })
             // .sort("items.item")
             .match({"items.item": productId})
             .exec((err, ventas) => {
-                mongoose.connection.close()
                 conn.close()
                 if(err)console.log(err)
                 res.status(200).send({
@@ -218,18 +216,18 @@ var controller = {
                 .lookup({ from: 'productos', localField: "_id.producto", foreignField: '_id', as: 'producto' })
                 .sort({"_id.producto": 1, "_id.precio": -1})
                 .unwind('producto')
-                .exec((err, ventas)=>{
-                    if(err){
-                        return res.status(404).send({
-                            status: 'error',
-                            err
-                        })
-                    }
+                .then(ventas =>{
                     return res.status(200).send({
                         status: 'success',
                         ventas,
                     })
                 })
+                .catch(err => {
+                    return res.status(404).send({
+                        status: 'error',
+                        err
+                    })
+                })                    
         }catch(err){
             return res.status(200).send({
                 status: 'error',
@@ -255,7 +253,6 @@ var controller = {
             },
             { $sort: {_id: 1 } }
         ]).exec((err, ventas) => {
-            mongoose.connection.close()
             conn.close()
             if(err)console.log(err)
                 res.status(200).send({
@@ -275,7 +272,6 @@ var controller = {
             
             // Find and update
             Compra.findOneAndUpdate({_id: compraId}, params, {new:true}, (err, compraUpdated) => {
-                mongoose.connection.close()
                 conn.close()
                 if(err){
                     return res.status(500).send({
@@ -283,7 +279,6 @@ var controller = {
                         message: 'Error al actualizar'
                     })
                 }
-
                 if(!compraUpdated){
                     return res.status(404).send({
                         status: 'error',
@@ -296,17 +291,17 @@ var controller = {
                 })
 
             })
-
     },
 
     cancel: (req, res) => {
-        var id = req.params.id;
+        const id = req.params.id;
         const bd= req.params.bd
         const conn = con(bd)
-        var Venta = conn.model('Venta',require('../schemas/venta') )
-        var VentaItem = conn.model('VentaItem',require('../schemas/venta_item') )
-        var CompraItem = conn.model('CompraItem',require('../schemas/compra_item') )
-        var Ingreso = conn.model('Ingreso',require('../schemas/ingreso') )
+        const Venta = conn.model('Venta')
+        const VentaItem = conn.model('VentaItem')
+        const CompraItem = conn.model('CompraItem')
+        const Ingreso = conn.model('Ingreso')
+        
         Venta.findById(id)
             .populate({
                 path: 'items',
@@ -353,7 +348,6 @@ var controller = {
                 })
                 
                 venta.save((err, ventaSaved) => {
-                    mongoose.connection.close()
                     conn.close()
                     if(err || !ventaSaved){
                         return res.status(200).send({

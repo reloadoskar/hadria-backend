@@ -1,7 +1,6 @@
 'use strict'
 const con = require('../conections/hadriaUser')
-var mongoose = require('mongoose');
-var controller = {
+const controller = {
     save: (req, res) => {
         //recoger parametros
         const params = req.body;
@@ -18,7 +17,6 @@ var controller = {
         ingreso.importe = params.importe
 
         ingreso.save((err, ingresoSaved) => {
-            mongoose.connection.close()
             conn.close()
             if(err){
                 return res.status(500).send({
@@ -52,6 +50,7 @@ var controller = {
                 })                
             })
             .catch( err => {
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los ingresos' + err

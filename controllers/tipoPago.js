@@ -1,46 +1,38 @@
 'use strict'
-var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
 
-var controller = {
+const controller = {
     save: (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        var TipoPago = conn.model('TipoPago', require('../schemas/tipoPago') )
-        //recoger parametros
-        var params = req.body;
-
-
-            //Crear el objeto a guardar
-            var tipopago = new TipoPago();
+        const params = req.body;
+        const TipoPago = conn.model('TipoPago')
+        let tipopago = new TipoPago();
             
-            //Asignar valores
-            tipopago.tipo = params.tipo;
+        //Asignar valores
+        tipopago.tipo = params.tipo;
 
-            //Guardar objeto
-            tipopago.save((err, tipopagoStored) => {
-                mongoose.connection.close()
-                conn.close()
-                if(err || !tipopagoStored){
-                    return res.status(404).send({
-                        status: 'error',
-                        message: 'El tipopago no se guardó'
-                    })
-                }
-                return res.status(200).send({
-                    status: 'success',
-                    tipopago: tipopagoStored
+        //Guardar objeto
+        tipopago.save((err, tipopagoStored) => {
+            conn.close()
+            if(err || !tipopagoStored){
+                return res.status(404).send({
+                    status: 'error',
+                    message: 'El tipopago no se guardó'
                 })
+            }
+            return res.status(200).send({
+                status: 'success',
+                tipopago: tipopagoStored
             })
-
+        })
     },
 
     getTipoPagos: (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        var TipoPago = conn.model('TipoPago', require('../schemas/tipoPago') )
+        const TipoPago = conn.model('TipoPago')
         TipoPago.find({}).sort('_id').exec( (err, tipopagos) => {
-            mongoose.connection.close()
             conn.close()
             if(err || !tipopagos){
                 return res.status(500).send({
@@ -56,12 +48,11 @@ var controller = {
     },
 
     getTipoPago: (req, res) => {
-        var tipopagoId = req.params.id;
+        const tipopagoId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var TipoPago = conn.model('TipoPago', require('../schemas/tipoPago') )
+        const TipoPago = conn.model('TipoPago')
         if(!tipopagoId){
-            mongoose.connection.close()
             conn.close()
             return res.status(404).send({
                 status: 'error',
@@ -70,7 +61,6 @@ var controller = {
         }
 
         TipoPago.findById(tipopagoId, (err, tipopago) => {
-            mongoose.connection.close()
             conn.close()
             if(err || !tipopago){
                 return res.status(404).send({
@@ -86,46 +76,39 @@ var controller = {
     },
 
     update: (req, res) => {
-        var tipopagoId = req.params.id;
+        const tipopagoId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var TipoPago = conn.model('TipoPago', require('../schemas/tipoPago') )
-        //recoger datos actualizados y validarlos
-        var params = req.body;
-            
-            // Find and update
-            TipoPago.findOneAndUpdate({_id: tipopagoId}, params, {new:true}, (err, tipopagoUpdated) => {
-                mongoose.connection.close()
-                conn.close()
-                if(err){
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al actualizar'
-                    })
-                }
-
-                if(!tipopagoUpdated){
-                    return res.status(404).send({
-                        status: 'error',
-                        message: 'No existe el tipopago'
-                    })
-                }
-                return res.status(200).send({
-                    status: 'success',
-                    tipopago: tipopagoUpdated
+        const params = req.body;
+        const TipoPago = conn.model('TipoPago', require('../schemas/tipoPago') )
+        
+        TipoPago.findOneAndUpdate({_id: tipopagoId}, params, {new:true}, (err, tipopagoUpdated) => {
+            conn.close()
+            if(err){
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al actualizar'
                 })
-
+            }
+            if(!tipopagoUpdated){
+                return res.status(404).send({
+                    status: 'error',
+                    message: 'No existe el tipopago'
+                })
+            }
+            return res.status(200).send({
+                status: 'success',
+                tipopago: tipopagoUpdated
             })
-
+        })
     },
 
     delete: (req, res) => {
-        var tipopagoId = req.params.id;
+        const tipopagoId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        var TipoPago = conn.model('TipoPago', require('../schemas/tipoPago') )
+        const TipoPago = conn.model('TipoPago')
         TipoPago.findOneAndDelete({_id: tipopagoId}, (err, tipopagoRemoved) => {
-            mongoose.connection.close()
             conn.close()
             if(!tipopagoRemoved){
                 return res.status(500).send({
