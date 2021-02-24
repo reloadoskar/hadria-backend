@@ -3,7 +3,7 @@ var mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
 
 var controller = {
-    save: (req, res) => {
+    save: async (req, res) => {
         const bd = req.params.bd
         const params = req.body
         const conn = con(bd)
@@ -14,9 +14,10 @@ var controller = {
         const CompraItem = conn.model('CompraItem')
         const Cliente = conn.model('Cliente')
 
-        let ingreso = new Ingreso()
-        let venta = new Venta()
+        var ingreso = new Ingreso
+        var venta = new Venta()
 
+        
         ingreso.concepto = "VENTA"
         ingreso.venta = venta._id
         ingreso.ubicacion = params.ubicacion
@@ -32,7 +33,6 @@ var controller = {
                 ingreso.importe = 0
                 ingreso.saldo = params.total
             }
-
             Cliente.findById(params.cliente._id).exec((err, cliente)=>{
                 if(err){console.log(err)}
                 cliente.cuentas.push(ingreso._id)
@@ -43,19 +43,15 @@ var controller = {
                     if(err)console.log(err)
                 })
             })
-
-
         }else{
             ingreso.importe = params.total
         }
-
+        
         ingreso.save((err, ingresoSaved) => {
             if(err || !ingresoSaved){console.log(err)}
         })
-
-
-        Venta.estimatedDocumentCount((err, count) => {
-            if(err){console.log(err)}
+        
+        Venta.estimatedDocumentCount().then(count => {
             venta.folio = count +1
             venta.ubicacion = params.ubicacion
             venta.cliente = params.cliente
@@ -66,14 +62,14 @@ var controller = {
             let items = params.items
 
             items.map(item => {
-                let ventaItem = new VentaItem()
+                var ventaItem = new VentaItem()
                     ventaItem.venta = venta._id
                     ventaItem.ventaFolio = venta.folio 
                     ventaItem.ubicacion = venta.ubicacion
                     ventaItem.fecha = venta.fecha
                     ventaItem.compra = item.compra
                     ventaItem.compraItem = item.item
-                    ventaItem.producto = item.producto[0]._id
+                    ventaItem.producto = item.producto._id
                     ventaItem.cantidad = item.cantidad
                     ventaItem.empaques = item.empaques
                     ventaItem.precio = item.precio
@@ -82,7 +78,6 @@ var controller = {
                     ventaItem.save((err, vItmSaved)=>{
                         if(err)console.log(err)
                     })
-
                     venta.items.push(ventaItem._id)
 
                     CompraItem.updateOne({_id: item.item },
