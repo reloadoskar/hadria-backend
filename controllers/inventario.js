@@ -110,6 +110,8 @@ var controller = {
                     _id: "$ubicacion",
                     items: {$push: {_id: "$_id", compra: "$compra", producto: "$producto", stock: "$stock", empaquesStock: "$empaquesStock", empaques: "$empaques"}},
                 })
+                .unwind('compra')
+                .unwind('producto')
                 .exec()
                 return res.status(200).send({
                     status: "success",
