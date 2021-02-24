@@ -1,8 +1,9 @@
 'use strict'
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
+
 const con = require('../conections/hadriaUser')
 
-const controller = {
+var controller = {
     save: (req, res) => {
         const params = req.body;
         const bd = req.params.bd
@@ -12,11 +13,11 @@ const controller = {
         const Egreso = conn.model('Egreso')
         const Provedor = conn.model('Provedor')
         
-        Compra.estimatedDocumentCount(count => {
-            let nDocuments = count
-            let compra = new Compra();
+        Compra.estimatedDocumentCount().then(count => {
+            console.log(count)
+            var compra = new Compra();
             compra._id = mongoose.Types.ObjectId()
-            compra.folio = nDocuments + 1
+            compra.folio = count + 1
             compra.provedor = params.provedor
             compra.ubicacion = params.ubicacion
             compra.tipoCompra = params.tipoCompra
@@ -343,7 +344,6 @@ const controller = {
         const Compra = conn.model('Compra')
         Compra.findOneAndDelete({ _id: compraId }, (err, compraRemoved) => {
             conn.close()
-            mongoose.connection.close()
             if (!compraRemoved) {
                 return res.status(500).send({
                     status: 'error',
@@ -383,7 +383,6 @@ const controller = {
                     })
                 }else{
                     CompraItem.updateMany({"compra": saved._id}, {"stock": 0}, (err, n) => {
-                        mongoose.connection.close()
                         conn.close()
                         return res.status(200).send({
                             status: 'success',
@@ -422,7 +421,7 @@ const controller = {
                 Compra.findById(newItem.compra).exec((err,compra) => {
                 
                     if(err){
-                        mongoose.connection.close()
+                        conn.close()
                         return res.status(200).send({
                             status: 'error',
                             message: 'Ocurrio un error.'
@@ -431,7 +430,6 @@ const controller = {
                         compra.items.push(itmSaved._id)
                         compra.save()
                         CompraItem.findById(itmSaved._id).populate('producto').exec((err, item)=> {
-                            mongoose.connection.close()
                             conn.close()
                             return res.status(200).send({
                                 status: 'success',
