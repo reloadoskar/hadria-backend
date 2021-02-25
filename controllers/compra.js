@@ -14,7 +14,6 @@ var controller = {
         const Provedor = conn.model('Provedor')
         
         Compra.estimatedDocumentCount().then(count => {
-            console.log(count)
             var compra = new Compra();
             compra._id = mongoose.Types.ObjectId()
             compra.folio = count + 1
@@ -123,7 +122,6 @@ var controller = {
                             })
                             .exec((err, c) => {
                                 conn.close()  
-                                console.log(err)
                                 return res.status(200).send({
                                     status: 'success',
                                     message: 'Compra registrada correctamente.',

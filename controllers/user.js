@@ -302,10 +302,10 @@ const controller = {
         //     if(err){console.log(err)}
         //     console.log("Produccion - vaciado")
         // })
-        Producto.deleteMany({}).exec((err, docs)=> {
-            if(err){console.log(err)}
-            console.log("Producto - vaciado")
-        })
+        // Producto.deleteMany({}).exec((err, docs)=> {
+        //     if(err){console.log(err)}
+        //     console.log("Producto - vaciado")
+        // })
         // Provedor.deleteMany({}).exec((err, docs)=> {
         //     if(err){console.log(err)}
         //     console.log("Provedor - vaciado")

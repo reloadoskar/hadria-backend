@@ -135,6 +135,70 @@ var controller = {
         }
     },
 
+    // moveInventario: (req, res) => {
+    //     const bd = req.params.bd
+    //     const params = req.body;
+    //     const destinoId = params.destino._id
+    //     const compraId = params.itemsel.compra._id
+    //     const productoId = params.itemsel.producto._id
+    //     const cantidadm = parseInt(params.itemselcantidad)
+    //     const empaquesm = parseInt(params.itemselempaques)
+    //     const conn = con(bd)
+    //     const CompraItem = conn.model('CompraItem')
+    //     const Compra = conn.model('Compra')
+    //     const Movimiento = conn.model('Movimiento')
+
+    //     CompraItem.findById(params.itemsel._id).exec((err, item) => {
+    //         if(err || !item){console.log(err)}
+    //         item.cantidad -= params.itemselcantidad
+    //         item.stock -= params.itemselcantidad
+    //         item.empaques -= params.itemselempaques
+    //         item.empaquesStock -= params.itemselempaques
+    //         item.importe = item.cantidad * item.costo
+
+    //         item.save((err, itemsaved) => {
+    //             if(err){console.log(err)}
+                
+    //             let nitem = new CompraItem()
+    //             nitem.ubicacion = params.destino._id
+    //             nitem.compra = params.itemsel.compra._id
+    //             nitem.producto = params.itemsel.producto._id
+    //             nitem.cantidad = params.itemselcantidad
+    //             nitem.stock = params.itemselcantidad
+    //             nitem.empaques = params.itemselempaques
+    //             nitem.empaquesStock = params.itemselempaques
+    //             nitem.costo = itemsaved.costo
+    //             nitem.importe = nitem.cantidad * itemsaved.costo
+    //             nitem.save((err, nitemsaved) => {
+    //                 if(err|!nitemsaved){console.log(err)}
+    //                 Compra.findById(compraId).exec((err, compra) => {
+    //                     if(err){console.log(err)}
+    //                     compra.items.push(nitemsaved._id)
+    //                     // console.log(compra)
+    //                     let movimiento = new Movimiento()
+    //                     movimiento.origen = params.origen
+    //                     movimiento.destino = params.destino
+    //                     movimiento.item = params.itemsel
+    //                     movimiento.cantidad = params.itemselcantidad
+    //                     movimiento.empaques = params.itemselempaques
+    //                     movimiento.pesadas = params.pesadas
+    //                     movimiento.save()
+    //                     compra.movimientos.push(movimiento._id)
+    //                     compra.save().then( compra => {
+    //                         conn.close()
+    //                         return res.status(200).send({
+    //                             status: "success",
+    //                             message: "Movimiento guardado correctamente.",
+    //                             movimiento
+    //                         })
+    //                     })
+    //                 })
+    //             })
+    //         })
+    //     })
+    // },
+
+
     moveInventario: (req, res) => {
         const bd = req.params.bd
         const params = req.body;
@@ -148,53 +212,84 @@ var controller = {
         const Compra = conn.model('Compra')
         const Movimiento = conn.model('Movimiento')
 
-        CompraItem.findById(params.itemsel._id).exec((err, item) => {
-            if(err || !item){console.log(err)}
-            item.cantidad -= params.itemselcantidad
-            item.stock -= params.itemselcantidad
-            item.empaques -= params.itemselempaques
-            item.empaquesStock -= params.itemselempaques
-            item.importe = item.cantidad * item.costo
 
-            item.save((err, itemsaved) => {
-                if(err){console.log(err)}
-                
-                let nitem = new CompraItem()
-                nitem.ubicacion = params.destino._id
-                nitem.compra = params.itemsel.compra._id
-                nitem.producto = params.itemsel.producto._id
-                nitem.cantidad = params.itemselcantidad
-                nitem.stock = params.itemselcantidad
-                nitem.empaques = params.itemselempaques
-                nitem.empaquesStock = params.itemselempaques
-                nitem.costo = itemsaved.costo
-                nitem.importe = nitem.cantidad * itemsaved.costo
-                nitem.save((err, nitemsaved) => {
-                    if(err|!nitemsaved){console.log(err)}
-                    Compra.findById(compraId).exec((err, compra) => {
-                        if(err){console.log(err)}
-                        compra.items.push(nitemsaved._id)
-                        // console.log(compra)
-                        let movimiento = new Movimiento()
-                        movimiento.origen = params.origen
-                        movimiento.destino = params.destino
-                        movimiento.item = params.itemsel
-                        movimiento.cantidad = params.itemselcantidad
-                        movimiento.empaques = params.itemselempaques
-                        movimiento.pesadas = params.pesadas
-                        movimiento.save()
-                        compra.movimientos.push(movimiento._id)
-                        compra.save()
-                        conn.close()
+        const movimiento = new Movimiento()
+            movimiento.origen = params.origen
+            movimiento.destino = params.destino
+            movimiento.item = params.itemsel
+            movimiento.cantidad = params.itemselcantidad
+            movimiento.empaques = params.itemselempaques
+            movimiento.pesadas = params.pesadas
+            movimiento.save((err, movimiento) => {
+                if(err){
+                    return res.status(500).send({
+                        status: 'error',
+                        message: "No se pudo guardar el movimiento.",
+                        err
+                    })
+                }
+                CompraItem.findById(params.itemsel._id).exec((err, item) => {
+                    if(err || !item){
+                        return res.status(500).send({
+                            status: 'error',
+                            message: "No se encontro el item origen.",
+                            err
+                        })
+                    }
+                    item.cantidad -= params.itemselcantidad
+                    item.stock -= params.itemselcantidad
+                    item.empaques -= params.itemselempaques
+                    item.empaquesStock -= params.itemselempaques
+                    item.importe = item.cantidad * item.costo
+                    item.save((err, itemsaved) => {
+                        if(err){
+                            return res.status(500).send({
+                                status: 'error',
+                                message: "No se pudo actualizar el item origen"
+                            })
+                        }
+                        const nitem = new CompraItem()
+                        nitem.ubicacion = params.destino._id
+                        nitem.compra = params.itemsel.compra._id
+                        nitem.producto = params.itemsel.producto._id
+                        nitem.cantidad = params.itemselcantidad
+                        nitem.stock = params.itemselcantidad
+                        nitem.empaques = params.itemselempaques
+                        nitem.empaquesStock = params.itemselempaques
+                        nitem.costo = itemsaved.costo
+                        nitem.importe = nitem.cantidad * itemsaved.costo
+                        nitem.save((err, nitemsaved) => {
+                            if(err){
+                                return res.status(500).send({
+                                    status: 'error',
+                                    message: "No se creó el nuevo item.",
+                                    err
+                                })
+                            }
+                            Compra.findById(compraId).exec((err, compra) => {
+                                if(err){console.log(err)}
+                                compra.items.push(nitemsaved._id)
+                                compra.movimientos.push(movimiento._id)
+                                compra.save((err, compra) => {
+                                    conn.close()
+                                    if(err){
+                                        return res.status(500).send({
+                                            status:"error",
+                                            mesage: "No se actualizo la compra.",
+                                            err
+                                        })
+                                    }
+                                    return res.status(200).send({
+                                        status:'success',
+                                        movimiento
+                                    })
+                                })
+
+                            })
+                        })
                     })
                 })
             })
-        })
-        return res.status(200).send({
-            status: "success",
-            message: "Movimiento guardado correctamente.",
-            params
-        })
     }
 }
 
