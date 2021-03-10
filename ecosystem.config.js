@@ -3,7 +3,7 @@ module.exports = {
     name: "HADRIA2",
     script: "./server_multi.js",
     instances: "max",
-    // instances: "1",
+    max_memory_restart: "256M",
     env: {
       NODE_ENV: "development",
     },
@@ -11,6 +11,5 @@ module.exports = {
       NODE_ENV: "production",
     },
     exec_mode: "cluster",
-    max_memory_restart: "100M"
   }]
 }

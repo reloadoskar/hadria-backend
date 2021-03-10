@@ -84,11 +84,13 @@ var controller = {
             const resumn = await VentaItem
                     .aggregate()
                     .match({ubicacion: mongoose.Types.ObjectId(ubicacion), fecha: fecha })
-                    .group({_id: "$compraItem", compra: {$first:"$compra"}, producto: {$first: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
+                    .group({_id: "$compraItem", item: {$first:"$compraItem"}, compra: {$first:"$compra"}, producto: {$first: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
                     .lookup({ from: 'productos', localField: "producto", foreignField: '_id', as: 'producto' })
                     .lookup({ from: 'compras', localField: "compra", foreignField: '_id', as: 'compra' })
+                    .lookup({ from: 'compraitems', localField: "item", foreignField: '_id', as: 'item' })
                     .unwind('producto')
-                    .unwind('compra')                    
+                    .unwind('compra')
+                    .unwind('item')
                     .sort({"_id": 1})
                     .catch( err => {
                         throw new Error("No se cargaron los items: "+ err)

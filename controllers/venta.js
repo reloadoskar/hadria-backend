@@ -321,16 +321,17 @@ var controller = {
                 venta.importe = 0
 
                 venta.items.map(item => {
-                    let stockUpdated = item.compraItem.stock + item.cantidad
-                    let empUpdated = item.compraItem.empaquesStock + item.empaques
+                    let stockUpdated = 0
+                    let empUpdated = 0 
+                        stockUpdated = item.compraItem.stock + item.cantidad
+                        empUpdated = item.compraItem.empaquesStock + item.empaques
                     CompraItem.findById(item.compraItem._id).exec((err, item) => {
-                    
+                        if(err){console.log(err)}
                         item.stock = stockUpdated
                         item.empaquesStock = empUpdated
                         item.save( (err, itemSaved) => {
-                            if(err)console.log(err)
+                            if(err)console.log("Error al actualizar stock"+err)
                         })
-                            
                     })
                 })
 
@@ -343,7 +344,8 @@ var controller = {
                 })
                 
                 venta.save((err, ventaSaved) => {
-                    conn.close()
+                    
+                    
                     if(err || !ventaSaved){
                         return res.status(200).send({
                             status: 'error',

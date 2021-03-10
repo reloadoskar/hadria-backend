@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "pm2-runtime start ecosystem.config.js --env production",
-    "test": "nodemon server_multi.js --verbose --max-old-space-size=70M"
+    "test": "nodemon server_multi.js --verbose --max-old-space-size=100"
   },
   "author": "Oskar Rodriguez",
   "license": "MIT",

@@ -15,8 +15,3 @@ process.on('SIGINT', function(){
       process.exit(0)
     })
 })
-
-process.on('uncaughtException', err => {
-  console.log(`Uncaught Exception: ${err.message}`)
-  process.exit(1)
-})
