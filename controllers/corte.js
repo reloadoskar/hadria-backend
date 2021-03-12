@@ -137,46 +137,53 @@ var controller = {
                 })
             }else{
                 // guardar egreso e ingreso, definir a donde se va el corte...
-                let egreso = new Egreso()
-                Egreso.estimatedDocumentCount((err, count) => {
-                    egreso.folio = ++count
-                    egreso.ubicacion = data.ubicacion
-                    egreso.concepto = "ENVIO DE CORTE A " + data.enviarA.nombre
-                    egreso.tipo = "CORTE"
-                    egreso.fecha = data.fecha
-                    egreso.importe = data.total
-                    egreso.saldo = 0
-                    egreso.save((err, egreso) => {
-                        if( err || !egreso){
-                            return res.status(404).send({
-                                status: 'error',
-                                message: 'No se registró el egreso.' + err
-                            })
-                        }
-                        let ingreso = new Ingreso()
-                        
-                        ingreso.ubicacion = data.enviarA._id
-                        ingreso.concepto = "RECEPCIÓN DE CORTE "+ data.ubicacion.nombre
-                        ingreso.fecha = data.fecha
-                        ingreso.importe = data.total
-                        ingreso.saldo = 0
-                        ingreso.save((err, ingresoSaved) => {
-                                conn.close()
-                                if(err){
-                                    return res.status(500).send({
-                                        status: 'error',
-                                        message: "No se pudo registrar el Ingreso.",
-                                        err
-                                    })
-                                }                        
-                                return res.status(200).send({
-                                        status: 'success', 
-                                        message: 'Corte guardado correctamente',
-                                        corte 
+                if(data.total > 0){
+                    let egreso = new Egreso()
+                    Egreso.estimatedDocumentCount((err, count) => {
+                        egreso.folio = ++count
+                        egreso.ubicacion = data.ubicacion
+                        egreso.concepto = "ENVIO DE CORTE A " + data.enviarA.nombre
+                        egreso.tipo = "CORTE"
+                        egreso.fecha = data.fecha
+                        egreso.importe = data.total
+                        egreso.saldo = 0
+                        egreso.save((err, egreso) => {
+                            if( err || !egreso){
+                                return res.status(404).send({
+                                    status: 'error',
+                                    message: 'No se registró el egreso.' + err
                                 })
-                            })
+                            }
+                            let ingreso = new Ingreso()
+                            
+                            ingreso.ubicacion = data.enviarA._id
+                            ingreso.concepto = "RECEPCIÓN DE CORTE "+ data.ubicacion.nombre
+                            ingreso.fecha = data.fecha
+                            ingreso.importe = data.total
+                            ingreso.saldo = 0
+                            ingreso.save((err, ingresoSaved) => {
+                                    conn.close()
+                                    if(err){
+                                        return res.status(500).send({
+                                            status: 'error',
+                                            message: "No se pudo registrar el Ingreso.",
+                                            err
+                                        })
+                                    }                        
+                                    return res.status(200).send({
+                                            status: 'success', 
+                                            message: 'Corte guardado correctamente',
+                                            corte 
+                                    })
+                                })
+                        })
                     })
-                })
+                }else{
+                    return res.status(200).send({
+                        status: 'error',
+                        message: 'No se guardó.'
+                    })
+                }
             }
         })
     },
