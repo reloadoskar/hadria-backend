@@ -221,6 +221,41 @@ var controller = {
             })
         }
     },
+
+    open: async (req, res) => {
+        const ubicacion = req.params.ubicacion;
+        const fecha = req.params.fecha;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Corte = conn.model('Corte')
+
+        try{
+
+            const res = await Corte
+                .deleteOne({ubicacion: ubicacion, fecha: fecha})
+                .then(res => {
+                    conn.close()
+                    return res.status(200).send({
+                        status: 'success',
+                        res
+                    })
+                })
+                .catch(err => {
+                    conn.close()
+                    return res.status(404).send({
+                        status: "error",
+                        err
+                    })
+                })
+
+        }catch(err){
+            return res.status(200).send({
+                status: 'error desconocido',
+                err,
+                ubicacion, fecha
+            })
+        }
+    },
     
     getEgresos: async (req, res) => {
         const ubicacion = req.params.ubicacion;

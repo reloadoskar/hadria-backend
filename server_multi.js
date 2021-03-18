@@ -9,9 +9,9 @@ const server = app.listen(PORT, () => {
     console.log("Running in :"  + process.env.NODE_ENV);
 })
 
-process.on('SIGINT', function(){
-    mongoose.connection.close(function(){
-      console.log("Saliendo de HADRIA")
-      process.exit(0)
-    })
-})
+// process.on('SIGINT', function(){
+//     mongoose.connection.close(function(){
+//       console.log("Saliendo de HADRIA")
+//       process.exit(0)
+//     })
+// })
