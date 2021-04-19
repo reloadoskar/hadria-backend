@@ -1,117 +1,170 @@
 'use strict'
-
-var Venta = require('../models/venta');
-var Ingreso = require('../models/ingreso');
-var Cliente = require('../models/cliente');
 var mongoose = require('mongoose');
+const con = require('../conections/hadriaUser')
+
 var controller = {
     save: (req, res) => {
-        var params = req.body
-        var venta = new Venta()
+        const params = req.body
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Ingreso = conn.model('Ingreso')
+        let ingreso = new Ingreso()
+        ingreso.ubicacion = params.ubicacion
+        ingreso.fecha = params.fecha
+        ingreso.concepto = "VENTA"
+        ingreso.tipoPago = params.tipoPago
+        ingreso.importe = params.total
+        if(params.tipoPago === 'CREDITO'){
+            ingreso.acuenta = params.acuenta
+            ingreso.saldo = params.saldo
+        }
 
-        Venta.estimatedDocumentCount((err, count) => {
-            venta._id = mongoose.Types.ObjectId(),
-            venta.folio = ++count
-            venta.cliente = params.cliente
-            venta.fecha = params.fecha
-            venta.importe = params.importe 
-            venta.saldo = params.importe
-            venta.tipoPago = 'CRÉDITO'
+        if(params.venta){
+            ingreso.descripcion = "CREDTIO A: "+ params.cliente.nombre + " FOLIO: "+ venta.folio
+            ingreso.venta = venta._id
+        }
 
-            Cliente.findById(params.cliente._id, (err, cliente) => {
-                if(err)console.log(err)
-                let creditoDisponible = cliente.credito_disponible
-                let creditoActualizado = creditoDisponible - venta.saldo
-                cliente.credito_disponible = creditoActualizado
-                cliente.save((err, cliente) => {
-                    if(err)console.log(err)
-                })
+        ingreso.save((err, ingresoSaved) => {
+            if(err){console.log(err)}
+            conn.close()
+            return res.status(500).send({
+                status: "success",
+                message: "Cuenta por cobrar creada correctamente.",
+                cxc: ingresoSaved
             })
-
-            venta.save( (err, ventaSaved) => {
-                if(err){
-                    return res.status(404).send({
-                        status: "error",
-                        message: "Error al guardar la venta",
-                        err
-                    })
-                }
-                else{
-                    return res.status(200).send({
-                        status: "success",
-                        message: "Venta guardada correctamente.",
-                        venta: ventaSaved
-                    })
-                }        
-            })
-                       
         })
-        
     },
-    getCuentas: (req, res) => {
-        Venta.find( { "saldo": {$gt: 0} } )
-            .select("cliente importe saldo fecha acuenta folio")
-            .populate("cliente")
-            .exec((err, docs) => {
-                if (err){
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'No se encontraron cuentas',
-                    })
-                }
 
+    getCuentasCliente: async (req,res) => {
+        const bd= req.params.bd
+        const clienteID= req.params.id
+        const conn = con(bd)
+        const Venta = conn.model('Venta')
+        const resp = await Venta
+            .find({cliente: clienteID, saldo: {$gt: 0}})
+            .lean()
+            .then( cuentas => {
+                conn.close()
                 return res.status(200).send({
-                    status: 'success',
-                    message: 'Cuentas encontradas',
-                    cuentas: docs
+                    status: "success",
+                    cuentas
                 })
+            })
+            .catch(err=>{
+                conn.close()
+                return res.status(500).send({
+                    status: "error",                    
+                    err
+                })
+            })
+    },
+
+    getCuentas: async (req, res) => {
+        const bd= req.params.bd
+        const conn = con(bd)
+        const Cliente = conn.model('Cliente')
+        const resp = await Cliente
+            .find({cuentas: {$ne: []}})
+            .select('nombre dias_de_credito cuentas')
+            .populate({
+                path: 'cuentas',
+                match: { saldo: {$ne: 0} },
+                select: 'concepto importe acuenta saldo venta',
+                populate: { path: 'venta', select: 'items folio fecha importe'}
+            })
+            .lean()
+            .then( clientes => {
+                conn.close()
+                return res.status(200).send({
+                    status: "success",
+                    clientes
+                })
+            })
+            .catch(err=>{
+                conn.close()
+                return res.status(500).send({
+                    status: "error",
+                    err
+                })
+            })
+    },
+
+    getCxcPdv: async (req, res) =>{
+        const bd= req.params.bd
+        const conn = con(bd)
+        const Ingreso = conn.model('Ingreso')
+        const resp = await Ingreso
+            .find({saldo: {$gt: 0}})
+            .populate({path:'venta', select: 'cliente folio', populate: { path: 'cliente', select: 'nombre'}})            
+            .populate('ubicacion')
+            .lean()
+            .then(cuentas => {
+                conn.close()
+                return res.status(200).send({
+                    status:"success",
+                    cuentas
+                })
+            })
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status:"error",
+                    err
+                })                
             })
     },
 
     savePago: (req, res) => {
         var params = req.body
+        const bd = req.params.bd
+        const conn = con(bd)
+        var Ingreso = conn.model('Ingreso')
+        var Cliente = conn.model('Cliente')
+        var Venta = conn.model('Venta')
+
+        // CREAMOS EL INGRESO
+        var ingreso = new Ingreso()
+        ingreso.importe = params.importe
+        ingreso.ubicacion = params.ubicacion
+        ingreso.fecha = params.fecha                
+        ingreso.concepto = "COBRANZA"
+        ingreso.descripcion = "PAGO DE: " + params.cuenta.venta.cliente.nombre + " " + params.referencia
+        ingreso.tipoPago = params.tipoPago
         
-        Venta.findById(params.cuenta._id)
-            .exec()
-            .then(venta => {
-                venta.pagos.push({
-                    ubicacion: params.ubicacion,
-                    fecha: params.fecha,
-                    importe: params.importe,
-                    tipoPago: params.tipoPago,
-                    referencia: params.referencia,
-                })
+        //ACTUALIZAMOS SALDO CLIENTE Y AGREGAMOS PAGO
+        var cltId = params.cuenta.venta.cliente._id
+        Cliente.findById(cltId).exec((err, cliente)=>{
+            if(err){console.log(err)}
 
-                venta.saldo -= parseFloat(params.importe)
+            cliente.pagos.push(ingreso._id)
+            cliente.credito_disponible += params.importe
 
+            cliente.save()
+            
+            let pago = params.importe
+            Ingreso.findById(params.cuenta._id).exec((err, ing)=>{
+                if(err){console.log(err)}
                 
-                var ingreso = new Ingreso()
-                ingreso.venta = params.cuenta._id
-                ingreso.importe = params.importe
-                ingreso.ubicacion = params.ubicacion
-                ingreso.fecha = params.fecha                
-                ingreso.concepto = "COBRANZA"
-                ingreso.descripcion = "PAGO DE: " + params.cuenta.cliente.nombre + " " + params.referencia
-                ingreso.tipoPago = params.tipoPago
-                
-                venta.save()
-                ingreso.save()
+                ing.saldo -= pago
+                ing.save()
 
-                return Cliente.findById(params.cuenta.cliente._id)
-                        .exec()
-            })
-            .then(cliente => {
-                cliente.credito_disponible += parseFloat(params.importe)
-
-                cliente.save()
-
-                res.status(200).send({
-                    status: 'success',
-                    message: 'Cobro agregado correctamente.'
+                Venta.findById(params.cuenta.venta._id).exec((err, venta)=>{
+                    if(err){console.error(err)}
+                    venta.pagos.push(ingreso._id)
+                    venta.save()
+                    ingreso.save().then((err, ingreso) => {
+                        conn.close()                        
+                        if(err){console.log(err)}
+                        return res.status(200).send({
+                            status: 'success',
+                            message: 'Cobro agregado correctamente.',
+                            ingreso
+                        })                
+                    })
                 })
             })
+        })            
     }
-
 }
 
 module.exports = controller;

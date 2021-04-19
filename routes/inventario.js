@@ -6,7 +6,9 @@ var Inventario = require('../controllers/inventario');
 var router = express.Router();
 
 //Rutas
-router.get('/inventario', Inventario.getInventario);
-router.get('/inventario/:ubicacion', Inventario.getInventarioBy);
+router.get('/:bd/inventario', Inventario.getInventario);
+router.post('/:bd/inventario/movimiento', Inventario.moveInventario);
+router.get('/:bd/inventario/:ubicacion', Inventario.getInventarioBy);
+router.get('/:bd/inventarioxubicacion/', Inventario.getInventarioUbicacion);
 
 module.exports = router;

@@ -6,15 +6,15 @@ var CompraController = require('../controllers/compra');
 var router = express.Router();
 
 //Rutas
-router.post('/compra/save', CompraController.save);
-router.post('/compra/additem', CompraController.addCompraItem);
-router.get('/compras', CompraController.getCompras);
-router.get('/compras/dash', CompraController.getComprasDash);
-router.get('/compra/:id', CompraController.getCompra);
-router.put('/compra/:id', CompraController.close);
-router.put('/update/compra/:id', CompraController.update);
-router.put('/compra/item/:id', CompraController.updateCompraItem);
-router.delete('/compra/:id', CompraController.delete);
-router.put('/compra/cancel/:id', CompraController.cancel);
+router.post('/:bd/compra/save', CompraController.save);
+router.post('/:bd/compra/additem', CompraController.addCompraItem);
+router.get('/:bd/compras', CompraController.getCompras);
+router.get('/:bd/compras/dash', CompraController.getComprasDash);
+router.get('/:bd/compra/:id', CompraController.getCompra);
+router.put('/:bd/compra/:id', CompraController.close);
+router.put('/:bd/update/compra/:id', CompraController.update);
+router.put('/:bd/compra/item/:id', CompraController.updateCompraItem);
+router.delete('/:bd/compra/:id', CompraController.delete);
+router.put('/:bd/compra/cancel/:id', CompraController.cancel);
 
 module.exports = router;

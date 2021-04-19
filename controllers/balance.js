@@ -1,77 +1,42 @@
 'use strict'
+const con = require('../conections/hadriaUser')
 
-var Venta = require('../models/venta')
-var Ingreso = require('../models/ingreso')
-var Egreso = require('../models/egreso')
-var Compra = require('../models/compra')
-var CompraItem = require('../models/compra_item')
-var Ubicacion = require('../models/ubicacion')
-
-var controller = {
-    getBalance: (req, res) => {
-        var balance = {}
-        // traemos ventas a crédito
-        Venta
-        .find({"tipoPago": "CRÉDITO", "saldo": {$gt: 0}})
-        .select('ubicacion cliente tipoPago acuenta saldo importe')
-        .populate('ubicacion')
-        .populate('cliente')
-        .sort('ubicacion cliente tipoPago acuenta saldo importe')
-        .exec()
-        .then(porCobrar => {
-
-            balance.porCobrar = porCobrar
-            
-            return Ingreso.find({})
-                .select('ubicacion concepto descripcion fecha importe')
-                .populate('ubicacion')
-                .sort('ubicacion concepto descripcion fecha importe')
-                .exec()
-        })
-        .then( ingresos => {
-
-            balance.ingresos = ingresos
-
-            return Egreso.find({})
-                .select("ubicacion concepto descripcion fecha importe")
-                .populate('ubicacion')
-                .sort('ubicacion concepto descripcion fecha importe')
-                .exec()
-
-        })
-        .then( egresos => {
-            balance.egresos = egresos
-
-            return Ubicacion
-                .aggregate()
-                .lookup({ from: 'ingresos', localField: "_id", foreignField: 'ubicacion', as: 'ingresos' })
-                .lookup({ from: 'egresos', localField: "_id", foreignField: 'ubicacion', as: 'egresos' })
-                .exec()
-
-        })
-        .then( disponiblePorUbicacion =>{
-            balance.disponiblePorUbicacion = disponiblePorUbicacion
-                
-            return Compra.find({"status": "ACTIVO", "saldo": {$gt: 0}})
-                .select('provedor ubicacion fecha folio saldo clave')
-                .populate('provedor')
-                .populate('ubicacion')
-                .exec()
-        })
-        .then( porPagar => {
-            balance.porPagar = porPagar
-
-            return CompraItem.find({"stock": {$gt: 0}})
-                .select('stock costo')
-                .exec()
+const controller = {
+    getBalance: async (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Balance = conn.model('Balance', require('../schemas/balance'))
+    
+        const resp = await Balance.findOne().sort('-fecha')
+            .lean()
+            .then(doc => {
+                return res.status(200).send({
+                    status: "success",
+                    doc
+                })
             })
-            
-        .then( inventario => {
-            balance.inventario = inventario
-            res.status(200).send({
-                balance
+            .catch(err => {
+                return res.status(500).send({status:"error", err})
             })
-        })
+        
+        conn.close()
+    },
+
+    disponiblexUbicacion: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Ubicacion = conn.model('Ubicacion')
+        Ubicacion.aggregate()
+            .lookup({ from: 'ingresos', localField: "_id", foreignField: 'ubicacion', as: 'ingresos' })
+            .lookup({ from: 'egresos', localField: "_id", foreignField: 'ubicacion', as: 'egresos' })
+            .exec((err, disp)=>{
+                conn.close()
+                if(err){console.log(err)}
+                return res.status(200).send({
+                    status: "success",
+                    disp
+                })
+            })
     },
 }
 

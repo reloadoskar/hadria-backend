@@ -6,10 +6,10 @@ var TipoCompraController = require('../controllers/tipoCompra');
 var router = express.Router();
 
 //Rutas
-router.post('/tipocompra/save', TipoCompraController.save);
-router.get('/tipocompras', TipoCompraController.getTipoCompras);
-router.get('/tipocompra/:id', TipoCompraController.getTipoCompra);
-router.put('/tipocompra/:id', TipoCompraController.update);
-router.delete('/tipocompra/:id', TipoCompraController.delete);
+router.post('/:bd/tipocompra/create', TipoCompraController.save);
+router.get('/:bd/tipocompras', TipoCompraController.getTipoCompras);
+router.get('/:bd/tipocompra/:id', TipoCompraController.getTipoCompra);
+router.put('/:bd/tipocompra/:id', TipoCompraController.update);
+router.delete('/:bd/tipocompra/:id', TipoCompraController.delete);
 
 module.exports = router;

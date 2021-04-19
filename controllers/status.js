@@ -1,64 +1,48 @@
 'use strict'
-
-var validator = require('validator');
-var Status = require('../models/status');
+const con = require('../conections/hadriaUser')
 
 var controller = {
     save: (req, res) => {
-        //recoger parametros
-        var params = req.body;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const params = req.body;
+        const Status = conn.model('Status',require('../schemas/status') )
 
-        //validar datos
-        try{
-            var validate_nombre = !validator.isEmpty(params.nombre);
-        }catch(err){
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if(validate_nombre){
-            //Crear el objeto a guardar
-            var status = new Status();
+        //Crear el objeto a guardar
+        var status = new Status();
+        //Asignar valores
+        status.nombre = params.nombre;
             
-            //Asignar valores
-            status.nombre = params.nombre;
 
-            //Guardar objeto
-            status.save((err, statusStored) => {
+        //Guardar objeto
+        status.save((err, statusStored) => {
+                conn.close()
                 if(err || !statusStored){
                     return res.status(404).send({
                         status: 'error',
                         message: 'El status no se guardó'
                     })
                 }
-                //Devolver respuesta
                 return res.status(200).send({
                     status: 'success',
                     status: statusStored
                 })
             })
 
-
-        }else{
-            return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
-            })
-        }
-
     },
 
     getStatuss: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Status = conn.model('Status',require('../schemas/status') )
         Status.find({}).sort('_id').exec( (err, statuss) => {
+            conn.close()
             if(err || !statuss){
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los statuss'
                 })
             }
-
             return res.status(200).send({
                 status: 'success',
                 statuss
@@ -67,9 +51,13 @@ var controller = {
     },
 
     getStatus: (req, res) => {
-        var statusId = req.params.id;
+        const statusId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Status = conn.model('Status')
 
         if(!statusId){
+            conn.close()
             return res.status(404).send({
                 status: 'error',
                 message: 'No existe el status'
@@ -77,6 +65,7 @@ var controller = {
         }
 
         Status.findById(statusId, (err, status) => {
+            conn.close()
             if(err || !status){
                 return res.status(404).send({
                     status: 'success',
@@ -91,57 +80,41 @@ var controller = {
     },
 
     update: (req, res) => {
-        var statusId = req.params.id;
-        
-        //recoger datos actualizados y validarlos
-        var params = req.body;
-        try{
-            var validate_nombre = !validator.isEmpty(params.nombre);
-        }catch(err){
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
+        const statusId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const params = req.body;
+        const Status = conn.model('Status',require('../schemas/status') )
 
-        if(validate_nombre){
-            
-            // Find and update
-            Status.findOneAndUpdate({_id: statusId}, params, {new:true}, (err, statusUpdated) => {
-                if(err){
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al actualizar'
-                    })
-                }
-
-                if(!statusUpdated){
-                    return res.status(404).send({
-                        status: 'error',
-                        message: 'No existe el status'
-                    })
-                }
-
-                return res.status(200).send({
-                    status: 'success',
-                    statusUpdated
+        Status.findOneAndUpdate({_id: statusId}, params, {new:true}, (err, statusUpdated) => {
+            conn.close()
+            if(err){
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al actualizar'
                 })
-
-            })
-
-        }else{
+            }
+            if(!statusUpdated){
+                return res.status(404).send({
+                    status: 'error',
+                    message: 'No existe el status'
+                })
+            }
             return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
+                status: 'success',
+                statusUpdated
             })
-        }
-
+        })
     },
 
     delete: (req, res) => {
-        var statusId = req.params.id;
+        const statusId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Status = conn.model('Status')
 
         Status.findOneAndDelete({_id: statusId}, (err, statusRemoved) => {
+            conn.close()
             if(!statusRemoved){
                 return res.status(500).send({
                     status: 'error',
@@ -154,7 +127,6 @@ var controller = {
                     message: 'Ocurrio un error.'
                 })
             }
-
             return res.status(200).send({
                 status: 'success',
                 statusRemoved

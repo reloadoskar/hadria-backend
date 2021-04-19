@@ -1,20 +1,20 @@
 'use strict'
+const con = require('../conections/hadriaUser')
 
-var Produccion = require('../models/produccion');
-var ProduccionItem = require('../models/produccionItem')
-
-var controller = {
+const controller = {
     save: (req, res) => {
-
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Produccion = conn.model('Produccion')
         //Crear el objeto a guardar
 
         Produccion.estimatedDocumentCount((err, count) => {
             if (err) console.log(err)
             const nDocuments = count
 
-            var produccion = new Produccion();
+            let produccion = new Produccion();
 
-            produccion.fecha = new Date()
+            produccion.fecha = new Date().toISOString()
             produccion.folio = nDocuments + 1
             produccion.clave = "PRO-"+produccion.folio
             produccion.status = "ACTIVO"
@@ -23,13 +23,13 @@ var controller = {
 
             //Guardar objeto
             produccion.save((err, produccionStored) => {
+                conn.close()
                 if (err || !produccionStored) {
                     return res.status(200).send({
                         status: 'error',
                         message: 'La produccion no se creó'
                     })
                 }
-
                 return res.status(200).send({
                     status: 'success',
                     message: 'Producción creada correctamente.',
@@ -42,25 +42,42 @@ var controller = {
     },
 
     getProduccions: (req, res) => {
-        Produccion.find({}).sort('folio').exec((err, produccions) => {
-            if (err || !produccions) {
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'Error al devolver los produccions'
-                })
-            }
-
-            return res.status(200).send({
-                status: 'success',
-                produccions: produccions
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Produccion = conn.model('Produccion')
+        Produccion.find({})
+            .populate('insumos')
+            .populate({
+                path:'insumos', 
+                populate: {
+                    path: 'compraItem',
+                    populate: 'producto'
+                }
             })
+            .sort('folio')
+            .exec((err, produccions) => {
+                conn.close()
+                if (err || !produccions) {
+                    return res.status(500).send({
+                        status: 'error',
+                        message: 'Error al devolver los produccions'
+                    })
+                }
+                return res.status(200).send({
+                    status: 'success',
+                    produccions: produccions
+                })
         })
     },
 
     getProduccion: (req, res) => {
-        var produccionId = req.params.id;
-
+        const produccionId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Produccion = conn.model('Produccion')
         if (!produccionId) {
+            mongoose.connection.close()
+            conn.close()
             return res.status(404).send({
                 status: 'error',
                 message: 'No existe la producción: ',
@@ -73,76 +90,61 @@ var controller = {
         .populate('egresos')
         .populate('items')
         .populate('ventas')
-        .exec( (err, produccion) => {
-            if (err || !produccion) {
-                return res.status(404).send({
-                    status: 'success',
-                    message: 'Ocurrio un error.',
-                    err
-                })
-            }
+        .lean()
+        .then(produccion => {
+            conn.close()
             return res.status(200).send({
                 status: 'success',
                 produccion
             })
         })
+        .catch( err => {            
+            return res.status(404).send({
+                status: 'success',
+                message: 'Ocurrio un error.',
+                err
+            })            
+        })
     },
 
     update: (req, res) => {
-        var produccionId = req.params.id;
+        const produccionId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const params = req.body;
+        const Produccion = conn.model('Produccion',require('../schemas/produccion') )
 
-        //recoger datos actualizados y validarlos
-        var params = req.body;
-        try {
-            var validate_clave = !validator.isEmpty(params.clave);
-            var validate_descripcion = !validator.isEmpty(params.descripcion);
-            var validate_costo = !validator.isEmpty(params.costo);
-            var validate_precio1 = !validator.isEmpty(params.precio1);
-        } catch (err) {
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if (validate_clave && validate_descripcion && validate_costo, validate_precio1) {
-
-            // Find and update
-            Produccion.findOneAndUpdate({ _id: produccionId }, params, { new: true }, (err, produccionUpdated) => {
-                if (err) {
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al actualizar'
-                    })
-                }
-
-                if (!produccionUpdated) {
-                    return res.status(404).send({
-                        status: 'error',
-                        message: 'No existe el produccion'
-                    })
-                }
-
-                return res.status(200).send({
-                    status: 'success',
-                    produccion: produccionUpdated
+        Produccion.findOneAndUpdate({ _id: produccionId }, params, { new: true }, (err, produccionUpdated) => {
+            conn.close()
+            if (err) {
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al actualizar'
                 })
+            }
 
-            })
+            if (!produccionUpdated) {
+                return res.status(404).send({
+                    status: 'error',
+                    message: 'No existe el produccion'
+                })
+            }
 
-        } else {
             return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
+                status: 'success',
+                produccion: produccionUpdated
             })
-        }
-
+        })
     },
 
     delete: (req, res) => {
-        var produccionId = req.params.id;
-
+        const produccionId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Produccion = conn.model('Produccion',require('../schemas/produccion') )
         Produccion.findOneAndDelete({ _id: produccionId }, (err, produccionRemoved) => {
+            mongoose.connection.close()
+            conn.close()
             if (!produccionRemoved) {
                 return res.status(500).send({
                     status: 'error',
@@ -155,7 +157,6 @@ var controller = {
                     message: 'Ocurrio un error.'
                 })
             }
-
             return res.status(200).send({
                 status: 'success',
                 message: 'Produccion eliminado correctamente.',

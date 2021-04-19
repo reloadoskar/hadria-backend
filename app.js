@@ -1,27 +1,29 @@
 'use strict'
-const express = require('express');
-const app = express();
-var bodyParser = require('body-parser')
-var cors = require('cors')
+const express = require('express')
+const helmet = require('helmet');
+const app = express()
+const bodyParser = require('body-parser')
+const cors = require('cors')
 
 //Middlewares
-app.use(bodyParser.urlencoded({extended: false}));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({limit: '50mb', extended: false}))
+app.use(bodyParser.json({limit: '50mb'}))
 app.use(cors())
+app.use(helmet())
 
 //cargar rutas
-var producto_routes = require('./routes/producto');
-var cliente_routes = require('./routes/cliente');
-var provedor_routes = require('./routes/provedor');
-var compra_routes = require('./routes/compra');
-var ubicacion_routes = require('./routes/ubicacion');
-var status_routes = require('./routes/status');
-var tipo_compra_routes = require('./routes/tipoCompra');
-var tipo_pago_routes = require('./routes/tipoPago');
-var ingreso_routes = require('./routes/ingreso');
-var egreso_routes = require('./routes/egreso');
-var inventario_routes = require('./routes/inventario');
-var venta_routes = require('./routes/venta');
+var producto_routes = require('./routes/producto')
+var cliente_routes = require('./routes/cliente')
+var provedor_routes = require('./routes/provedor')
+var compra_routes = require('./routes/compra')
+var ubicacion_routes = require('./routes/ubicacion')
+var status_routes = require('./routes/status')
+var tipo_compra_routes = require('./routes/tipoCompra')
+var tipo_pago_routes = require('./routes/tipoPago')
+var ingreso_routes = require('./routes/ingreso')
+var egreso_routes = require('./routes/egreso')
+var inventario_routes = require('./routes/inventario')
+var venta_routes = require('./routes/venta')
 var cuentas_por_pagar_routes = require('./routes/porPagarCuenta')
 var cuentas_por_cobrar_routes = require('./routes/porCobrarCuenta')
 var corte_routes = require('./routes/corte')
@@ -32,6 +34,9 @@ var empaque_routes = require('./routes/empaque')
 var concepto_routes = require('./routes/concepto')
 var produccion_routes = require('./routes/produccion')
 var retiro_routes = require('./routes/retiro')
+var insumo_routes = require('./routes/insumo')
+var compra_item_routes = require('./routes/compraItem')
+var produccion_item_routes = require('./routes/produccionItem')
 
 //Usar rutas
 app.use('/api', producto_routes);
@@ -56,9 +61,12 @@ app.use('/api', empaque_routes);
 app.use('/api', concepto_routes);
 app.use('/api', produccion_routes);
 app.use('/api', retiro_routes)
+app.use('/api', insumo_routes)
+app.use('/api', compra_item_routes)
+app.use('/api', produccion_item_routes)
 
 app.get('/', (req, res) => {
-    res.send('Hello Hadria!');
+    res.send('Rutas cargadas y listas.');
 });
 
 module.exports = app;

@@ -1,121 +1,152 @@
 'use strict'
-var mongoose = require('mongoose');
-var Compra = require('../models/compra')
-var CompraItem = require('../models/compra_item')
-var VentaItem = require('../models/venta_item')
-var Egreso = require('../models/egreso')
-var Produccion = require('../models/produccion')
+const mongoose = require('mongoose');
+
+const con = require('../conections/hadriaUser')
 
 var controller = {
     save: (req, res) => {
-        //recoger parametros
-        var params = req.body;
-
-        // async function getNumberOfComprasFor(provedorId) {
-        //     var res = await Compra.countDocuments({ provedor: provedorId })
-        //     return res
-        // }
-        Compra.estimatedDocumentCount((err, count) => {
-            // .then((err, count) =>{
-            if (err) console.log(err)
-            const nDocuments = count
+        const params = req.body;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Compra = conn.model( 'Compra')
+        const CompraItem = conn.model('CompraItem')
+        const Egreso = conn.model('Egreso')
+        const Provedor = conn.model('Provedor')
+        
+        Compra.estimatedDocumentCount().then(count => {
             var compra = new Compra();
-            compra._id = mongoose.Types.ObjectId(),
-            compra.folio = nDocuments + 1
+            compra._id = mongoose.Types.ObjectId()
+            compra.folio = count + 1
             compra.provedor = params.provedor
             compra.ubicacion = params.ubicacion
             compra.tipoCompra = params.tipoCompra
             compra.remision = params.remision
-            compra.importe = params.total
-            compra.saldo = params.total
+            compra.importe = params.importe
+            compra.saldo = params.importe
             compra.fecha = params.fecha
             compra.status = 'ACTIVO'
 
-            if (params.tipoCompra.tipo === "PRODUCCION" ){
-                compra.produccion = params.produccion
-                compra.status = 'PRODUCCION'
-                Produccion.findById(params.produccion._id).exec((err, produccion) => {
-                    produccion.compras.push(compra.id)
-                    produccion.costo += compra.importe
-                    produccion.save()
+            Provedor.findById(compra.provedor).exec((err, prov)=>{
+                if(err){console.log(err)}
+                // prov.cuentas.push(compra._id)
+                // prov.save()
+            Compra.countDocuments({ provedor: params.provedor._id })
+            .then(c => {
+                let sigCompra = c +1
+                compra.clave = params.provedor.clave + "-" + sigCompra
+                
+                let i = params.items
+                let itmsToSave = []
+                i.map((item) => {
+                    let compraItem = {}
+                    compraItem._id = mongoose.Types.ObjectId()
+                    compraItem.ubicacion = params.ubicacion
+                    compraItem.compra = compra._id
+                    compraItem.producto = item.producto._id
+                    compraItem.cantidad = item.cantidad
+                    compraItem.stock = item.cantidad
+                    compraItem.empaques = item.empaques
+                    compraItem.empaquesStock = item.empaques
+                    compraItem.costo = item.costo
+                    compraItem.importe = item.importe
+                    itmsToSave.push(compraItem)
                 })
-            }
-
-            compra.save((err, compraSaved) => {
-                if (err) {
-                    return res.status(200).send({
-                        status: 'error',
-                        message: "No se pudo guardar la compra.",
-                        err
+                
+                CompraItem.insertMany(itmsToSave, (err, items) => {
+                    if (err) console.log(err)
+                    items.map(itm => {
+                        compra.items.push(itm._id)
                     })
-                } else {
-                    //Calculamos cuantas compras tiene el provedor... then()...
-                    Compra.countDocuments({ provedor: params.provedor._id })
-                        .then(c => {
-                            var sigCompra = c
-                            compraSaved.clave = params.provedor.clave + "-" + sigCompra
-                            var i = params.items
-                            var itmsToSave = []
-                            i.map((item) => {
-                                var compraItem = {}
-                                if(item.provedor === ''){
-                                    compraItem.provedor = compra.provedor
-                                }else{
-                                    compraItem.provedor = item.provedor
-                                }
-                                compraItem.compra = compraSaved._id
-                                compraItem.producto = item.producto._id
-                                compraItem.cantidad = item.cantidad
-                                compraItem.stock = item.cantidad
-                                compraItem.empaques = item.empaques
-                                compraItem.empaquesStock = item.empaques
-                                compraItem.costo = item.costo
-                                compraItem.importe = item.importe
-                                itmsToSave.push(compraItem)
+                    
+                    Egreso.estimatedDocumentCount().then( c => {
+                        let g = params.gastos
+                        let cgastos = []
+                        g.map((gasto) => {
+                            var egreso = new Egreso()
+                            egreso._id = mongoose.Types.ObjectId()
+                            egreso.folio = c + 1
+                            egreso.tipo = "COMPRA"
+                            egreso.ubicacion = compra.ubicacion
+                            egreso.concepto = gasto.concepto
+                            egreso.descripcion = gasto.descripcion
+                            egreso.fecha = compra.fecha
+                            egreso.importe = 0
+                            egreso.saldo = gasto.importe
+                            egreso.compra = compra._id
+                            compra.gastos.push(egreso._id)
+                            prov.cuentas.push(egreso._id)
+                            egreso.save((err, e)=> {
+                                if(err){console.log(err)}
                             })
-                            CompraItem.insertMany(itmsToSave, (err, items) => {
-                                if (err) console.log(err)
-                                items.map(itm => {
-                                    compraSaved.items.push(itm._id)
-                                })
-                                compraSaved.save((err, compra) => {
-                                    if(err)console.log(err)
-                                    //Devolver respuesta
-                                    Compra.findById(compra._id)
-                                        .populate('provedor', 'nombre')
-                                        .populate('ubicacion')
-                                        .populate('tipoCompra')
-                                        .populate({
-                                            path: 'items',
-                                            populate: { path: 'producto'},
-                                        })
-                                        .exec((err, compraCompleta) => {
-                                            if (err || !compraCompleta) {
-                                                return res.status(500).send({
-                                                    status: 'error',
-                                                    message: 'Error al devolver la compra' + err
-                                                })
-                                            }
-
-                                            return res.status(200).send({
-                                                status: 'success',
-                                                message: 'Compra registrada correctamente.',
-                                                compra: compraCompleta
-                                            })
-                                        })
-                                })
-                            });
-
-
                         })
+                        // compra.gastos.push(cgastos)
+                        compra.save((err, compraSaved) => {          
+                                                                  
+                            if (err || !compraSaved) {
+                                return res.status(500).send({
+                                    status: 'error',
+                                    message: 'Error al devolver la compra' + err
+                                })
+                            }
+                            Egreso.estimatedDocumentCount().then( c => {
+                                let egItm = new Egreso()
+                                egItm._id = mongoose.Types.ObjectId()
+                                egItm.folio = c + 1
+                                egItm.tipo = "COMPRA"
+                                egItm.ubicacion = compra.ubicacion
+                                egItm.concepto = "COMPRA"
+                                egItm.fecha = compra.fecha
+                                egItm.importe = 0
+                                egItm.saldo = params.importeItems
+                                egItm.compra = compra._id
+                                prov.cuentas.push(egItm._id)
+                                egItm.save((err, e) => {
+                                    if(err){console.log(err)}
+                                })
+                                
+                                prov.save()
+                            })
 
-                }
+                            Compra.findById(compraSaved._id)
+                            .sort('folio')
+                            .populate('provedor', 'nombre')
+                            .populate('ubicacion')
+                            .populate('tipoCompra')
+                            .populate({
+                                path: 'items',
+                                populate: { path: 'producto'},
+                            })
+                            .populate({
+                                path: 'items',
+                                populate: { path: 'provedor'},
+                            })
+                            .exec((err, c) => {
+                                conn.close()  
+                                return res.status(200).send({
+                                    status: 'success',
+                                    message: 'Compra registrada correctamente.',
+                                    compra: c,
+                                })
+                            })
+                        })
+                    })
+
+                })
             })
         })
+    })
     },
 
-    getComprasDash: (req, res) => {
-        Compra.find({ "status": { $ne: "PRODUCCION" }, "status": { $ne: "CANCELADO"} }).sort('folio')
+    getComprasDash: async (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+
+        const Compra = conn.model('Compra')
+        
+        const resp = await Compra
+            .find({ "status": { $ne: "PRODUCCION" }, "status": { $ne: "CANCELADO"} })
+            .sort('folio')
+            .lean()
             .populate('provedor', 'nombre')
             .populate('ubicacion')
             .populate('tipoCompra')
@@ -123,31 +154,37 @@ var controller = {
                 path: 'items',
                 populate: { path: 'producto'},
             })
-            .exec((err, compras) => {
-                if (err || !compras) {
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al devolver los compras' + err
-                    })
-                }
-    
-                return res.status(200).send({
-    
+            .then(compras => {
+                conn.close()
+                return res.status(200).send({    
                     status: 'success',
                     compras: compras
                 })
-    
+            })
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al devolver los compras' + err
+                })
             })
     },
 
-    getCompras: (req, res) => {
-        Compra.find({
-            $and:[
-                {"status": {$ne: "CANCELADO"} }, 
-                {"status": {$ne: "CERRADO"} },
-                {"status": {$ne: "PRODUCCION"} },
-                ]
-        }).sort('folio')
+    getCompras: async (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Compra = conn.model('Compra')
+        
+        const resp = await Compra
+            .find({
+                $and:[
+                    {"status": {$ne: "CANCELADO"} }, 
+                    {"status": {$ne: "CERRADO"} },
+                    {"status": {$ne: "PRODUCCION"} },
+                    ]
+            })
+            .sort('folio')
+            .lean()
             .populate('provedor', 'nombre')
             .populate('ubicacion')
             .populate('tipoCompra')
@@ -157,134 +194,154 @@ var controller = {
             })
             .populate({
                 path: 'items',
-                populate: { path: 'provedor'},
+                populate: { path: 'ubicacion'},
             })
-            .exec((err, compras) => {
-                if (err || !compras) {
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al devolver los compras' + err
-                    })
-                }
-
+            .then(compras => {
+                conn.close()
                 return res.status(200).send({
-
                     status: 'success',
                     compras: compras
                 })
-
+            })
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al devolver los compras' + err
+                })
             })
     },
 
-    getCompra: (req, res) => {
-        var compraId = req.params.id;
-        var data = {}
-        Compra
-        .findById(compraId)
-        .populate('provedor', 'clave nombre tel1 cta1 email diasDeCredito comision')
-        .populate('ubicacion')
-        .populate('tipoCompra')
-        .populate({
-            path: 'items',
-            populate: { path: 'provedor'},
-        })
-        .populate({
-            path: 'items',
-            populate: { path: 'producto'},
-        })
-        .populate({
-            path: 'items',
-            populate: { path: 'producto', populate: { path: 'unidad'} },
-        })
-        .populate({
-            path: 'items',
-            populate: { path: 'producto', populate: { path: 'empaque'} },
-        })
-        .populate('pagos.ubicacion')
-        .exec()
-        .then( (compra) => {
-            
-            data.compra = compra
+    getCompra: async (req, res) => {
+        const compraId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Compra = conn.model('Compra')
+        const VentaItem = conn.model('VentaItem')
+        const Egreso = conn.model('Egreso')
+        let data = {}
+
+        const compra = await Compra
+            .findById(compraId)
+            .lean()
+            .populate('provedor', 'clave nombre tel1 cta1 email diasDeCredito comision')
+            .populate('ubicacion')
+            .populate('tipoCompra')
+            .populate({
+                path: 'items',
+                populate: { path: 'ubicacion'},
+            })
+            .populate({
+                path: 'items',
+                populate: { path: 'producto'},
+            })
+            .populate({
+                path: 'items',
+                populate: { path: 'producto', populate: { path: 'unidad'} },
+            })
+            .populate({
+                path: 'items',
+                populate: { path: 'producto', populate: { path: 'empaque'} },
+            })
+            .populate('pagos.ubicacion')
+            .catch( err => {
+                conn.close()
+                return res.status(404).send({
+                    status: 'error',
+                    err
+                })
+            })
+        data.compra = compra
                 
-                
-            return VentaItem.find({compra: compra._id})
+        const ventas = await VentaItem.find({compra: compra._id})
+                .lean()
                 .populate('venta')
                 .populate('producto')
-                .exec()
 
-        })
-        .then((ventas) => {
-            data.ventas = ventas
-            return VentaItem
+        data.ventas = ventas
+
+        const ventasGroup = await VentaItem
                 .aggregate()
                 .match({compra: data.compra._id})
                 .group({_id: {producto: "$producto", precio: "$precio"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
                 .lookup({ from: 'productos', localField: "_id.producto", foreignField: '_id', as: 'producto' })
                 .sort({"_id.producto": 1, "_id.precio": -1})
                 .exec()
+    
+        data.ventasGroup = ventasGroup        
 
+        const egresos = await Egreso
+            .find({compra: data.compra._id, tipo: {$eq: 'GASTO DE COMPRA'}})
+            .lean()
+            .populate('ubicacion')
+
+        data.egresos = egresos
+        conn.close()
+        return res.status(200).send({
+            status: 'success',
+            data
         })
-        .then(ventasGroup => {
-            data.ventasGroup = ventasGroup        
-                return Egreso.find({compra: data.compra._id, concepto: {$ne: 'PAGO'}})
-                    .populate('ubicacion')
-                    .exec()
-        })
-        .then( egresos => {
-                data.egresos = egresos
+    },
+
+    close: async (req, res) => {
+        const compraId = req.params.id
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Compra = conn.model('Compra')
+        const resp = await Compra
+            .findOneAndUpdate({_id: compraId}, {status: "CERRADO"} )
+            .then(compraUpdated => {
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
-                    data
+                    message: 'Compra cerrada correctamente.',
+                    compraUpdated
                 })
-
-        })
-    },
-
-    close: (req, res) => {
-        var compraId = req.params.id
-
-        Compra.findOneAndUpdate({_id: compraId}, {status: "CERRADO"} , (err, compraUpdated) => {
-            if(err)console.log(err)
-            return res.status(200).send({
-                status: 'success',
-                message: 'Compra cerrada correctamente.',
-                compraUpdated
             })
-        })
+            .catch(err => {
+                conn.close()
+                return res.status(404).send({
+                    status: "error",
+                    err
+                })
+            })
     },
 
-    update: (req, res) => {
-        var compra = req.body
-
-            Compra.findByIdAndUpdate(compra._id, compra, { new: true }, (err, compraUpdated) => {
+    update: async (req, res) => {
+        const compra = req.body
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Compra = conn.model('Compra')
+        const resp = await Compra
+            .findByIdAndUpdate(compra._id, compra, { new: true }, (err, compraUpdated) => {
+                conn.close()
                 if (err) {
                     return res.status(500).send({
                         status: 'error',
                         message: 'Error al actualizar'
                     })
                 }
-
                 if (!compraUpdated) {
                     return res.status(404).send({
                         status: 'error',
                         message: 'No existe el compra'
                     })
                 }
-
                 return res.status(200).send({
                     status: 'success',
                     message: "Compra actualizada",
                     compra: compraUpdated
                 })
-
             })
-
     },
 
     delete: (req, res) => {
-        var compraId = req.params.id;
-
+        const compraId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Compra = conn.model('Compra')
         Compra.findOneAndDelete({ _id: compraId }, (err, compraRemoved) => {
+            conn.close()
             if (!compraRemoved) {
                 return res.status(500).send({
                     status: 'error',
@@ -297,7 +354,6 @@ var controller = {
                     message: 'Ocurrio un error.'
                 })
             }
-
             return res.status(200).send({
                 status: 'success',
                 message: 'Compra eliminada correctamente',
@@ -308,8 +364,11 @@ var controller = {
     },
 
     cancel: (req, res) => {
-        var compraId = req.params.id
-
+        const compraId = req.params.id
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Compra = conn.model('Compra')
+        const CompraItem = conn.model('CompraItem')
         Compra.findById(compraId).exec((err, compra) => {
             compra.status = "CANCELADO"
 
@@ -322,6 +381,7 @@ var controller = {
                     })
                 }else{
                     CompraItem.updateMany({"compra": saved._id}, {"stock": 0}, (err, n) => {
+                        conn.close()
                         return res.status(200).send({
                             status: 'success',
                             message: 'Compra CANCELADA correctamente.',
@@ -334,8 +394,12 @@ var controller = {
     },
 
     addCompraItem: (req,res) => {
-        var item = req.body
-        var newItem = new CompraItem()
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Compra = conn.model('Compra', require('../schemas/compra') )
+        const CompraItem = conn.model('CompraItem', require('../schemas/compra_item') )
+        let item = req.body
+        let newItem = new CompraItem()
         newItem.compra = item.compra
         newItem.producto = item.producto
         newItem.cantidad = item.cantidad
@@ -353,7 +417,9 @@ var controller = {
                 })
             }else{
                 Compra.findById(newItem.compra).exec((err,compra) => {
+                
                     if(err){
+                        conn.close()
                         return res.status(200).send({
                             status: 'error',
                             message: 'Ocurrio un error.'
@@ -362,6 +428,7 @@ var controller = {
                         compra.items.push(itmSaved._id)
                         compra.save()
                         CompraItem.findById(itmSaved._id).populate('producto').exec((err, item)=> {
+                            conn.close()
                             return res.status(200).send({
                                 status: 'success',
                                 message: 'Item Agregado correctamente.',
@@ -377,10 +444,15 @@ var controller = {
     },
 
     updateCompraItem: (req, res) => {
-        var item = req.body;
+        const item = req.body;
+        const bd = req.params.bd
+        const conn = con(bd)
+        
+        const CompraItem = conn.model('CompraItem')
 
         CompraItem.findById(item.item_id).exec( (err, compraItem) => {
             if(err || !compraItem){
+                conn.close()
                 return res.status(200).send({
                     status: 'error',
                     message: 'Ocurrio un error.'
@@ -395,6 +467,7 @@ var controller = {
                 compraItem.stock -= cantDiff
                 compraItem.empaquesStock -= empDiff
                 compraItem.save((err, compraItemSaved) => {
+                    conn.close()
                     if(err || !compraItemSaved){
                         return res.status(200).send({
                             status: 'error',

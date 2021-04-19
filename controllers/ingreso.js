@@ -1,21 +1,19 @@
 'use strict'
-
-var validator = require('validator');
-var Ingreso = require('../models/ingreso');
-var Cuenta = require('../models/porCobrarCuenta');
-var Compra = require('../models/compra')
-
-var controller = {
+const con = require('../conections/hadriaUser')
+const controller = {
     save: (req, res) => {
         //recoger parametros
-        var params = req.body;
-        
-        var ingreso = new Ingreso()
+        const params = req.body;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Ingreso = conn.model('Ingreso')
+        let ingreso = new Ingreso()
 
         ingreso.ubicacion = params.ubicacion
         ingreso.concepto = params.concepto
         ingreso.descripcion = params.descripcion
         ingreso.fecha = params.fecha
+        ingreso.tipoPago = params.tipoPago
         ingreso.importe = params.importe
 
         if(ingreso.concepto === "PRESTAMO"){
@@ -37,13 +35,14 @@ var controller = {
         }
 
         ingreso.save((err, ingresoSaved) => {
+            conn.close()
             if(err){
                 return res.status(500).send({
                     status: 'error',
-                    message: "No se pudo registrar el Ingreso."
+                    message: "No se pudo registrar el Ingreso.",
+                    err
                 })
             }
-
             return res.status(200).send({
                 status: 'success',
                 message: "Ingreso registrado correctamente.",
@@ -53,124 +52,111 @@ var controller = {
         })
     },
 
-    getIngresos: (req, res) => {
-        Ingreso.find({}).sort('-_id')
-            .populate('provedor', 'nombre')
-            .populate('ubicacion')
-            .populate('items.producto')
-            .exec( (err, ingresos) => {
-            if(err || !ingresos){
+    getIngresos: async (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Ingreso = conn.model('Ingreso')
+        const resp = await Ingreso
+            .find({importe:{$gt:0}}).sort({fecha: -1, createdAt: -1})
+            .populate({path: 'ubicacion', select: 'nombre'})
+            .lean()
+            .then(ingresos => {
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    ingresos
+                })                
+            })
+            .catch( err => {
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los ingresos' + err
-                })
-            }
-
-            return res.status(200).send({
-                status: 'success',
-                ingresos
+                })            
             })
-        })
     },
 
-    getIngreso: (req, res) => {
-        var ingresoId = req.params.id;
-
+    getIngreso: async (req, res) => {
+        const ingresoId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Ingreso = conn.model('Ingreso')
         if(!ingresoId){
+            conn.close()
             return res.status(404).send({
                 status: 'error',
                 message: 'No existe el ingreso'
             })
         }
 
-        Ingreso.findById(ingresoId, (err, ingreso) => {
-            if(err || !ingreso){
+        const resp = await Ingreso
+            .findById(ingresoId)
+            .lean()
+            .then(ingreso => {
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    ingreso
+                })
+            })
+            .catch(err => {
+                conn.close()            
                 return res.status(404).send({
                     status: 'success',
-                    message: 'No existe el ingreso.'
+                    message: 'No existe el ingreso.',
+                    err
                 })
-            }
-            return res.status(200).send({
-                status: 'success',
-                ingreso
             })
-        })
     },
 
-    update: (req, res) => {
-        var ingresoId = req.params.id;
-        
-        //recoger datos actualizados y validarlos
-        var params = req.body;
-        try{
-            var validate_clave = !validator.isEmpty(params.clave);
-            var validate_descripcion = !validator.isEmpty(params.descripcion);
-            var validate_costo = !validator.isEmpty(params.costo);
-            var validate_precio1 = !validator.isEmpty(params.precio1);
-        }catch(err){
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if(validate_clave && validate_descripcion && validate_costo, validate_precio1){
-            
-            // Find and update
-            Ingreso.findOneAndUpdate({_id: ingresoId}, params, {new:true}, (err, ingresoUpdated) => {
-                if(err){
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al actualizar'
-                    })
-                }
-
-                if(!ingresoUpdated){
-                    return res.status(404).send({
-                        status: 'error',
-                        message: 'No existe el ingreso'
-                    })
-                }
-
+    update: async (req, res) => {
+        const ingresoId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const params = req.body;
+        const Ingreso = conn.model('Ingreso')
+    
+        const resp = await Ingreso
+            .findOneAndUpdate({_id: ingresoId}, params, {new:true})
+            .then(ingresoUpdated => {
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     ingreso: ingresoUpdated
                 })
-
             })
-
-        }else{
-            return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al actualizar',
+                    err
+                })
             })
-        }
-
     },
 
-    delete: (req, res) => {
-        var ingresoId = req.params.id;
-
-        Ingreso.findOneAndDelete({_id: ingresoId}, (err, ingresoRemoved) => {
-            if(!ingresoRemoved){
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'No se pudo borrar el ingreso.'
+    delete: async (req, res) => {
+        const ingresoId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Ingreso = conn.model('Ingreso')
+        const resp = await Ingreso
+            .findOneAndDelete({_id: ingresoId})
+            .then(ingresoRemoved => {            
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    ingresoRemoved
                 })
-            }
-            if(err){
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'Ocurrio un error.'
-                })
-            }
-
-            return res.status(200).send({
-                status: 'success',
-                ingresoRemoved
             })
-        })
-
+            .catch(err => {
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'No se pudo borrar el ingreso.',
+                    err
+                })
+            })            
     }
 
 }

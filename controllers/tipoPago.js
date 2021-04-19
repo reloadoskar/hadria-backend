@@ -1,64 +1,45 @@
 'use strict'
+const con = require('../conections/hadriaUser')
 
-var validator = require('validator');
-var TipoPago = require('../models/tipoPago');
-
-var controller = {
+const controller = {
     save: (req, res) => {
-        //recoger parametros
-        var params = req.body;
-
-        //validar datos
-        try{
-            var validate_tipo = !validator.isEmpty(params.tipo);
-        }catch(err){
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if(validate_tipo){
-            //Crear el objeto a guardar
-            var tipopago = new TipoPago();
+        const bd = req.params.bd
+        const conn = con(bd)
+        const params = req.body;
+        const TipoPago = conn.model('TipoPago')
+        let tipopago = new TipoPago();
             
-            //Asignar valores
-            tipopago.tipo = params.tipo;
+        //Asignar valores
+        tipopago.tipo = params.tipo;
 
-            //Guardar objeto
-            tipopago.save((err, tipopagoStored) => {
-                if(err || !tipopagoStored){
-                    return res.status(404).send({
-                        status: 'error',
-                        message: 'El tipopago no se guardó'
-                    })
-                }
-                //Devolver respuesta
-                return res.status(200).send({
-                    status: 'success',
-                    tipopago: tipopagoStored
+        //Guardar objeto
+        tipopago.save((err, tipopagoStored) => {
+            conn.close()
+            if(err || !tipopagoStored){
+                return res.status(404).send({
+                    status: 'error',
+                    message: 'El tipopago no se guardó'
                 })
-            })
-
-
-        }else{
+            }
             return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
+                status: 'success',
+                tipopago: tipopagoStored
             })
-        }
-
+        })
     },
 
     getTipoPagos: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        const TipoPago = conn.model('TipoPago')
         TipoPago.find({}).sort('_id').exec( (err, tipopagos) => {
+            conn.close()
             if(err || !tipopagos){
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los tipopagos'
                 })
             }
-
             return res.status(200).send({
                 status: 'success',
                 tipopagos
@@ -67,9 +48,12 @@ var controller = {
     },
 
     getTipoPago: (req, res) => {
-        var tipopagoId = req.params.id;
-
+        const tipopagoId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const TipoPago = conn.model('TipoPago')
         if(!tipopagoId){
+            conn.close()
             return res.status(404).send({
                 status: 'error',
                 message: 'No existe el tipopago'
@@ -77,6 +61,7 @@ var controller = {
         }
 
         TipoPago.findById(tipopagoId, (err, tipopago) => {
+            conn.close()
             if(err || !tipopago){
                 return res.status(404).send({
                     status: 'success',
@@ -91,57 +76,40 @@ var controller = {
     },
 
     update: (req, res) => {
-        var tipopagoId = req.params.id;
+        const tipopagoId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const params = req.body;
+        const TipoPago = conn.model('TipoPago', require('../schemas/tipoPago') )
         
-        //recoger datos actualizados y validarlos
-        var params = req.body;
-        try{
-            var validate_tipo = !validator.isEmpty(params.tipo);
-        }catch(err){
-            return res.status(200).send({
-                status: 'error',
-                message: 'Faltan datos.'
-            })
-        }
-
-        if(validate_tipo){
-            
-            // Find and update
-            TipoPago.findOneAndUpdate({_id: tipopagoId}, params, {new:true}, (err, tipopagoUpdated) => {
-                if(err){
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al actualizar'
-                    })
-                }
-
-                if(!tipopagoUpdated){
-                    return res.status(404).send({
-                        status: 'error',
-                        message: 'No existe el tipopago'
-                    })
-                }
-
-                return res.status(200).send({
-                    status: 'success',
-                    tipopago: tipopagoUpdated
+        TipoPago.findOneAndUpdate({_id: tipopagoId}, params, {new:true}, (err, tipopagoUpdated) => {
+            conn.close()
+            if(err){
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al actualizar'
                 })
-
-            })
-
-        }else{
+            }
+            if(!tipopagoUpdated){
+                return res.status(404).send({
+                    status: 'error',
+                    message: 'No existe el tipopago'
+                })
+            }
             return res.status(200).send({
-                status: 'error',
-                message: 'Datos no validos.'
+                status: 'success',
+                tipopago: tipopagoUpdated
             })
-        }
-
+        })
     },
 
     delete: (req, res) => {
-        var tipopagoId = req.params.id;
-
+        const tipopagoId = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const TipoPago = conn.model('TipoPago')
         TipoPago.findOneAndDelete({_id: tipopagoId}, (err, tipopagoRemoved) => {
+            conn.close()
             if(!tipopagoRemoved){
                 return res.status(500).send({
                     status: 'error',
@@ -154,7 +122,6 @@ var controller = {
                     message: 'Ocurrio un error.'
                 })
             }
-
             return res.status(200).send({
                 status: 'success',
                 tipopagoRemoved
