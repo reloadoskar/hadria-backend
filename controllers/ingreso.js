@@ -16,6 +16,24 @@ const controller = {
         ingreso.tipoPago = params.tipoPago
         ingreso.importe = params.importe
 
+        if(ingreso.concepto === "PRESTAMO"){
+            Compra.estimatedDocumentCount((err, count) => {
+                const nDocuments = count
+                var compra = new Compra()
+                compra._id = mongoose.Types.ObjectId(),
+                compra.folio = nDocuments + 1
+                compra.provedor = params.provedor
+                compra.ubicacion = params.ubicacion
+                compra.tipoCompra = "PRESTAMO"
+                compra.importe = params.importe
+                compra.saldo = params.importe
+                compra.fecha = params.fecha
+                compra.status = 'ACTIVO'
+                compra.save()
+            })
+
+        }
+
         ingreso.save((err, ingresoSaved) => {
             conn.close()
             if(err){

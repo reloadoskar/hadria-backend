@@ -9,6 +9,7 @@ var controller = {
         const resp = await Compra
             .find({"status": "ACTIVO"})
             .select('clave folio ubicacion items importe')
+
             .populate({
                 path: 'items',
                 select: 'stock empaques cantidad costo empaquesStock producto, ubicacion',
