@@ -1,7 +1,7 @@
 const globals = require('../globals')
 const mongoose = require('mongoose');
 const clientOption = {
-    socketTimeoutMS: 30000,
+    socketTimeoutMS: 5000,
     // keepAlive: 30000,
     poolSize: 5,
     useNewUrlParser: true,
@@ -9,11 +9,11 @@ const clientOption = {
     useCreateIndex: true,
     useFindAndModify: false
   };
-
 module.exports = function conexionLobby(){
   const conn = mongoose.createConnection(globals.dbMaster, clientOption);
+  conn.model('User', require('../schemas/user'))
   conn.once("open", function() {
-      console.log("Bienvenido, accesando a HADRIA2");
+      console.log("HADRIA_2 On-Line");
   });
   conn.on('error',(err) =>{
     conn.close()
@@ -27,8 +27,5 @@ module.exports = function conexionLobby(){
     conn.close()
     console.log('Desconectado')
   })
-
-  conn.model('User', require('../schemas/user'));
-  
   return conn
 }

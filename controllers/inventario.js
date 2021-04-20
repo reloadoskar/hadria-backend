@@ -9,7 +9,6 @@ var controller = {
         const resp = await Compra
             .find({"status": "ACTIVO"})
             .select('clave folio ubicacion items importe')
-
             .populate({
                 path: 'items',
                 select: 'stock empaques cantidad costo empaquesStock producto, ubicacion',
@@ -115,6 +114,7 @@ var controller = {
                     items: {$push: {_id: "$_id", compra: "$compra", producto: "$producto", stock: "$stock", empaquesStock: "$empaquesStock", empaques: "$empaques"}},
                 })
                 .unwind('_id')
+                .sort('_id.nombre')
                 .then(inventario => {
                     conn.close()
                     return res.status(200).send({

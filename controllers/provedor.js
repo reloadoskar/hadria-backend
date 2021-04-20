@@ -101,7 +101,7 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const params = req.body;
-        const Provedor = conn.model('Provedor',require('../schemas/provedor') )
+        const Provedor = conn.model('Provedor')
 
         Provedor.findOneAndUpdate({_id: provedorId}, params, {new:true}, (err, provedorUpdated) => {
             conn.close()
@@ -128,7 +128,7 @@ const controller = {
         const provedorId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        const Provedor = conn.model('Provedor',require('../schemas/provedor') )
+        const Provedor = conn.model('Provedor')
         Provedor.findOneAndDelete({_id: provedorId}, (err, provedorRemoved) => {
             conn.close()
             if(!provedorRemoved){

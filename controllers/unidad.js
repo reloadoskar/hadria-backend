@@ -57,7 +57,7 @@ const controller = {
         const bd= req.params.bd
         const unidadId = req.params.id;
         const conn = con(bd)
-        const Unidad = conn.model('Unidad',require('../schemas/unidad') )
+        const Unidad = conn.model('Unidad')
 
         Unidad.findOneAndDelete({_id: unidadId}, (err, unidadRemoved) => {
             conn.close()

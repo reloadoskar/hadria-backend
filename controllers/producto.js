@@ -42,8 +42,12 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const Producto = conn.model('Producto')
+        const Unidad = conn.model('Unidad')
+        const Empauqe = conn.model('Empaque')
         const resp = await Producto
             .find({})
+            .populate('unidad')
+            .populate('empaque')
             .sort('clave')
             .lean()
             .then( productos => {

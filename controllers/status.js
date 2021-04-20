@@ -6,7 +6,7 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const params = req.body;
-        const Status = conn.model('Status',require('../schemas/status') )
+        const Status = conn.model('Status')
 
         //Crear el objeto a guardar
         var status = new Status();
@@ -34,7 +34,7 @@ var controller = {
     getStatuss: (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        const Status = conn.model('Status',require('../schemas/status') )
+        const Status = conn.model('Status')
         Status.find({}).sort('_id').exec( (err, statuss) => {
             conn.close()
             if(err || !statuss){
@@ -84,7 +84,7 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const params = req.body;
-        const Status = conn.model('Status',require('../schemas/status') )
+        const Status = conn.model('Status')
 
         Status.findOneAndUpdate({_id: statusId}, params, {new:true}, (err, statusUpdated) => {
             conn.close()

@@ -43,15 +43,15 @@ module.exports = function conexionCliente(bd) {
     conn.model('Venta', require('../schemas/venta'));
     conn.model('VentaItem', require('../schemas/venta_item'));
     conn.on('connected', function(){
-      console.log("Conectado OK.")
-    })
-    conn.on('error', function(err){
-      console.log(err)
+      console.log("Conectado -- Modelos Cargados.")
     })
     conn.on('disconnected', function(){
       mongoose.connection.close(() => {
-        console.log("Desconectado.");
+        console.log("Cerrando conexión -- Modelos Descargados.");
       })
+    })
+    conn.on('error', function(err){
+      console.log(err)
     })
     return conn; 
 }

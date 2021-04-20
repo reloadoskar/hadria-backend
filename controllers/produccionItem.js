@@ -5,8 +5,8 @@ const controller = {
         const params = req.body;
         const bd = req.params.bd
         const conn = con(bd)
-        const Produccion = conn.model('Produccion', require('../schemas/produccion'))
-        const ProduccionItem = conn.model('ProduccionItem',require('../schemas/produccionItem') )
+        const Produccion = conn.model('Produccion')
+        const ProduccionItem = conn.model('ProduccionItem')
         let item = new ProduccionItem()
 
         item.produccion = params.produccion._id
@@ -58,7 +58,7 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
 
-        const ProduccionItem = conn.model('ProduccionItem',require('../schemas/produccionItem') )
+        const ProduccionItem = conn.model('ProduccionItem')
 
         ProduccionItem.find({produccion: produccionID})
             .populate({ path: 'produccion', select: 'clave' })            
@@ -84,7 +84,7 @@ const controller = {
         const prodId = params.produccion._id
         const bd = req.params.bd
         const conn = con(bd)
-        const ProduccionItem = conn.model('ProduccionItem',require('../schemas/produccionItem') )
+        const ProduccionItem = conn.model('ProduccionItem')
         ProduccionItem.findOneAndDelete({ _id: id }, (err, insumoRemoved) => {
             if(err|| !insumoRemoved){
                 console.log(err)
@@ -103,7 +103,7 @@ const controller = {
         const bd = req.params.bd
         const params = req.body
         const conn = con(bd)
-        const ProduccionItem = conn.model('ProduccionItem', require('../schemas/produccionItem'))
+        const ProduccionItem = conn.model('ProduccionItem')
         ProduccionItem.findById(params.id).exec((err, item) => {
             if(err||!item){
                 console.log(err)

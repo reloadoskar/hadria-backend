@@ -7,7 +7,7 @@ const controller = {
         const params = req.body;
         const bd = req.params.bd
         const conn = con(bd)
-        const TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
+        const TipoCompra = conn.model('TipoCompra')
         
         //Crear el objeto a guardar
         let tipocompra = new TipoCompra();
@@ -85,7 +85,7 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const params = req.body;
-        const TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
+        const TipoCompra = conn.model('TipoCompra')
 
         TipoCompra.findOneAndUpdate({_id: tipocompraId}, params, {new:true}, (err, tipocompraUpdated) => {
             conn.close()
@@ -112,7 +112,7 @@ const controller = {
         const tipocompraId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        const TipoCompra = conn.model('TipoCompra', require('../schemas/tipoCompra') )
+        const TipoCompra = conn.model('TipoCompra')
         TipoCompra.findOneAndDelete({_id: tipocompraId}, (err, tipocompraRemoved) => {
             conn.close()
             if(!tipocompraRemoved){

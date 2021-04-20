@@ -263,7 +263,7 @@ var controller = {
         const bd = req.params.bd
         const conn = con(bd)
         
-        const Egreso = conn.model('Egreso',require('../schemas/egreso') )
+        const Egreso = conn.model('Egreso')
         const resp = await Egreso
             .find({"ubicacion": ubicacion, "fecha": fecha})
             .lean()

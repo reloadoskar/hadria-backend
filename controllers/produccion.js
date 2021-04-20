@@ -112,7 +112,7 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const params = req.body;
-        const Produccion = conn.model('Produccion',require('../schemas/produccion') )
+        const Produccion = conn.model('Produccion')
 
         Produccion.findOneAndUpdate({ _id: produccionId }, params, { new: true }, (err, produccionUpdated) => {
             conn.close()
@@ -141,7 +141,7 @@ const controller = {
         const produccionId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        const Produccion = conn.model('Produccion',require('../schemas/produccion') )
+        const Produccion = conn.model('Produccion')
         Produccion.findOneAndDelete({ _id: produccionId }, (err, produccionRemoved) => {
             mongoose.connection.close()
             conn.close()

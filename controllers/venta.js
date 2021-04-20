@@ -125,7 +125,7 @@ var controller = {
     getVentas: (req, res) => {
         const bd= req.params.bd
         const conn = con(bd)
-        var Venta = conn.model('Venta',require('../schemas/venta') )
+        var Venta = conn.model('Venta')
         Venta.find({})
         .populate('compras')
         .exec((err, ventas) => {
@@ -142,7 +142,7 @@ var controller = {
         const folio = req.params.folio
         const bd= req.params.bd
         const conn = con(bd)
-        const Venta = conn.model('Venta',require('../schemas/venta') )
+        const Venta = conn.model('Venta')
         Venta.findOne({"folio": folio })
             .populate({
                 path: 'items',
@@ -182,7 +182,7 @@ var controller = {
         const productId = req.params.id;
         const bd= req.params.bd
         const conn = con(bd)
-        const Venta = conn.model('Venta',require('../schemas/venta') )
+        const Venta = conn.model('Venta')
         Venta.aggregate()
             .project({"items": 1, fecha: 1, cliente: 1, tipoPago:1, })
             // .sort("items.item")
@@ -237,7 +237,7 @@ var controller = {
         let fecha2 = req.query.f2
         const bd= req.params.bd
         const conn = con(bd)
-        const Venta = conn.model('Venta',require('../schemas/venta') )
+        const Venta = conn.model('Venta')
         Venta.aggregate([
             { $match: { fecha: { $gte: fecha1, $lte: fecha2 } } },
             { $group: 
@@ -261,7 +261,7 @@ var controller = {
         let compraId = req.params.id;
         const bd= req.params.bd
         const conn = con(bd)
-        const Venta = conn.model('Venta',require('../schemas/venta') )
+        const Venta = conn.model('Venta')
         //recoger datos actualizados y validarlos
         let params = req.body;
             

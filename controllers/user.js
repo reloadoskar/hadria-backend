@@ -90,68 +90,123 @@ const controller = {
     save: (req, res) => {
         const {email, password, nombre, apellido} = req.body;
         const conn = conexion_app()
-        const User = conn.model('User');
-        const Empleado = conn.model('Empleado')
-        User.estimatedDocumentCount((err, count) => {
-            if (err) console.log(err)
-            const user = new User();
-            user.nombre = nombre
-            user.apellido = apellido
-            user.email = email
-            user.password = password
-            user.database = count+1
-            user.level = 1
-            user.fechaInicio = curDateISO
-            user.tryPeriodEnds = tryPeriod
-            user.paidPeriodEnds = tryPeriod
-            User.findOne({
-                email: email
-            })
-            .then(usr => {
-                if(!usr){
-                    //Creo un Empleado en BD local
-                    let nempleado = new Empleado()
-                    nempleado._id = usr._id
-                    nempleado.nombre = params.area.level
-                    nempleado.edad = params.edad
-                    nempleado.level = params.area.level
-                    nempleado.sexo = params.sexo
-                    nempleado.ubicacion = params.ubicacion
-                    nempleado.direccion = params.direccion
-                    nempleado.telefono = params.telefono
-                    nempleado.email = params.email
-                    nempleado.instagram = params.instagram
-                    nempleado.facebook = params.facebook
+        const User = conn.model('User')
 
-                    nempleado.save()
+        User
+        .findOne({email: email}, (err, user) => {
+            if(err){
+                return res.status(200).send({
+                    status: 'error',
+                    message:"¡Ups!, ocurrió un error.",
+                    err
+                })
+            }
+            if(user === null){
+                User.estimatedDocumentCount(count => {
+                    const user = new User();
+                    user.nombre = nombre
+                    user.apellido = apellido
+                    user.email = email
+                    user.database = count+1
+                    user.level = 1
+                    user.fechaInicio = curDateISO
+                    user.tryPeriodEnds = tryPeriod
+                    user.paidPeriodEnds = tryPeriod
+
                     bcrypt.hash(password, 10, (err, hash) => {
-                        user.password = hash
-                        
-                        user.save((err, user) => {
-                            conn.close()
+                        user.password = hash                        
+                        user.save((err, usr) => {
                             if(err || !user) {
-                                return res.status(404).send({
+                                return res.status(200).send({
                                     status: 'error',
-                                    message: "Ocurrio un error",
+                                    message:"No se guardó el usuario",
                                     err
                                 })
                             }else{
-                                return res.status(200).send({
-                                    status: 'success',
-                                    message:"Registrado.",
+                                let con2 = con(usr.database)
+                                let Ubicacion = con2.model('Ubicacion')
+                                let Unidad = con2.model('Unidad')
+                                let Empaque = con2.model('Empaque')
+                                let Empleado = con2.model('Empleado')
+                                let Cliente = con2.model('Cliente')
+                                let Provedor = con2.model('Provedor')
+
+                                Ubicacion.create({nombre:"BODEGA/ALMACÉN", tipo:"Almacenamiento"})
+                                
+                                Unidad.create({unidad:"Paquetes", abr:"Paq"})
+                                Unidad.create({unidad:"Cajas", abr:"Cj"})
+                                Unidad.create({unidad:"Kilos", abr:"Kg"})
+                                Unidad.create({unidad:"Onzas", abr:"Oz"})
+                                Unidad.create({unidad:"Gramos", abr:"g"})
+                                Unidad.create({unidad:"Piezas", abr:"pz"})
+                                Unidad.create({unidad:"Litros", abr:"lt"})
+                                Unidad.create({unidad:"Galónes", abr:"gt"})
+                                Unidad.create({unidad:"Garrafas", abr:"gt"})
+                                Unidad.create({unidad:"Bidón", abr:"gt"})
+                                
+                                Empaque.create({empaque:"Tarimas", abr:"Tr"})
+                                Empaque.create({empaque:"Cajas", abr:"Cj"})
+                                Empaque.create({empaque:"Bolsas", abr:"b"})
+                                Empaque.create({empaque:"TetraPack", abr:"Tp"})
+
+                                Cliente.create({
+                                    nombre: "PÚBLICO EN GENERAL",
+                                    rfc: "XAXX010101000",
+                                    dias_de_credito: 0,
+                                    limite_de_credito: 0,
+                                    credito_disponible: 0,
+                                })
+                                Provedor.create({
+                                    nombre: "COMPRAS GENERAL",
+                                    clave: "CG",
+                                    diasDeCredito: 0,
+                                    comision: 0,
+                                })
+
+                                let nueva_ubicacion_administracion = new Ubicacion()
+                                    nueva_ubicacion_administracion.nombre = "ADMINISTRACIÓN"
+                                    nueva_ubicacion_administracion.tipo = "Administración"
+                                    nueva_ubicacion_administracion.save()
+                                
+                                let nempleado = new Empleado()
+                                nempleado._id = usr._id
+                                nempleado.nombre = usr.nombre
+                                nempleado.level = 1
+                                nempleado.email = usr.email
+                                nempleado.ubicacion = nueva_ubicacion_administracion._id
+                                nempleado.save( (err, empleadoSaved) => {
+                                    // conn.close()
+                                    // con2.close()
+                                    if(err){
+                                        return res.status(200).send({
+                                            status: "error",
+                                            message: "No se pudo crear el Empleado.",
+                                            err
+                                        })
+                                    }
+                                    return res.status(200).send({
+                                        status: "success",
+                                        message: "Usuario creado con éxito.",
+                                        usr
+                                    })
                                 })
                             }
-                
                         })
 
                     })
-                }else{
-                    conn.close()
-                    return res.status(200).send({
-                        status: 'error',
-                        message:"El Usuario ya existe."
-                    })
-                }
+                })
+            }else{
+                return res.status(200).send({
+                    status: "error",
+                    message: "El usuario ya existe."
+                })
+            }
+        })            
+        .catch(err => {
+            return res.status(200).send({
+                status: 'error',
+                message:"¡Ups!, no se que pasó.",
+                err
             })
         })
     },
@@ -166,20 +221,24 @@ const controller = {
     login: (req, res) => {
         try{
         const conn = conexion_app()
-        const User = conn.model('User', require('../schemas/user') );
-        const {email, password} = req.body;
+        const User = conn.model('User')
+        const {usuario, password} = req.body
             User.findOne({
-                email: email
+                email: usuario
             })
-            .then(user => {
+            .lean()
+            .then( user => {
+                // console.log(user)
                 if(user){
                     if(bcrypt.compareSync(password, user.password)){
                         const conn2 = con(user.database)
                         const Empleado = conn2.model('Empleado')
-                        Empleado.findById(user._id).populate('ubicacion').exec((err, emp) => {
+                        Empleado.findById(user._id)
+                        .populate('ubicacion')
+                        // .lean()
+                        .then(emp => {
                             conn2.close()
                             conn.close()
-                            if(err || !emp){console.log(err)}
                             const payload = {
                                 _id: emp._id,
                                 nombre: emp.nombre,
@@ -192,13 +251,23 @@ const controller = {
                                 paidPeriodEnds: user.paidPeriodEnds,
                             }
                             let token = jwt.sign(payload, process.env.SECRET_KEY, {
-                                expiresIn: '1h'
+                                expiresIn: '12h'
                             })
                             return res.status(200).send({
                                 status: 'success',
                                 message: 'Bienvenido '+payload.nombre,
                                 token
                             })
+                        })
+                        .catch(err => {
+                            console.log(err)
+                            conn2.close()
+                            conn.close()
+                            return res.status(200).send({
+                                status: 'error',
+                                message: "El empleado es incorrecto.",
+                                err
+                            })    
                         })
                     }else{
                         return res.status(200).send({
@@ -213,6 +282,13 @@ const controller = {
                     })
                 }
             })
+            .catch(err => {
+                return res.status(200).send({
+                    status: "error",
+                    message: "Algo paso con la BASE DE DATOS.",
+                    err
+                })
+            })
         }catch(err){
             console.log(err)
             return res.status(500).send({
@@ -225,7 +301,7 @@ const controller = {
 
     profile: (req, res) => {
         const conn = conexion_app()
-        const User = conn.model('User', require('../schemas/user') );
+        const User = conn.model('User')
         let decoded = jwt.verify(req.headers['authorization'], process.env.SECRET_KEY)
 
         User.findOne({

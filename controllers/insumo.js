@@ -56,7 +56,7 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
 
-        const Insumo = conn.model('Insumo',require('../schemas/insumo') )
+        const Insumo = conn.model('Insumo')
 
         Insumo.find({produccion: produccionID})
             .populate({ path: 'produccion', select: 'clave' })            
@@ -81,7 +81,7 @@ const controller = {
         const id = req.body._id
         const bd = req.params.bd
         const conn = con(bd)
-        const Insumo = conn.model('Insumo',require('../schemas/insumo') )
+        const Insumo = conn.model('Insumo')
 
         Insumo.findOneAndDelete({ _id: id }, (err, insumoRemoved) => {
             mongoose.connection.close()
@@ -101,7 +101,7 @@ const controller = {
         const bd = req.params.bd
         const params = req.body
         const conn = con(bd)
-        const Insumo = conn.model('Insumo', require('../schemas/insumo'))
+        const Insumo = conn.model('Insumo')
         Insumo.findById(params.id).exec((err, item) => {
             if(err||!item){
                 conn.close()
@@ -123,7 +123,7 @@ const controller = {
         const bd = req.params.bd
         const params = req.body
         const conn = con(bd)
-        const Insumo = conn.model('Insumo', require('../schemas/insumo'))
+        const Insumo = conn.model('Insumo')
         Insumo.findById(params.id).exec((err, item) => {
             if(err||!item){
                 conn.close()

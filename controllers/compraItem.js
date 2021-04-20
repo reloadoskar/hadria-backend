@@ -39,7 +39,7 @@ const controller = {
         const bd = req.params.bd
         const params = req.body
         const conn = con(bd)
-        const CompraItem = conn.model('CompraItem', require('../schemas/compra_item'))
+        const CompraItem = conn.model('CompraItem')
         CompraItem.findById(params.id).exec((err, item) => {
             if(err||!item){
                 console.log(err)
@@ -62,7 +62,7 @@ const controller = {
         const bd = req.params.bd
         const params = req.body
         const conn = con(bd)
-        const CompraItem = conn.model('CompraItem', require('../schemas/compra_item'))
+        const CompraItem = conn.model('CompraItem')
         CompraItem.findById(params.id).exec((err, item) => {
             if(err||!item){
                 conn.close()

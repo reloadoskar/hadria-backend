@@ -27,7 +27,11 @@ const controller = {
         const conn = con(bd)
         const Ubicacion = conn.model('Ubicacion')
         Ubicacion.aggregate()
-            .lookup({ from: 'ingresos', localField: "_id", foreignField: 'ubicacion', as: 'ingresos' })
+            .lookup({ 
+                from: 'ingresos', 
+                localField: "_id", 
+                foreignField: 'ubicacion', 
+                as: 'ingresos' })
             .lookup({ from: 'egresos', localField: "_id", foreignField: 'ubicacion', as: 'egresos' })
             .exec((err, disp)=>{
                 conn.close()

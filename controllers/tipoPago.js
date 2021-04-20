@@ -80,7 +80,7 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const params = req.body;
-        const TipoPago = conn.model('TipoPago', require('../schemas/tipoPago') )
+        const TipoPago = conn.model('TipoPago')
         
         TipoPago.findOneAndUpdate({_id: tipopagoId}, params, {new:true}, (err, tipopagoUpdated) => {
             conn.close()

@@ -45,7 +45,7 @@ const controller = {
     getClientes: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        const Cliente = conn.model('Cliente',require('../schemas/cliente') )
+        const Cliente = conn.model('Cliente')
         
         const resp = await Cliente.find({})
             .sort('_id')
