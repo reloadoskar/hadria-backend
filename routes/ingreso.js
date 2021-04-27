@@ -7,7 +7,7 @@ var router = express.Router();
 
 //Rutas
 router.post('/:bd/ingreso/save', Ingreso.save);
-router.get('/:bd/ingresos', Ingreso.getIngresos);
+router.get('/:bd/ingresos/:fecha', Ingreso.getIngresosDelDia);
 // router.get('/ingreso/:id', Ingreso.getingreso);
 // router.put('/ingreso/:id', Ingreso.update);
 // router.delete('/ingreso/:id', Ingreso.delete);

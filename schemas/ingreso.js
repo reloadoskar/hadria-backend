@@ -19,4 +19,21 @@ var IngresoSchema = Schema({
     timestamps: true
 });
 
+IngresoSchema.statics.ingresosDelDia = function(fecha){
+    return new Promise((resolve, reject) => {
+        this.find({fecha: fecha})
+            .populate('ubicacion')
+            .populate({path: 'venta', populate: { path: 'items'}})
+            .sort({"createdAt": 1 })
+            .exec((err, docs) => {
+                if(err) {
+                    console.error(err)
+                    return reject(err)
+                }
+          
+                resolve(docs)
+            })
+        })
+    }
+
 module.exports = IngresoSchema

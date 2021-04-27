@@ -41,7 +41,7 @@ var controller = {
         const conn = con(bd)
         const Venta = conn.model('Venta')
         const resp = await Venta
-            .find({cliente: clienteID, saldo: {$gt: 0}})
+            .find({cliente: clienteID, saldo: {$gt: 1}})
             .lean()
             .then( cuentas => {
                 conn.close()
@@ -68,7 +68,7 @@ var controller = {
             .select('nombre dias_de_credito cuentas')
             .populate({
                 path: 'cuentas',
-                match: { saldo: {$ne: 0} },
+                match: { saldo: {$gt: 1} },
                 select: 'concepto importe acuenta saldo venta',
                 populate: { path: 'venta', select: 'items folio fecha importe'}
             })

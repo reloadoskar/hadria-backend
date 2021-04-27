@@ -157,6 +157,33 @@ const controller = {
                     err
                 })
             })            
+    },
+
+    getIngresosDelDia: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        const fecha = req.params.fecha
+    
+        const Ingreso = conn.model('Ingreso')
+        try{
+            Ingreso.ingresosDelDia(fecha)
+                .then(ingresos => {
+                    return res.status(200).send({
+                        status: "succes",
+                        ingresos
+                    })
+                })
+                .catch(err => {
+                    console.log(err)
+                    throw "No se cargaron los ingresos."
+                })
+            
+        }catch(err){
+            return res.status(200).send({
+                status: "error",
+                message: err
+            })
+        }
     }
 
 }

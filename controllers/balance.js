@@ -26,20 +26,15 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const Ubicacion = conn.model('Ubicacion')
-        Ubicacion.aggregate()
-            .lookup({ 
-                from: 'ingresos', 
-                localField: "_id", 
-                foreignField: 'ubicacion', 
-                as: 'ingresos' })
-            .lookup({ from: 'egresos', localField: "_id", foreignField: 'ubicacion', as: 'egresos' })
-            .exec((err, disp)=>{
-                conn.close()
-                if(err){console.log(err)}
-                return res.status(200).send({
-                    status: "success",
-                    disp
+        let disp = []
+        Ubicacion.find({})
+            .then(ubicacions => {
+                ubicacions.forEach(ub => {
+
                 })
+            })
+            .catch(err => {
+                console.log(err)
             })
     },
 }

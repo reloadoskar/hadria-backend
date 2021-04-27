@@ -159,6 +159,33 @@ const controller = {
         })
 
 
+    },
+
+    getEgresosDelDia: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        const fecha = req.params.fecha
+    
+        const Egreso = conn.model('Egreso')
+        try{
+            Egreso.egresosDelDia(fecha)
+                .then(egresos => {
+                    return res.status(200).send({
+                        status: "succes",
+                        egresos
+                    })
+                })
+                .catch(err => {
+                    console.log(err)
+                    throw "No se cargaron los egresos."
+                })
+            
+        }catch(err){
+            return res.status(200).send({
+                status: "error",
+                message: err
+            })
+        }
     }
 
 }

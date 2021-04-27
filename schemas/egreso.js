@@ -18,4 +18,21 @@ var EgresoSchema = Schema({
     timestamps: true
 });
 
+EgresoSchema.statics.egresosDelDia = function(fecha){
+    return new Promise((resolve, reject) => {
+        this.find({fecha: fecha})
+            .populate('ubicacion')
+            .populate({path: 'compra', select: 'folio status'})
+            .sort({"createdAt": 1 })
+            .exec((err, docs) => {
+                if(err) {
+                    console.error(err)
+                    return reject(err)
+                }
+          
+                resolve(docs)
+            })
+        })
+    }
+
 module.exports = EgresoSchema

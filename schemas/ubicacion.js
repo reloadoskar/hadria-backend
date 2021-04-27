@@ -8,4 +8,12 @@ var UbicacionSchema = Schema({
     tipo: {type: String},
 });
 
+UbicacionSchema.virtual('ingresos', {
+    ref: 'Ingreso',
+    localField: '_id',
+    foreignField: 'ubicacion',
+    justOne: false,
+    // match: { isActive: true }
+  });
+
 module.exports = UbicacionSchema

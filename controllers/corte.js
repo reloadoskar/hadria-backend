@@ -294,7 +294,7 @@ var controller = {
         const Ingreso = conn.model('Ingreso')
         const resp = await Ingreso
             .find({"ubicacion": ubicacion, "fecha": fecha, concepto: {$ne: 'VENTA'}})
-            .$where(lean)
+            .lean()
             .then(ingresos => {
                 conn.close()
                 return res.status(200).send({
