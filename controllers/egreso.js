@@ -20,7 +20,7 @@ const controller = {
                 egreso.importe = params.importe
                 egreso.saldo = 0
                 egreso.save((err, egreso) => {
-                    conn.close()
+                    
                     if( err || !egreso){
                         return res.status(404).send({
                             status: 'error',

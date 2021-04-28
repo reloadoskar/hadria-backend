@@ -16,7 +16,7 @@ exports.cxp_list = async (req, res) => {
         })
         .lean()
         .then( provs => {
-            conn.close()
+            
             return res.status(200).send({
                 status: 'success',
                 message: 'Cuentas encontradas',
@@ -24,7 +24,7 @@ exports.cxp_list = async (req, res) => {
             })
         })
         .catch(err => {
-            conn.close()
+            
             return res.status(500).send({
                 status: 'error',
                 message: 'Cuentas encontradas',
@@ -64,7 +64,7 @@ exports.cxp_create_pago = (req, res) => {
                     if(err){console.log(err)}
                     Egreso.findById(params.cuenta._id).exec((err, eg)=>{
                         if(err){
-                            conn.close()
+                            
                             return res.status(500).send({
                                 status: "error",
                                 message: "¡Ups! Ocurrió un Eerror.",
@@ -73,7 +73,7 @@ exports.cxp_create_pago = (req, res) => {
                         }
                         eg.saldo -= params.importe
                         eg.save((err, saved)=>{
-                            conn.close()
+                            
                             return res.status(200).send({
                                 status: "success",
                                 message: "Pago registrado correctamente",
@@ -110,7 +110,7 @@ exports.cxp_update_saldo = (req, res) => {
             }
         }
     })
-    conn.close()
+    
     return res.status(200).send({
         status: 'success',
         message: "Saldo actualizaso",

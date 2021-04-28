@@ -325,14 +325,21 @@ var controller = {
                     let empUpdated = 0 
                         stockUpdated = item.compraItem.stock + item.cantidad
                         empUpdated = item.compraItem.empaquesStock + item.empaques
-                    CompraItem.findById(item.compraItem._id).exec((err, item) => {
-                        if(err){console.log(err)}
-                        item.stock = stockUpdated
-                        item.empaquesStock = empUpdated
-                        item.save( (err, itemSaved) => {
-                            if(err)console.log("Error al actualizar stock"+err)
-                        })
-                    })
+
+                    CompraItem.updateOne({_id: item.compraItem._id },
+                            {"$inc": { "stock":  +item.cantidad, "empaquesStock": +item.empaques }},
+                            (err, doc) => {
+                                if(err)console.log(err)
+                            }
+                        )
+                    // CompraItem.findById(item.compraItem._id).exec((err, item) => {
+                    //     if(err){console.log(err)}
+                    //     item.stock = stockUpdated
+                    //     item.empaquesStock = empUpdated
+                    //     item.save( (err, itemSaved) => {
+                    //         if(err)console.log("Error al actualizar stock"+err)
+                    //     })
+                    // })
                 })
 
                 VentaItem.deleteMany({"venta": venta._id}, err => {

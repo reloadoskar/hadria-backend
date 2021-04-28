@@ -26,7 +26,7 @@ var controller = {
 
         ingreso.save((err, ingresoSaved) => {
             if(err){console.log(err)}
-            conn.close()
+            
             return res.status(500).send({
                 status: "success",
                 message: "Cuenta por cobrar creada correctamente.",
@@ -44,14 +44,14 @@ var controller = {
             .find({cliente: clienteID, saldo: {$gt: 1}})
             .lean()
             .then( cuentas => {
-                conn.close()
+                
                 return res.status(200).send({
                     status: "success",
                     cuentas
                 })
             })
             .catch(err=>{
-                conn.close()
+                
                 return res.status(500).send({
                     status: "error",                    
                     err
@@ -74,14 +74,14 @@ var controller = {
             })
             .lean()
             .then( clientes => {
-                conn.close()
+                
                 return res.status(200).send({
                     status: "success",
                     clientes
                 })
             })
             .catch(err=>{
-                conn.close()
+                
                 return res.status(500).send({
                     status: "error",
                     err
@@ -99,14 +99,14 @@ var controller = {
             .populate('ubicacion')
             .lean()
             .then(cuentas => {
-                conn.close()
+                
                 return res.status(200).send({
                     status:"success",
                     cuentas
                 })
             })
             .catch(err => {
-                conn.close()
+                
                 return res.status(500).send({
                     status:"error",
                     err
@@ -153,7 +153,7 @@ var controller = {
                     venta.pagos.push(ingreso._id)
                     venta.save()
                     ingreso.save().then((err, ingreso) => {
-                        conn.close()                        
+                                                
                         if(err){console.log(err)}
                         return res.status(200).send({
                             status: 'success',
