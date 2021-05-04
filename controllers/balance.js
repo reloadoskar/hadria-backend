@@ -18,7 +18,6 @@ const controller = {
             .catch(err => {
                 return res.status(500).send({status:"error", err})
             })
-        
         conn.close()
     },
 
@@ -36,6 +35,7 @@ const controller = {
             .catch(err => {
                 console.log(err)
             })
+        conn.close()
     },
 }
 

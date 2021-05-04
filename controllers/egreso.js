@@ -20,7 +20,7 @@ const controller = {
                 egreso.importe = params.importe
                 egreso.saldo = 0
                 egreso.save((err, egreso) => {
-                    
+                    conn.close()
                     if( err || !egreso){
                         return res.status(404).send({
                             status: 'error',
@@ -170,17 +170,20 @@ const controller = {
         try{
             Egreso.egresosDelDia(fecha)
                 .then(egresos => {
+                    conn.close()
                     return res.status(200).send({
                         status: "succes",
                         egresos
                     })
                 })
                 .catch(err => {
+                    conn.close()
                     console.log(err)
                     throw "No se cargaron los egresos."
                 })
             
         }catch(err){
+            conn.close()
             return res.status(200).send({
                 status: "error",
                 message: err

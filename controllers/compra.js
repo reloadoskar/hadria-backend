@@ -83,6 +83,7 @@ var controller = {
                         compra.save((err, compraSaved) => {          
                                                                   
                             if (err || !compraSaved) {
+                                conn.close()  
                                 return res.status(500).send({
                                     status: 'error',
                                     message: 'Error al devolver la compra' + err
@@ -374,6 +375,7 @@ var controller = {
 
             compra.save((err, saved) => {
                 if(err | !saved){
+                    conn.close()
                     return res.status(200).send({
                         status: 'error',
                         message: 'Ocurrió un error',
@@ -411,6 +413,7 @@ var controller = {
 
         newItem.save((err, itmSaved) => {
             if(err || !itmSaved) {
+                conn.close()  
                 return res.status(200).send({
                     status: 'error',
                     message: 'Ocurrio un error.'

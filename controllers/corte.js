@@ -149,6 +149,7 @@ var controller = {
                         egreso.saldo = 0
                         egreso.save((err, egreso) => {
                             if( err || !egreso){
+                                conn.close()
                                 return res.status(404).send({
                                     status: 'error',
                                     message: 'No se registró el egreso.' + err
@@ -179,6 +180,7 @@ var controller = {
                         })
                     })
                 }else{
+                    conn.close()
                     return res.status(200).send({
                         status: 'error',
                         message: 'No se guardó.'
@@ -249,6 +251,7 @@ var controller = {
                 })
 
         }catch(err){
+            conn.close()
             return res.status(200).send({
                 status: 'error desconocido',
                 err,

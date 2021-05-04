@@ -35,6 +35,7 @@ const controller = {
         }
 
         ingreso.save((err, ingresoSaved) => {
+            conn.close()
             if(err){
                 return res.status(500).send({
                     status: 'error',
@@ -60,12 +61,14 @@ const controller = {
             .populate({path: 'ubicacion', select: 'nombre'})
             .lean()
             .then(ingresos => {
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     ingresos
                 })                
             })
             .catch( err => {
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los ingresos' + err
@@ -89,12 +92,14 @@ const controller = {
             .findById(ingresoId)
             .lean()
             .then(ingreso => {
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     ingreso
                 })
             })
-            .catch(err => {        
+            .catch(err => {   
+                conn.close()     
                 return res.status(404).send({
                     status: 'success',
                     message: 'No existe el ingreso.',
@@ -113,12 +118,14 @@ const controller = {
         const resp = await Ingreso
             .findOneAndUpdate({_id: ingresoId}, params, {new:true})
             .then(ingresoUpdated => {
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     ingreso: ingresoUpdated
                 })
             })
             .catch(err => {
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al actualizar',
@@ -134,13 +141,15 @@ const controller = {
         const Ingreso = conn.model('Ingreso')
         const resp = await Ingreso
             .findOneAndDelete({_id: ingresoId})
-            .then(ingresoRemoved => {            
+            .then(ingresoRemoved => {   
+                conn.close()         
                 return res.status(200).send({
                     status: 'success',
                     ingresoRemoved
                 })
             })
             .catch(err => {
+                conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'No se pudo borrar el ingreso.',
@@ -158,17 +167,20 @@ const controller = {
         try{
             Ingreso.ingresosDelDia(fecha)
                 .then(ingresos => {
+                    conn.close()
                     return res.status(200).send({
                         status: "succes",
                         ingresos
                     })
                 })
                 .catch(err => {
+                    conn.close()
                     console.log(err)
                     throw "No se cargaron los ingresos."
                 })
             
         }catch(err){
+            conn.close()
             return res.status(200).send({
                 status: "error",
                 message: err
