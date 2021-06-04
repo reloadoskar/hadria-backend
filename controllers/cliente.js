@@ -18,9 +18,9 @@ const controller = {
         cliente.rfc = params.rfc;
         cliente.tel1 = params.tel1;
         cliente.email = params.email;
-        cliente.limite_de_credito = params.limiteDeCredito;
-        cliente.credito_disponible = params.limiteDeCredito;
-        cliente.dias_de_credito = params.diasDeCredito;
+        cliente.limite_de_credito = params.limite_de_credito;
+        cliente.credito_disponible = params.limite_de_credito;
+        cliente.dias_de_credito = params.dias_de_credito;
 
         //Guardar objeto
         cliente.save((err, clienteStored) => {
@@ -58,6 +58,7 @@ const controller = {
                     clientes
                 })
             })
+            .sort('createdAt')
             .catch(err => {
                 conn.close()
                 return res.status(500).send({
