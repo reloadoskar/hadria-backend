@@ -48,7 +48,7 @@ const controller = {
         const Cliente = conn.model('Cliente')
         
         const resp = await Cliente.find({})
-            .sort('_id')
+            .sort('createdAt')
             .lean()
             .then((clientes) => {
                 conn.close()
@@ -58,7 +58,6 @@ const controller = {
                     clientes
                 })
             })
-            .sort('createdAt')
             .catch(err => {
                 conn.close()
                 return res.status(500).send({

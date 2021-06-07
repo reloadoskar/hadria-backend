@@ -39,7 +39,7 @@ const controller = {
         const conn = con(bd)
         const Ubicacion = conn.model('Ubicacion')
         Ubicacion.find({}).sort('nombre').exec( (err, ubicacions) => {
-            
+            conn.close()
             if(err || !ubicacions){
                 return res.status(500).send({
                     status: 'error',
@@ -64,7 +64,7 @@ const controller = {
         const Ubicacion = conn.model('Ubicacion')
 
         Ubicacion.findById(ubicacionId, (err, ubicacion) => {
-            
+            conn.close()
             if(err || !ubicacion){
                 return res.status(404).send({
                     status: 'success',
@@ -86,7 +86,7 @@ const controller = {
         const Ubicacion = conn.model('Ubicacion')
     
         Ubicacion.findOneAndUpdate({_id: ubicacionId}, params, {new:true}, (err, ubicacionUpdated) => {
-            
+            conn.close()
             if(err){
                 return res.status(500).send({
                     status: 'error',
@@ -116,7 +116,7 @@ const controller = {
         Compra.find({"ubicacion": ubicacionId, "status": "ACTIVO"}).exec((err, compras)=>{
             if(err){console.log(err)}
             if(compras.length > 0){
-                
+                conn.close()
                 return res.status(200).send({
                     status: "warning",
                     message: "No se puede eliminar la ubicación, existen COMPRAS ACTIVAS relacionadas a éste.",
@@ -124,7 +124,7 @@ const controller = {
                 })
             }else{
                 Ubicacion.findOneAndDelete({_id: ubicacionId}, (err, ubicacionRemoved) => {
-                    
+                    conn.close()
                     if(!ubicacionRemoved){
                         return res.status(500).send({
                             status: 'error',
