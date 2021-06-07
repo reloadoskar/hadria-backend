@@ -47,7 +47,7 @@ module.exports = function conexionCliente(bd) {
     })
     conn.on('disconnected', function(){
       mongoose.connection.close(() => {
-        console.log("Cerrando conexión -- Modelos Descargados.");
+        console.log("Desconectado.");
       })
     })
     conn.on('error', function(err){

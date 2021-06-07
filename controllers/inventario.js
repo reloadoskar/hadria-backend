@@ -1,5 +1,6 @@
 'use strict'
 const con = require('../conections/hadriaUser')
+const mongoose = require('mongoose')
 var controller = {
     getInventario: async (req, res) => {
         const bd = req.params.bd
@@ -45,42 +46,53 @@ var controller = {
             })
     },
     
-    getInventarioBy: async (req, res) => {
+    getInventarioBy: (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
         const ubicacion = req.params.ubicacion;
-        const Compra = conn.model('Compra')
-        const resp = await Compra
-            .find({ "ubicacion": ubicacion})
-            .select('clave items ubicacion folio')
-            .populate('ubicacion')
-            .populate('items')
-            .populate({
-                path: 'items',
-                populate: { 
-                    path: 'producto',
-                    populate: {
-                        path: 'unidad empaque',
-                        select: 'abr'
-                    }
-                },
+        const CompraItem = conn.model('CompraItem')
+        console.log('CompraItem')
+        CompraItem        
+            .aggregate()
+            .match({ubicacion: mongoose.Types.ObjectId(ubicacion), empaquesStock: { $gt: 0} })
+            .lookup({ from: 'ubicacions', localField: "ubicacion", foreignField: '_id', as: 'ubicacion' })
+            .lookup({ from: 'compras', localField: "compra", foreignField: '_id', as: 'compra' })
+            .lookup({ from: 'productos', localField: "producto", foreignField: '_id', as: 'producto' })
+            .project({
+                _id: 1,
+                stock: 1,
+                empaques: 1,
+                empaquesStock: 1,
+                ubicacion: 1, 
+                "compra._id":1,
+                "compra.folio": 1, 
+                "compra.clave": 1, 
+                "compra.status": 1,
+                "producto._id": 1,
+                "producto.descripcion": 1,
             })
-            .lean()
-            .then( inventario => {
+            .unwind('compra')
+            .unwind('producto')
+            .unwind('ubicacion')
+            // .group({
+            //     _id: "$ubicacion",
+            //     items: {$push: {_id: "$_id", compra: "$compra", producto: "$producto", stock: "$stock", empaquesStock: "$empaquesStock", empaques: "$empaques"}},
+            // })
+            
+            .sort('_id.nombre')
+            .then(inventario => {
                 conn.close()
                 return res.status(200).send({
-                    status: 'success',
-                    message: 'Items encontrados',
+                    status: "Encontrado",
                     inventario
                 })
             })
             .catch(err => {
                 conn.close()
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'No se encontraron items',
-                    err
-                })
+                    return res.status(500).send({
+                        status: "error",
+                        err
+                    })
             })
     },
 
@@ -94,6 +106,8 @@ var controller = {
                 .lookup({ from: 'ubicacions', localField: "ubicacion", foreignField: '_id', as: 'ubicacion' })
                 .lookup({ from: 'compras', localField: "compra", foreignField: '_id', as: 'compra' })
                 .lookup({ from: 'productos', localField: "producto", foreignField: '_id', as: 'producto' })
+                .lookup({ from: 'unidads', localField: "producto.unidad", foreignField: '_id', as: 'productounidad' })
+                .lookup({ from: 'empaques', localField: "producto.empaque", foreignField: '_id', as: 'productoempaque' })
                 .project({
                     _id: 1,
                     stock: 1,
@@ -106,12 +120,24 @@ var controller = {
                     "compra.status": 1,
                     "producto._id": 1,
                     "producto.descripcion": 1,
+                    "productounidad": 1,
+                    "productoempaque": 1,
                 })
                 .unwind('compra')
                 .unwind('producto')
+                .unwind('productounidad')
+                .unwind('productoempaque')
                 .group({
                     _id: "$ubicacion",
-                    items: {$push: {_id: "$_id", compra: "$compra", producto: "$producto", stock: "$stock", empaquesStock: "$empaquesStock", empaques: "$empaques"}},
+                    items: {$push: {
+                        _id: "$_id", 
+                        compra: "$compra", 
+                        producto: "$producto", 
+                        productounidad: "$productounidad", 
+                        productoempaque: "$productoempaque", 
+                        stock: "$stock", 
+                        empaquesStock: "$empaquesStock", 
+                        empaques: "$empaques"}},
                 })
                 .unwind('_id')
                 .sort('_id.nombre')

@@ -5,6 +5,7 @@ const controller = {
     getBalance: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
+        console.log("getBalance")
         const Balance = conn.model('Balance', require('../schemas/balance'))
     
         const resp = await Balance.findOne().sort('-fecha')
@@ -24,6 +25,7 @@ const controller = {
     disponiblexUbicacion: (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
+        console.log("disponiblexUbicacion")
         const Ubicacion = conn.model('Ubicacion')
         let disp = []
         Ubicacion.find({})

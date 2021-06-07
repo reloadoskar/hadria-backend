@@ -26,6 +26,7 @@ var controller = {
         if(params.tipoPago === "CRÉDITO"){
             if(params.acuenta>0){
                 venta.acuenta = params.acuenta
+                ingreso.descripcion = "PAGO A CUENTA DE " + params.cliente.nombre
                 ingreso.importe = params.acuenta
                 ingreso.saldo = params.saldo
             }else{
@@ -68,7 +69,7 @@ var controller = {
                     ventaItem.ubicacion = venta.ubicacion
                     ventaItem.fecha = venta.fecha
                     ventaItem.compra = item.compra
-                    ventaItem.compraItem = item.item
+                    ventaItem.compraItem = item.itemOrigen
                     ventaItem.producto = item.producto._id
                     ventaItem.cantidad = item.cantidad
                     ventaItem.empaques = item.empaques
@@ -80,7 +81,7 @@ var controller = {
                     })
                     venta.items.push(ventaItem._id)
 
-                    CompraItem.updateOne({_id: item.item },
+                    CompraItem.updateOne({_id: item.itemOrigen },
                         {"$inc": { "stock":  -item.cantidad, "empaquesStock": -item.empaques }},
                         (err, doc) => {
                             if(err)console.log(err)

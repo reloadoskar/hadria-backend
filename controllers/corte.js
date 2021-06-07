@@ -82,12 +82,19 @@ var controller = {
             corte.ubicacion = ub
 
             const resumn = await VentaItem
-                    .aggregate()
-                    .match({ubicacion: mongoose.Types.ObjectId(ubicacion), fecha: fecha })
-                    .group({_id: "$compraItem", item: {$first:"$compraItem"}, compra: {$first:"$compra"}, producto: {$first: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
+                .aggregate()
+                .match({ubicacion: mongoose.Types.ObjectId(ubicacion), fecha: fecha })
+                // V 1.0
+                // .group({_id: {producto: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
+                // .lookup({ from: 'productos', localField: "_id.producto", foreignField: '_id', as: 'producto' })
+                // .sort({"_id.producto": 1, "_id.precio": -1})
+                // .unwind('producto')
+
+                // V 2.0
                     .lookup({ from: 'productos', localField: "producto", foreignField: '_id', as: 'producto' })
                     .lookup({ from: 'compras', localField: "compra", foreignField: '_id', as: 'compra' })
-                    .lookup({ from: 'compraitems', localField: "item", foreignField: '_id', as: 'item' })
+                    .lookup({ from: 'compraitems', localField: "compraItem", foreignField: '_id', as: 'item' })
+                    .group({_id: "$item", item: {$first:"$compraItem"}, compra: {$first:"$compra"}, producto: {$first: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
                     .unwind('producto')
                     .unwind('compra')
                     .unwind('item')

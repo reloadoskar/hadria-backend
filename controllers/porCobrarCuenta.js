@@ -137,7 +137,7 @@ var controller = {
             if(err){console.log(err)}
 
             cliente.pagos.push(ingreso._id)
-            cliente.credito_disponible += params.importe
+            cliente.credito_disponible += parseFloat(params.importe)
 
             cliente.save()
             
