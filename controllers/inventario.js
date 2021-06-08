@@ -58,6 +58,8 @@ var controller = {
             .lookup({ from: 'ubicacions', localField: "ubicacion", foreignField: '_id', as: 'ubicacion' })
             .lookup({ from: 'compras', localField: "compra", foreignField: '_id', as: 'compra' })
             .lookup({ from: 'productos', localField: "producto", foreignField: '_id', as: 'producto' })
+            .lookup({ from: 'unidads', localField: "producto.unidad", foreignField: '_id', as: 'productounidad' })
+            .lookup({ from: 'empaques', localField: "producto.empaque", foreignField: '_id', as: 'productoempaque' })
             .project({
                 _id: 1,
                 stock: 1,
@@ -70,10 +72,14 @@ var controller = {
                 "compra.status": 1,
                 "producto._id": 1,
                 "producto.descripcion": 1,
+                "productounidad": 1,
+                "productoempaque": 1,
             })
             .unwind('compra')
             .unwind('producto')
             .unwind('ubicacion')
+            .unwind('productounidad')
+            .unwind('productoempaque')
             // .group({
             //     _id: "$ubicacion",
             //     items: {$push: {_id: "$_id", compra: "$compra", producto: "$producto", stock: "$stock", empaquesStock: "$empaquesStock", empaques: "$empaques"}},
