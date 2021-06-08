@@ -11,6 +11,7 @@ var controller = {
         const Ingreso = conn.model('Ingreso')
         const Venta = conn.model('Venta')
         const VentaItem = conn.model('VentaItem')
+        const Compra = conn.model('Compra')
         const CompraItem = conn.model('CompraItem')
         const Cliente = conn.model('Cliente')
 
@@ -83,6 +84,14 @@ var controller = {
 
                     CompraItem.updateOne({_id: item.itemOrigen },
                         {"$inc": { "stock":  -item.cantidad, "empaquesStock": -item.empaques }},
+                        (err, doc) => {
+                            if(err)console.log(err)
+                        }
+                    )
+
+                    Compra.updateOne(
+                        {_id: item.compra},
+                        {"$push": { ventas: venta._id}},
                         (err, doc) => {
                             if(err)console.log(err)
                         }

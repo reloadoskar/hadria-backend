@@ -197,6 +197,19 @@ var controller = {
                 path: 'items',
                 populate: { path: 'ubicacion'},
             })
+            .populate('ventas')
+            .populate({
+                path: 'ventas',
+                populate: { path: 'cliente' , select: 'nombre'},
+            })
+            .populate({
+                path: 'ventas',
+                populate: { path: 'ubicacion', select: 'nombre' },
+            })
+            .populate({
+                path: 'ventas',
+                populate: { path: 'items' , populate: 'producto' },
+            })
             .then(compras => {
                 conn.close()
                 return res.status(200).send({
@@ -224,7 +237,6 @@ var controller = {
 
         const compra = await Compra
             .findById(compraId)
-            .lean()
             .populate('provedor', 'clave nombre tel1 cta1 email diasDeCredito comision')
             .populate('ubicacion')
             .populate('tipoCompra')
@@ -245,6 +257,8 @@ var controller = {
                 populate: { path: 'producto', populate: { path: 'empaque'} },
             })
             .populate('pagos.ubicacion')
+            .populate('ventas')
+            .lean()
             .catch( err => {
                 conn.close()
                 return res.status(404).send({
