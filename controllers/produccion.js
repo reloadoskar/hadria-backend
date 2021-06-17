@@ -98,7 +98,8 @@ const controller = {
                 produccion
             })
         })
-        .catch( err => {            
+        .catch( err => {     
+            conn.close()       
             return res.status(404).send({
                 status: 'success',
                 message: 'Ocurrio un error.',
@@ -143,7 +144,6 @@ const controller = {
         const conn = con(bd)
         const Produccion = conn.model('Produccion')
         Produccion.findOneAndDelete({ _id: produccionId }, (err, produccionRemoved) => {
-            mongoose.connection.close()
             conn.close()
             if (!produccionRemoved) {
                 return res.status(500).send({

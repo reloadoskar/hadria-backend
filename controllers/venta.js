@@ -108,6 +108,7 @@ var controller = {
                                 populate: { path: 'ubicacion'},
                             })
                             .exec((err, vnt) => {
+                                conn.close()
                     if(err){console.log(err)}
                         return res.status(200).send({
                     status: "success",
@@ -213,18 +214,21 @@ var controller = {
                 .sort({"_id.producto": 1, "_id.precio": -1})
                 .unwind('producto')
                 .then(ventas =>{
+                    conn.close()
                     return res.status(200).send({
                         status: 'success',
                         ventas,
                     })
                 })
                 .catch(err => {
+                    conn.close()
                     return res.status(404).send({
                         status: 'error',
                         err
                     })
                 })                    
         }catch(err){
+            conn.close()
             return res.status(200).send({
                 status: 'error',
                 err
@@ -353,7 +357,7 @@ var controller = {
                 
                 venta.save((err, ventaSaved) => {
                     
-                    
+                    conn.close()
                     if(err || !ventaSaved){
                         return res.status(200).send({
                             status: 'error',

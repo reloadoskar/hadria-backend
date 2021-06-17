@@ -18,7 +18,7 @@ const controller = {
 
             //Guardar objeto
             ubicacion.save((err, ubicacionStored) => {
-                
+                conn.close()
                 if(err || !ubicacionStored){
                     return res.status(404).send({
                         status: 'error',
