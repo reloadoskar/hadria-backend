@@ -401,11 +401,11 @@ const controller = {
         VentaItem.deleteMany({}).exec((err, docs)=> {
             if(err){console.log(err)}
             console.log("Venta items - vaciado")
+            conn.close()
             return res.status(200).send({
                 message: 'Restart done!'
             })
         })
-        conn.close()
 
 
     }
