@@ -51,7 +51,6 @@ var controller = {
         const conn = con(bd)
         const ubicacion = req.params.ubicacion;
         const CompraItem = conn.model('CompraItem')
-        console.log('CompraItem')
         CompraItem        
             .aggregate()
             .match({ubicacion: mongoose.Types.ObjectId(ubicacion), empaquesStock: { $gt: 0} })

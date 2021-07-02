@@ -175,8 +175,8 @@ const controller = {
                                 nempleado.email = usr.email
                                 nempleado.ubicacion = nueva_ubicacion_administracion._id
                                 nempleado.save( (err, empleadoSaved) => {
-                                    // conn.close()
-                                    // con2.close()
+                                    conn.close()
+                                    con2.close()
                                     if(err){
                                         return res.status(200).send({
                                             status: "error",
@@ -401,6 +401,7 @@ const controller = {
         VentaItem.deleteMany({}).exec((err, docs)=> {
             if(err){console.log(err)}
             console.log("Venta items - vaciado")
+            conn.close()
             return res.status(200).send({
                 message: 'Restart done!'
             })

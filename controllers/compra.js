@@ -421,6 +421,7 @@ var controller = {
         let newItem = new CompraItem()
         newItem.compra = item.compra
         newItem.producto = item.producto
+        newItem.ubicacion = item.compra.ubicacion
         newItem.cantidad = item.cantidad
         newItem.stock = item.stock
         newItem.empaques = item.empaques
