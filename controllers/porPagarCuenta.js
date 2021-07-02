@@ -53,6 +53,7 @@ exports.cxp_create_pago = (req, res) => {
         egreso.importe = params.importe
         egreso.saldo = 0
         egreso.descripcion = "PAGO A: " + params.cuenta.concepto + " #"+ params.cuenta.folio
+        egreso.compra = params.cuenta.compra
         egreso.concepto = "PAGO" 
         Provedor.findById(params.provedor).exec((err, provedor)=> {
             if(err || !provedor){console.log(err)}

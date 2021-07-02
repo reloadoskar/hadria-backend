@@ -238,8 +238,10 @@ var controller = {
         const compra = await Compra
             .findById(compraId)
             .populate('provedor', 'clave nombre tel1 cta1 email diasDeCredito comision')
+            .populate('gastos')
             .populate('ubicacion')
             .populate('tipoCompra')
+            .populate('ventas')
             .populate({
                 path: 'items',
                 populate: { path: 'ubicacion'},
@@ -256,8 +258,6 @@ var controller = {
                 path: 'items',
                 populate: { path: 'producto', populate: { path: 'empaque'} },
             })
-            .populate('pagos.ubicacion')
-            .populate('ventas')
             .lean()
             .catch( err => {
                 conn.close()
@@ -278,15 +278,18 @@ var controller = {
         const ventasGroup = await VentaItem
                 .aggregate()
                 .match({compra: data.compra._id})
-                .group({_id: {producto: "$producto", precio: "$precio"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
+                .group({_id: {producto: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
                 .lookup({ from: 'productos', localField: "_id.producto", foreignField: '_id', as: 'producto' })
                 .sort({"_id.producto": 1, "_id.precio": -1})
+                .unwind('producto')
                 .exec()
     
         data.ventasGroup = ventasGroup        
 
         const egresos = await Egreso
-            .find({compra: data.compra._id, tipo: {$eq: 'GASTO DE COMPRA'}})
+            .find({compra: data.compra._id, 
+                // tipo: {$eq: 'GASTO DE COMPRA'}
+            })
             .lean()
             .populate('ubicacion')
 
