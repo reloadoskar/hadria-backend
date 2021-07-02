@@ -280,8 +280,12 @@ var controller = {
                 .match({compra: data.compra._id})
                 .group({_id: {producto: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
                 .lookup({ from: 'productos', localField: "_id.producto", foreignField: '_id', as: 'producto' })
-                .sort({"_id.producto": 1, "_id.precio": -1})
                 .unwind('producto')
+                .lookup({ from: 'unidads', localField: "producto.unidad", foreignField: '_id', as: 'producto.unidad' })
+                .lookup({ from: 'empaques', localField: "producto.empaque", foreignField: '_id', as: 'producto.empaque' })
+                .unwind('producto.empaque')
+                .unwind('producto.unidad')
+                .sort({"_id.producto": 1, "_id.precio": -1})
                 .exec()
     
         data.ventasGroup = ventasGroup        
