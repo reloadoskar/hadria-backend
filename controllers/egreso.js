@@ -19,7 +19,9 @@ const controller = {
                 egreso.fecha = params.fecha
                 egreso.importe = params.importe
                 egreso.saldo = 0
-                egreso.compra = params.compra
+                if(params.compra !== 1){
+                    egreso.compra = params.compra
+                }
                 egreso.save((err, egreso) => {
                     conn.close()
                     if( err || !egreso){
