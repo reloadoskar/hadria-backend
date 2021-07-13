@@ -53,7 +53,7 @@ var controller = {
         const CompraItem = conn.model('CompraItem')
         CompraItem        
             .aggregate()
-            .match({ubicacion: mongoose.Types.ObjectId(ubicacion), empaquesStock: { $gt: 0} })
+            .match({ubicacion: mongoose.Types.ObjectId(ubicacion), stock: { $gt: 0} })
             .lookup({ from: 'ubicacions', localField: "ubicacion", foreignField: '_id', as: 'ubicacion' })
             .lookup({ from: 'compras', localField: "compra", foreignField: '_id', as: 'compra' })
             .lookup({ from: 'productos', localField: "producto", foreignField: '_id', as: 'producto' })
