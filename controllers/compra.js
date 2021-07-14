@@ -180,7 +180,6 @@ var controller = {
             .find({
                 $and:[
                     {"status": {$ne: "CANCELADO"} }, 
-                    {"status": {$ne: "CERRADO"} },
                     {"status": {$ne: "PRODUCCION"} },
                     ]
             })
@@ -210,6 +209,7 @@ var controller = {
                 path: 'ventas',
                 populate: { path: 'items' , populate: 'producto' },
             })
+            .populate('ventaItems')
             .then(compras => {
                 conn.close()
                 return res.status(200).send({

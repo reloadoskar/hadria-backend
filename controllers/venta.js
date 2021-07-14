@@ -91,7 +91,7 @@ var controller = {
 
                     Compra.updateOne(
                         {_id: item.compra},
-                        {"$push": { ventas: venta._id}},
+                        {"$push": { ventaItems: ventaItem._id}},
                         (err, doc) => {
                             if(err)console.log(err)
                         }
