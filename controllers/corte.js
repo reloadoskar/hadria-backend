@@ -28,6 +28,7 @@ var controller = {
                         path: 'items',
                         populate: { path: 'compra'},
                     })
+                    .populate('pagos')
                     .populate('ubicacion')
                     .populate('cliente')
                     .sort('folio')
