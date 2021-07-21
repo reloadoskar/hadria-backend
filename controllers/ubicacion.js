@@ -38,7 +38,7 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const Ubicacion = conn.model('Ubicacion')
-        Ubicacion.find({}).sort('nombre').exec( (err, ubicacions) => {
+        Ubicacion.find({}).sort('tipo').exec( (err, ubicacions) => {
             console.log(err)
             conn.close()
             if(err || !ubicacions){
