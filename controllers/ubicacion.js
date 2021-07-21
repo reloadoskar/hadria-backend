@@ -39,11 +39,13 @@ const controller = {
         const conn = con(bd)
         const Ubicacion = conn.model('Ubicacion')
         Ubicacion.find({}).sort('nombre').exec( (err, ubicacions) => {
+            console.log(err)
             conn.close()
             if(err || !ubicacions){
                 return res.status(500).send({
                     status: 'error',
-                    message: 'Error al devolver los ubicacions'
+                    message: 'Error al devolver los ubicacions ' + err,
+                    error: err
                 })
             }
             return res.status(200).send({
