@@ -271,6 +271,10 @@ var controller = {
         const ventas = await VentaItem.find({compra: compra._id})
                 .lean()
                 .populate('venta')
+                .populate({
+                    path: 'venta',
+                    populate: { path: 'cliente'},
+                })
                 .populate('producto')
 
         data.ventas = ventas
