@@ -145,7 +145,7 @@ var controller = {
         const Compra = conn.model('Compra')
         
         const resp = await Compra
-            .find({ "status": { $ne: "PRODUCCION" }, "status": { $ne: "CANCELADO"} })
+            .find({status: "ACTIVO"})
             .sort('folio')
             .lean()
             .populate('provedor', 'nombre')
