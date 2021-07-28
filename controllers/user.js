@@ -107,7 +107,7 @@ const controller = {
                     user.nombre = nombre
                     user.apellido = apellido
                     user.email = email
-                    user.database = count+1
+                    user.database = count + 1
                     user.level = 1
                     user.fechaInicio = curDateISO
                     user.tryPeriodEnds = tryPeriod
@@ -130,8 +130,12 @@ const controller = {
                                 let Empleado = con2.model('Empleado')
                                 let Cliente = con2.model('Cliente')
                                 let Provedor = con2.model('Provedor')
+                                let TipoCompra = con2.model('TipoCompra')
 
-                                Ubicacion.create({nombre:"BODEGA/ALMACÉN", tipo:"Almacenamiento"})
+                                TipoCompra.create({tipo:"COMPRA"})
+                                TipoCompra.create({tipo:"CONSIGNACION"})
+
+                                Ubicacion.create({direccion:"", telefono:"", nombre:"BODEGA/ALMACÉN", tipo:"Almacenamiento"})
                                 
                                 Unidad.create({unidad:"Paquetes", abr:"Paq"})
                                 Unidad.create({unidad:"Cajas", abr:"Cj"})
@@ -141,12 +145,11 @@ const controller = {
                                 Unidad.create({unidad:"Piezas", abr:"pz"})
                                 Unidad.create({unidad:"Litros", abr:"lt"})
                                 Unidad.create({unidad:"Galónes", abr:"gt"})
-                                Unidad.create({unidad:"Garrafas", abr:"gt"})
                                 Unidad.create({unidad:"Bidón", abr:"gt"})
                                 
-                                Empaque.create({empaque:"Tarimas", abr:"Tr"})
                                 Empaque.create({empaque:"Cajas", abr:"Cj"})
                                 Empaque.create({empaque:"Bolsas", abr:"b"})
+                                Empaque.create({empaque:"Tarimas", abr:"Tr"})
                                 Empaque.create({empaque:"TetraPack", abr:"Tp"})
 
                                 Cliente.create({
@@ -164,32 +167,39 @@ const controller = {
                                 })
 
                                 let nueva_ubicacion_administracion = new Ubicacion()
-                                    nueva_ubicacion_administracion.nombre = "ADMINISTRACIÓN"
-                                    nueva_ubicacion_administracion.tipo = "Administración"
-                                    nueva_ubicacion_administracion.save()
-                                
-                                let nempleado = new Empleado()
-                                nempleado._id = usr._id
-                                nempleado.nombre = usr.nombre
-                                nempleado.level = 1
-                                nempleado.email = usr.email
-                                nempleado.ubicacion = nueva_ubicacion_administracion._id
-                                nempleado.save( (err, empleadoSaved) => {
-                                    conn.close()
-                                    con2.close()
-                                    if(err){
-                                        return res.status(200).send({
-                                            status: "error",
-                                            message: "No se pudo crear el Empleado.",
-                                            err
+                                    nueva_ubicacion_administracion.nombre = "Admin"
+                                    nueva_ubicacion_administracion.tipo = "ADMINISTRACIÓN"
+                                    nueva_ubicacion_administracion.save((err, nub)=>{
+                                        if(err){
+                                            console.log(err)
+                                            con2.close()
+                                            conn.close()
+                                        }
+
+                                        let nempleado = new Empleado()
+                                        nempleado._id = usr._id
+                                        nempleado.nombre = usr.nombre
+                                        nempleado.level = 1
+                                        nempleado.email = usr.email
+                                        nempleado.ubicacion = nub._id
+                                        nempleado.save( (err, empleadoSaved) => {
+                                            conn.close()
+                                            con2.close()
+                                            if(err){
+                                                return res.status(200).send({
+                                                    status: "error",
+                                                    message: "No se pudo crear el Empleado.",
+                                                    err
+                                                })
+                                            }
+                                            return res.status(200).send({
+                                                status: "success",
+                                                message: "Usuario creado con éxito.",
+                                                usr
+                                            })
                                         })
-                                    }
-                                    return res.status(200).send({
-                                        status: "success",
-                                        message: "Usuario creado con éxito.",
-                                        usr
                                     })
-                                })
+                                
                             }
                         })
 

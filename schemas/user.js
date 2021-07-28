@@ -6,7 +6,7 @@ var UserSchema = Schema({
         nombre: {type: String},
         apellido1: {type: String},
         apellido2: {type: String},
-        telefono: {type: String, trim: true, unique: true},
+        telefono: {type: String, unique: true},
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
         database: String,

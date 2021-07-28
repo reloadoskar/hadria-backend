@@ -4,7 +4,7 @@ const clientOption = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true, // DEBE SER FALSE EN PRODUCCION FIX IT!!!!!!
-    useFindAndModify: true,
+    useFindAndModify: false,
     poolSize: 10,
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 45000,

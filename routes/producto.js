@@ -9,7 +9,7 @@ var router = express.Router();
 router.post('/:bd/producto/save', ProductoController.save);
 router.get('/:bd/productos', ProductoController.getProductos);
 router.get('/:bd/producto/:id', ProductoController.getProducto);
-router.put('/:bd/producto/:id', ProductoController.update);
+router.put('/:bd/producto/update/:id', ProductoController.update);
 router.delete('/:bd/producto/:id', ProductoController.delete);
 
 module.exports = router;
