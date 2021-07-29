@@ -101,17 +101,15 @@ const controller = {
     },
 
     update: async (req, res) => {
-        const clienteId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        const Cliente = conn.model('Cliente')
-        
-        //recoger datos actualizados y validarlos
         const params = req.body;
+        
+        const Cliente = conn.model('Cliente')
 
             // Find and update
         const resp = await Cliente
-            .findOneAndUpdate({ _id: clienteId }, params, { new: true }, (err, clienteUpdated) => {
+            .findOneAndUpdate({ _id: params._id }, params, { new: true }, (err, clienteUpdated) => {
                 conn.close()
                 if (err) {
                     return res.status(500).send({

@@ -104,11 +104,11 @@ const controller = {
         const productoId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
-        console.log(req.body)
         const params = req.body;
-            params.empaque = req.body.empaque.id
-            params.unidad = req.body.unidad.id
+        params.empaque = req.body.empaque._id
+        params.unidad = req.body.unidad._id
         const Producto = conn.model('Producto')
+        console.log(params)
 
         Producto.findOneAndUpdate({_id: productoId}, params, {new:true}, (err, productoUpdated) => {
             conn.close()
