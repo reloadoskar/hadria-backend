@@ -14,6 +14,7 @@ var EmpleadoSchema = Schema({
     email: String,
     instagram: String,
     facebook: String,
+    sueldo: Number
 },{
     timestamps: true
 });

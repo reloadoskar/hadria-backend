@@ -10,6 +10,32 @@ tryPeriod = new Date(tryPeriod).toISOString()
 process.env.SECRET_KEY = 'muffintop'
 
 const controller = {
+    update: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        const params = req.body;
+        const Empleado = conn.model('Empleado')
+    
+        Empleado.findOneAndUpdate({_id: params._id}, params, {new:true}, (err, empleadoUpdated) => {
+            conn.close()
+            if(err){
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al actualizar'
+                })
+            }
+            if(!empleadoUpdated){
+                return res.status(404).send({
+                    status: 'error',
+                    message: 'No existe el empleado'
+                })
+            }
+            return res.status(200).send({
+                status: 'success',
+                empleado: empleadoUpdated
+            })
+        })
+    },
     getEmpleados: async (req, res) => {
         const bd= req.params.bd
         const conn = con(bd)
@@ -17,7 +43,7 @@ const controller = {
         try{
             const Empleado = conn.model('Empleado')
             const r = await Empleado.find()
-                .select('nombre sexo level instagram facebook email telefono ubicacion')            
+                // .select('nombre sexo leve instagram facebook email telefono ubicacion')            
                 .populate('ubicacion')
                 .lean()
                 conn.close()
@@ -63,6 +89,7 @@ const controller = {
             nempleado.edad = params.edad
             nempleado.level = params.area.level
             nempleado.sexo = params.sexo
+            nempleado.sueldo = params.sueldo
             nempleado.ubicacion = params.ubicacion
             nempleado.direccion = params.direccion
             nempleado.telefono = params.telefono
