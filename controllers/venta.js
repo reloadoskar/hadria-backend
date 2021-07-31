@@ -31,7 +31,6 @@ var controller = {
                 ingreso.importe = params.acuenta
                 ingreso.saldo = params.saldo
             }else{
-                venta.acuenta = 0
                 ingreso.importe = 0
                 ingreso.saldo = params.total
             }
@@ -46,6 +45,7 @@ var controller = {
                 })
             })
         }else{
+            venta.acuenta = params.acuenta
             ingreso.importe = params.total
         }
         
