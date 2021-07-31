@@ -18,7 +18,7 @@ var controller = {
         try{
             const ventas = await
                 Venta.find({"ubicacion": ubicacion, "fecha": fecha })
-                    .select('ubicacion cliente tipoPago saldo importe items folio')
+                    .select('ubicacion cliente tipoPago acuenta importe items folio')
                     .lean() 
                     .populate({
                         path: 'items',
