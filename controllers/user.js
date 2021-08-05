@@ -102,7 +102,7 @@ const controller = {
                 return res.status(200).send({
                     status: "success",
                     message: "Empleado creado correctamente",
-                    usrSvd
+                    empleado: usrSvd
                 })
             })
         } catch(err){
@@ -112,7 +112,24 @@ const controller = {
 
     },
     delEmpleado: (req,res) =>{
-        return false
+        const bd = req.params.bd
+        const empleadoId = req.params.id
+        const conn = con(bd)
+        const bdMaster = conexion_app()
+        const Empleado = conn.model('Empleado')
+        const User = bdMaster.model('User')
+        Empleado.findOneAndDelete({_id: empleadoId}, (err, empleadoRemoved) => {
+            if(err)console.log(err)
+            User.findOneAndDelete({_id:empleadoId}, (err, userDeleted)=>{
+                if(err)console.log(err)
+                bdMaster.close()
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    message: 'Se elimino el empleado correctamente.'
+                })
+            })
+        })
     },
     save: (req, res) => {
         const {email, password, nombre, apellido} = req.body;
