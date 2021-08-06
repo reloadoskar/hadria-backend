@@ -190,8 +190,8 @@ var controller = {
                 }else{
                     conn.close()
                     return res.status(200).send({
-                        status: 'error',
-                        message: 'No se guardó.'
+                        status: 'success',
+                        message: 'Corte cerrado.'
                     })
                 }
             }
@@ -241,28 +241,29 @@ var controller = {
 
         try{
 
-            const res = await Corte
+            const resp = await Corte
                 .deleteOne({ubicacion: ubicacion, fecha: fecha})
-                .then(res => {
+                .then(r => {
                     conn.close()
                     return res.status(200).send({
                         status: 'success',
-                        res
+                        message: 'El corte ahora esta abierto.',
+                        r
                     })
                 })
                 .catch(err => {
                     conn.close()
                     return res.status(404).send({
                         status: "error",
-                        err
+                        message: " :"+err
                     })
                 })
 
         }catch(err){
             conn.close()
             return res.status(200).send({
-                status: 'error desconocido',
-                err,
+                status: 'error',
+                message:'error desconocido: '+err,
                 ubicacion, fecha
             })
         }
