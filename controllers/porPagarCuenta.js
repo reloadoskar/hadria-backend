@@ -40,6 +40,7 @@ exports.cxp_create_pago = (req, res) => {
 
     var Egreso = conn.model('Egreso')
     var Provedor = conn.model('Provedor')
+    var Compra = conn.model('Compra')
 
     Egreso.estimatedDocumentCount()
     .exec((err,c)=> {
@@ -55,6 +56,10 @@ exports.cxp_create_pago = (req, res) => {
         egreso.descripcion = "PAGO A: " + params.cuenta.concepto + " #"+ params.cuenta.compra.folio
         egreso.compra = params.cuenta.compra
         egreso.concepto = "PAGO" 
+        Compra.findById(params.cuenta.compra).exec((err, compra)=>{
+            compra.pagos.push(egreso._id)
+            compra.save()
+        })
         Provedor.findById(params.provedor).exec((err, provedor)=> {
             if(err || !provedor){console.log(err)}
             // console.log(provedor)

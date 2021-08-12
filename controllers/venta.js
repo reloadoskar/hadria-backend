@@ -18,7 +18,6 @@ var controller = {
         var ingreso = new Ingreso
         var venta = new Venta()
 
-        
         ingreso.concepto = "VENTA"
         ingreso.venta = venta._id
         ingreso.ubicacion = params.ubicacion
@@ -102,35 +101,31 @@ var controller = {
                 if(err){console.log(err)}
                 
                 Venta.findById(ventaSaved._id)
-                            .populate('ubicacion')
-                            .populate('cliente')
-                            .populate({
-                                path: 'items',
-                                populate: { path: 'producto'},
-                            })
-                            .populate({
-                                path: 'items',
-                                populate: { path: 'compra'},
-                            })
-                            .populate({
-                                path: 'pagos',
-                                populate: { path: 'ubicacion'},
-                            })
-                            .exec((err, vnt) => {
-                                conn.close()
-                    if(err){console.log(err)}
+                    .populate('ubicacion')
+                    .populate('cliente')
+                    .populate({
+                        path: 'items',
+                        populate: { path: 'producto'},
+                    })
+                    .populate({
+                        path: 'items',
+                        populate: { path: 'compra'},
+                    })
+                    .populate({
+                        path: 'pagos',
+                        populate: { path: 'ubicacion'},
+                    })
+                    .exec((err, vnt) => {
+                        conn.close()
+                        if(err){console.log(err)}
                         return res.status(200).send({
-                    status: "success",
-                    message: "Venta guardada correctamente.",
-                    venta: vnt
-                })    
-                })
-                
-                
+                            status: "success",
+                            message: "Venta guardada correctamente.",
+                            venta: vnt
+                        })
+                    })
             })
         })
-
-
     },
     
     getVentas: (req, res) => {

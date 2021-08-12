@@ -276,6 +276,7 @@ var controller = {
                     populate: { path: 'cliente'},
                 })
                 .populate('producto')
+                .populate('ubicacion')
 
         data.ventas = ventas
 
