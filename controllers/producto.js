@@ -22,6 +22,7 @@ const controller = {
 
             //Guardar objeto
             producto.save((err, productoStored) => {
+                // productoStored.populate("unidad").lean()
                 conn.close()
                 if(err || !productoStored){
                     return res.status(200).send({
@@ -43,7 +44,7 @@ const controller = {
         const conn = con(bd)
         const Producto = conn.model('Producto')
         const Unidad = conn.model('Unidad')
-        const Empauqe = conn.model('Empaque')
+        const Empaque = conn.model('Empaque')
         const resp = await Producto
             .find({})
             .populate('unidad')
