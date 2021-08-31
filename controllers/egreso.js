@@ -7,21 +7,28 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const Egreso = conn.model('Egreso')
+        const Compra = conn.model('Compra')
+
         let egreso = new Egreso()
+        if(params.compra !== 1){
+            const compra = await Compra.findById(params.compra)
+            compra.gastos.push(egreso._id)
+            compra.save()
+            
+            egreso.compra = params.compra
+        }
+
         const resp = await Egreso
-            .estimatedDocumentCount()
-            .then(count => {
-                egreso.folio = ++count
-                egreso.ubicacion = params.ubicacion
-                egreso.concepto = params.concepto
-                egreso.tipo = params.tipo
-                egreso.descripcion = params.descripcion
-                egreso.fecha = params.fecha
-                egreso.importe = params.importe
-                egreso.saldo = 0
-                if(params.compra !== 1){
-                    egreso.compra = params.compra
-                }
+        .estimatedDocumentCount()
+        .then(count => {
+            egreso.folio = ++count
+            egreso.ubicacion = params.ubicacion
+            egreso.concepto = params.concepto
+            egreso.tipo = params.tipo
+            egreso.descripcion = params.descripcion
+            egreso.fecha = params.fecha
+            egreso.importe = params.importe
+            egreso.saldo = 0
                 egreso.save((err, egreso) => {
                     conn.close()
                     if( err || !egreso){

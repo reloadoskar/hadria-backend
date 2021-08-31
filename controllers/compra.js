@@ -196,19 +196,21 @@ var controller = {
                 path: 'items',
                 populate: { path: 'ubicacion'},
             })
-            .populate('ventas')
-            .populate({
-                path: 'ventas',
-                populate: { path: 'cliente' , select: 'nombre'},
-            })
-            .populate({
-                path: 'ventas',
-                populate: { path: 'ubicacion', select: 'nombre' },
-            })
-            .populate({
-                path: 'ventas',
-                populate: { path: 'items' , populate: 'producto' },
-            })
+            // .populate('ventas')
+            // .populate({
+            //     path: 'ventas',
+            //     populate: { path: 'cliente' , select: 'nombre'},
+            // })
+            // .populate({
+            //     path: 'ventas',
+            //     populate: { path: 'ubicacion', select: 'nombre' },
+            // })
+            // .populate({
+            //     path: 'ventas',
+            //     populate: { path: 'items' , populate: 'producto' },
+            // })
+            .populate('gastos')
+            .populate('pagos')
             .populate('ventaItems')
             .then(compras => {
                 conn.close()
@@ -514,9 +516,74 @@ var controller = {
                 })
             }
         })
+    },
+
+    recuperarVentas: async (req, res) => {
+        const id = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const VentaItem = conn.model('VentaItem')
+        const Compra = conn.model('Compra')
+
+        const ventas = await VentaItem.find({compra: id}).lean()
+
+        const compra = await Compra.findById(id)
+            compra.ventas = []
+            compra.ventaItems = []
+            ventas.forEach(element => {
+                compra.ventaItems.push(element._id)
+            })
+            compra.save()
+            .then(cmp =>{
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    message: 'Item actualizado.',
+                    compra: cmp
+                })
+            })
+            
+    },
+    recupearGastos: async (req, res) => {
+        const id = req.params.id;
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Compra = conn.model('Compra')
+        const Egreso = conn.model('Egreso')
+
+        const egresos = await Egreso.find({compra:id}).lean()
+        const compra = await Compra.findById(id)
+            compra.gastos = []
+            compra.pagos = []
+
+            egresos.map(eg=>{
+                if(eg.concepto !== "PAGO" && eg.importe > 0 ){
+                    compra.gastos.push(eg._id)
+                }else{
+                    compra.pagos.push(eg._id)
+                }
+            })
+
+            compra
+            .save()
+            .then(cmp=>{
+                cmp
+                .populate('gastos')
+                .populate('pagos')
+                .populate('provedor', 'nombre')
+                .populate('ubicacion')
+                .populate('tipoCompra')
+                .populate('ventaItems',(err, comp) =>{
+                    conn.close()
+                    return res.status(200).send({
+                        status: 'success',
+                        message: 'Item actualizado.',
+                        compra: comp
+                    })
+                })
+                
+            })
     }
-
-
 
 }
 
