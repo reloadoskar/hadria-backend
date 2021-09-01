@@ -173,15 +173,18 @@ var controller = {
 
     getCompras: async (req, res) => {
         const bd = req.params.bd
+        let mes = req.params.mes
+        // mes++
+        if(mes<10){
+            mes = "0"+ mes
+            console.log(mes)
+        }
         const conn = con(bd)
         const Compra = conn.model('Compra')
-        
+         
         const resp = await Compra
             .find({
-                $and:[
-                    {"status": {$ne: "CANCELADO"} }, 
-                    {"status": {$ne: "PRODUCCION"} },
-                    ]
+                fecha: {$gt: "2021-"+mes+"-00" , $lt: "2021-"+mes+"-32"}
             })
             .sort('folio')
             .lean()
@@ -196,19 +199,6 @@ var controller = {
                 path: 'items',
                 populate: { path: 'ubicacion'},
             })
-            // .populate('ventas')
-            // .populate({
-            //     path: 'ventas',
-            //     populate: { path: 'cliente' , select: 'nombre'},
-            // })
-            // .populate({
-            //     path: 'ventas',
-            //     populate: { path: 'ubicacion', select: 'nombre' },
-            // })
-            // .populate({
-            //     path: 'ventas',
-            //     populate: { path: 'items' , populate: 'producto' },
-            // })
             .populate('gastos')
             .populate('pagos')
             .populate('ventaItems')
