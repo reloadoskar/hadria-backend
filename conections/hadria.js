@@ -1,7 +1,7 @@
 const globals = require('../globals')
 const mongoose = require('mongoose');
 const clientOption = {
-    socketTimeoutMS: 5000,
+    socketTimeoutMS: 6000,
     // keepAlive: 30000,
     poolSize: 5,
     useNewUrlParser: true,

@@ -6,8 +6,8 @@ const clientOption = {
     useCreateIndex: true, // DEBE SER FALSE EN PRODUCCION FIX IT!!!!!!
     useFindAndModify: false,
     poolSize: 10,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
+    socketTimeoutMS: 6000,
+    // serverSelectionTimeoutMS: 5000,
     family: 4
   }
 module.exports = function conexionCliente(bd) {
