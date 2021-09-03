@@ -138,37 +138,44 @@ var controller = {
     })
     },
 
-    getComprasDash: async (req, res) => {
+    getComprasActivas: async (req, res) => {
         const bd = req.params.bd
-        const conn = con(bd)
-
-        const Compra = conn.model('Compra')
-        
-        const resp = await Compra
-            .find({status: "ACTIVO"})
-            .sort('folio')
-            .lean()
-            .populate('provedor', 'nombre')
-            .populate('ubicacion')
-            .populate('tipoCompra')
-            .populate({
-                path: 'items',
-                populate: { path: 'producto'},
-            })
-            .then(compras => {
-                conn.close()
-                return res.status(200).send({    
-                    status: 'success',
-                    compras: compras
+        const conexion = con(bd)
+        try {
+            const Compra = conexion.model('Compra')
+            const resp = await Compra
+                .find({status:"ACTIVO"})
+                .sort('folio')
+                .lean()
+                .populate('provedor', 'nombre')
+                .populate('ubicacion')
+                .populate('tipoCompra')
+                .populate({
+                    path: 'items',
+                    populate: { path: 'producto'},
                 })
-            })
-            .catch(err => {
-                conn.close()
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'Error al devolver los compras' + err
+                .then(compras => {
+                    conexion.close()
+                    return res.status(200).send({    
+                        status: 'success',
+                        compras: compras
+                    })
                 })
+                .catch(err => {
+                    conexion.close()
+                    return res.status(500).send({
+                        status: 'error',
+                        message: 'Error al devolver los compras' + err
+                    })
+                })
+        } catch (error) {
+            console.log(error)
+            conexion.close()
+            return res.status(500).send({
+                status: 'error',
+                message: 'Error al devolver los compras' + err
             })
+        }
     },
 
     getCompras: async (req, res) => {
@@ -177,7 +184,6 @@ var controller = {
         // mes++
         if(mes<10){
             mes = "0"+ mes
-            console.log(mes)
         }
         const conn = con(bd)
         const Compra = conn.model('Compra')
