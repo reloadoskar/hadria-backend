@@ -137,36 +137,21 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const Egreso = conn.model('Egreso')
-        Egreso.findById(egresoId, (err, egreso) => {
-            if(egreso.compra){
-                return res.status(500).send({
+        
+        Egreso.findOneAndDelete({ _id: egresoId }, (err, egresoRemoved) => {
+            conn.close()
+            if (err || !egresoRemoved) {
+                return res.status(200).send({
                     status: 'error',
-                    message: 'No se puede eliminar este egreso, esta relacionado a una compra, acceda a compras para eliminarlo desde ahí'
+                    message: 'No se pudo borrar el egreso.'
                 })
             }
-            //         compra.pagos.egreso(egresoId).remove()
-            //         compra.saldo = compra.saldo + egreso.importe
-            //         compra.save((err, compraUpdated) => {
-            //             if (err || !compraUpdated) {
-            //                 console.log('error' + err);
-            //             }
-            //         })
-            //     })
-            // }
-            Egreso.findOneAndDelete({ _id: egresoId }, (err, egresoRemoved) => {
-                conn.close()
-                if (err || !egresoRemoved) {
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'No se pudo borrar el egreso.'
-                    })
-                }
-                return res.status(200).send({
-                    status: 'success',
-                    egresoRemoved
-                })
+            return res.status(200).send({
+                status: 'success',
+                egresoRemoved
             })
         })
+        
 
 
     },
