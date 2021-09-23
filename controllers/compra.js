@@ -205,9 +205,29 @@ var controller = {
                 path: 'items',
                 populate: { path: 'ubicacion'},
             })
+            .populate({
+                path: 'items',
+                populate: { path: 'producto', populate: { path: 'unidad'} },
+            })
+            .populate({
+                path: 'items',
+                populate: { path: 'producto', populate: { path: 'empaque'} },
+            })
             .populate('gastos')
             .populate('pagos')
             .populate('ventaItems')
+            .populate({
+                path: 'ventaItems',
+                populate: { path: 'producto'},
+            })
+            .populate({
+                path: 'VentaItems',
+                populate: { path: 'producto', populate: { path: 'unidad'} },
+            })
+            .populate({
+                path: 'ventaItems',
+                populate: { path: 'producto', populate: { path: 'empaque'} },
+            })
             .then(compras => {
                 conn.close()
                 return res.status(200).send({
