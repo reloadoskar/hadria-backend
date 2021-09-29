@@ -24,8 +24,8 @@ var controller = {
         ingreso.fecha = params.fecha
         ingreso.tipoPago = params.tipoPago
         if(params.tipoPago === "CRÉDITO"){
-            if(params.acuenta>0){
                 venta.acuenta = params.acuenta
+            if(params.acuenta>0){
                 ingreso.descripcion = "PAGO A CUENTA DE " + params.cliente.nombre
                 ingreso.importe = params.acuenta
                 ingreso.saldo = params.saldo
