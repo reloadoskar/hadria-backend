@@ -20,6 +20,7 @@ const controller = {
             provedor.email = params.email;
             provedor.diasDeCredito = params.diasDeCredito;
             provedor.comision = params.comision;
+            provedor.ref = params.ref;
 
             //Guardar objeto
             provedor.save((err, provedorStored) => {

@@ -5,7 +5,7 @@ var Schema = mongoose.Schema;
 
 var ProvedorSchema = Schema({
     nombre: {type: String, unique: true},
-    clave: {type: String, unique: true},
+    clave: {type: String},
     cuentas: [{type: Schema.ObjectId, ref: 'Egreso' }],
     pagos: [{type: Schema.ObjectId, ref: 'Egreso'}],
     rfc: String,
@@ -17,6 +17,7 @@ var ProvedorSchema = Schema({
     cta2: Number,
     diasDeCredito: Number,
     comision: Number,
+    ref: String
 },{
     timestamps: true
 });

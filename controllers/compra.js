@@ -194,7 +194,7 @@ var controller = {
             })
             .sort('folio')
             .lean()
-            .populate('provedor', 'nombre')
+            .populate('provedor', 'nombre diasDeCredito comision email cta1 tel1')
             .populate('ubicacion')
             .populate('tipoCompra')
             .populate({
