@@ -266,6 +266,33 @@ var controller = {
         })
     },
 
+    getVentaItems: async (req, res) => {
+        const bd= req.params.bd
+        let mes = req.params.mes
+        const conn = con(bd)
+        const VentaItem = conn.model('VentaItem')
+        const Items = await VentaItem.find({
+                fecha: {$gt: "2021-"+mes+"-00" , $lt: "2021-"+mes+"-32"}
+            })
+            .sort('folio')
+            .lean()
+            .populate('producto')
+            .then(items => {
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    items: items
+                })
+            })
+            .catch(err => {
+                conn.close()
+                return res.status(200).send({
+                    status: 'error',
+                    message: 'Error al devolver los items' + err
+                })
+            })
+    },
+
     update: (req, res) => {
         let compraId = req.params.id;
         const bd= req.params.bd
