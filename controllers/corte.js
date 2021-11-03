@@ -15,6 +15,8 @@ var controller = {
         const VentaItem = conn.model('VentaItem')
         let corte = {}
         corte.fecha = fecha
+        corte.status="ABIERTO"
+
         try{
             const ventas = await
                 Venta.find({"ubicacion": ubicacion, "fecha": fecha })

@@ -329,6 +329,30 @@ var controller = {
         })
     },
 
+    open: async (req, res) => {
+        const compraId = req.params.id
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Compra = conn.model('Compra')
+        const resp = await Compra
+            .findOneAndUpdate({_id: compraId}, {status: "ACTIVO"} )
+            .then(compraUpdated => {
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    message: 'Compra activada correctamente.',
+                    compra: compraUpdated
+                })
+            })
+            .catch(err => {
+                conn.close()
+                return res.status(404).send({
+                    status: "error",
+                    err
+                })
+            })
+    },
+
     close: async (req, res) => {
         const compraId = req.params.id
         const bd = req.params.bd
@@ -341,7 +365,7 @@ var controller = {
                 return res.status(200).send({
                     status: 'success',
                     message: 'Compra cerrada correctamente.',
-                    compraUpdated
+                    compra: compraUpdated
                 })
             })
             .catch(err => {
