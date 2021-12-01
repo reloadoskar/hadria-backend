@@ -39,7 +39,6 @@ const controller = {
         const conn = con(bd)
         const Ubicacion = conn.model('Ubicacion')
         Ubicacion.find({}).sort('tipo').exec( (err, ubicacions) => {
-            console.log(err)
             conn.close()
             if(err || !ubicacions){
                 return res.status(500).send({

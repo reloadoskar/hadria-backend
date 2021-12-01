@@ -27,6 +27,7 @@ module.exports = function conexionCliente(bd) {
     conn.model('Empresa', require('../schemas/empresa'));
     conn.model('Ingreso', require('../schemas/ingreso'));
     conn.model('Insumo', require('../schemas/insumo'));
+    conn.model('Inversion', require('../schemas/inversion'));
     conn.model('Movimiento', require('../schemas/movimiento'));
     conn.model('Pago', require('../schemas/pago'));
     conn.model('PorCobrarCuenta', require('../schemas/porCobrarCuenta'));

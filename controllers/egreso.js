@@ -8,6 +8,7 @@ const controller = {
         const conn = con(bd)
         const Egreso = conn.model('Egreso')
         const Compra = conn.model('Compra')
+        const Inversion = conn.model('Inversion')
 
         let egreso = new Egreso()
         if(params.compra !== 1){
@@ -16,6 +17,14 @@ const controller = {
             compra.save()
             
             egreso.compra = params.compra
+        }
+
+        if(params.inversion){
+            const inversion = await Inversion.findById(params.inversion)
+            inversion.gastos.push(egreso._id)
+            inversion.save()
+            
+            egreso.inversion = params.inversion
         }
 
         const resp = await Egreso
