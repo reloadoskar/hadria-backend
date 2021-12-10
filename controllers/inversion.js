@@ -60,6 +60,10 @@ var controller = {
             .populate('provedor', 'nombre diasDeCredito comision email cta1 tel1')
             .populate('compras')            
             .populate('gastos')
+            .populate({
+                path: 'gastos',
+                populate: { path: 'ubicacion'},
+            })
             .then(inversiones => {
                 conn.close()
                 return res.status(200).send({
