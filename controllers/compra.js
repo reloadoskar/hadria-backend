@@ -209,7 +209,6 @@ var controller = {
         const bd = req.params.bd
         let mes = req.params.mes
         let year = req.params.year
-        // mes++
         if (mes < 10) {
             mes = "0" + mes
         }
