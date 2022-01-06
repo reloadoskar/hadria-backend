@@ -98,13 +98,12 @@ const controller = {
     },
 
     update: (req, res) => {
-        const provedorId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
         const params = req.body;
         const Provedor = conn.model('Provedor')
-
-        Provedor.findOneAndUpdate({_id: provedorId}, params, {new:true}, (err, provedorUpdated) => {
+        console.log(params)
+        Provedor.findOneAndUpdate({_id: params._id}, params, {new:true}, (err, provedorUpdated) => {
             conn.close()
             if(err){
                 return res.status(500).send({
