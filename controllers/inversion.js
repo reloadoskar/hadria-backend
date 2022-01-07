@@ -44,7 +44,7 @@ var controller = {
     getInversions: async (req, res) => {
         const bd = req.params.bd
         let mes = req.params.mes
-        // mes++
+        let year = req.params.year
         if(mes<10){
             mes = "0"+ mes
         }
@@ -53,12 +53,30 @@ var controller = {
          
         const resp = await Inversion
             .find({
-                fecha: {$gt: "2021-"+mes+"-00" , $lt: "2021-"+mes+"-32"}
+                fecha: { $gt: year + "-" + mes + "-00", $lt: year + "-" + mes + "-32" }
             })
             .sort('_id')
             .lean()
             .populate('provedor', 'nombre diasDeCredito comision email cta1 tel1')
-            .populate('compras')            
+            .populate('compras')  
+            .populate({ path: 'compras',
+                populate: { path: 'provedor', select: 'nombre diasDeCredito comision email cta1 tel1'},
+            })
+            .populate({ path: 'compras',
+                populate: { path: 'ubicacion'}
+            })
+            .populate({ path: 'compras',
+                populate: { path: 'tipoCompra'}
+            })
+            .populate({ path: 'compras',
+                populate: { path: 'gastos'}
+            })
+            .populate({ path: 'compras',
+                populate: { path: 'pagos'}
+            })
+            .populate({ path: 'compras',
+                populate: { path: 'ventaItems'}
+            })
             .populate('gastos')
             .populate({
                 path: 'gastos',
@@ -143,13 +161,6 @@ var controller = {
             })
     },
 
-    update: async (req, res) => {
-        const Id = req.params.id
-        const bd = req.params.bd
-        const conn = con(bd)
-        
-    },
-
     delete: (req, res) => {
         const Id = req.params.id
         const bd = req.params.bd
@@ -203,6 +214,31 @@ var controller = {
                 })
             })
         })
+    },
+
+    update: (req, res) => {
+        const inversion = req.body
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Inversion = conn.model('Inversion')
+
+        Inversion
+            .findOneAndUpdate({ _id: inversion._id }, inversion, { new: true })
+            .then(invSaved =>{
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    inversion: invSaved
+                })
+            })
+            .catch(err=>{
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'Error al actualizar',
+                    err
+                }) 
+            })
     },
 }
 

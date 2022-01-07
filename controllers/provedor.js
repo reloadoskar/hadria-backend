@@ -21,6 +21,8 @@ const controller = {
             provedor.diasDeCredito = params.diasDeCredito;
             provedor.comision = params.comision;
             provedor.ref = params.ref;
+            provedor.banco1 = params.banco1
+            provedor.sexo = params.sexo
 
             //Guardar objeto
             provedor.save((err, provedorStored) => {
@@ -102,7 +104,6 @@ const controller = {
         const conn = con(bd)
         const params = req.body;
         const Provedor = conn.model('Provedor')
-        console.log(params)
         Provedor.findOneAndUpdate({_id: params._id}, params, {new:true}, (err, provedorUpdated) => {
             conn.close()
             if(err){
