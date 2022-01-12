@@ -8,8 +8,9 @@ var router = express.Router();
 //Rutas
 router.post('/:bd/producto/save', ProductoController.save);
 router.get('/:bd/productos', ProductoController.getProductos);
+router.get('/:bd/productos/masvendidos/:year/:month', ProductoController.getProductosMasVendidos);
 router.get('/:bd/producto/:id', ProductoController.getProducto);
-router.put('/:bd/producto/update/:id', ProductoController.update);
+router.put('/:bd/producto/update/', ProductoController.update);
 router.delete('/:bd/producto/:id', ProductoController.delete);
 
 module.exports = router;

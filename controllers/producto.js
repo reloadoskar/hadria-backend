@@ -101,15 +101,22 @@ const controller = {
             })        
     },
 
+    getProductosMasVendidos: (req, res) => {
+        const year = req.params.year
+        const month = req.params.month
+        const bd = req.params.bd
+        const conn = con(bd)
+        const Producto = conn.model('Producto')
+    },
+
     update: (req, res) => {
-        const productoId = req.params.id;
+        const productoId = req.body._id;
         const bd = req.params.bd
         const conn = con(bd)
         const params = req.body;
         params.empaque = req.body.empaque._id
         params.unidad = req.body.unidad._id
         const Producto = conn.model('Producto')
-        console.log(params)
 
         Producto.findOneAndUpdate({_id: productoId}, params, {new:true}, (err, productoUpdated) => {
             conn.close()
@@ -127,6 +134,7 @@ const controller = {
             }
             return res.status(200).send({
                 status: 'success',
+                message: "Actualizado correctamente",
                 producto: productoUpdated
             })
         })
