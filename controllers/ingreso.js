@@ -108,6 +108,43 @@ const controller = {
             })
     },
 
+    getCuentasClientes: async (req, res) => {
+        const bd = req.params.bd
+        console.log(bd)
+        const conn = con(bd)
+        const Ingreso = conn.model('Ingreso')
+
+        const resp = await Ingreso
+            .aggregate([
+                {$match: { saldo: {$gt: 0} } },
+                {$lookup: { from: "ventas", localField: "venta", foreignField: "_id", as: "venta" } },
+                { $unwind: "$venta"},
+                {$addFields: {cliente: "$venta.cliente"}},
+                {$group: { 
+                    _id: "$cliente", 
+                    cliente: { $first: "$cliente" }, 
+                    saldo: { $sum: "$saldo" }, 
+                    importe: { $sum: "$importe" }  
+                    } 
+                },
+                {$lookup: { from: "clientes", localField: "cliente", foreignField: "_id", as: "cliente" } },
+                { $unwind: "$cliente"}
+            ])
+            .then(ingresos => {
+                conn.close()
+                return res.status(200).send({
+                    status: "success",
+                    cuentas: ingresos
+                })
+            })
+            .catch(err=>{
+                return res.status(200).send({
+                    status: "error",
+                    message: "aca: "+err,
+                })
+            })
+    },
+
     update: async (req, res) => {
         const ingresoId = req.params.id;
         const bd = req.params.bd

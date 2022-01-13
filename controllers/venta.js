@@ -25,6 +25,7 @@ var controller = {
         ingreso.tipoPago = params.tipoPago
         if(params.tipoPago === "CRÉDITO"){
                 venta.acuenta = params.acuenta
+                ingreso.cliente = params.cliente
             if(params.acuenta>0){
                 ingreso.descripcion = "PAGO A CUENTA DE " + params.cliente.nombre
                 ingreso.importe = params.acuenta

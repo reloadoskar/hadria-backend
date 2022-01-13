@@ -7,7 +7,7 @@ var IngresoSchema = Schema({
     concepto: String,
     venta: { type: Schema.ObjectId, ref: 'Venta'},
     ubicacion: { type: Schema.ObjectId, ref: 'Ubicacion' },
-    // cliente: { type: Schema.ObjectId, ref: 'Cliente' },
+    cliente: { type: Schema.ObjectId, ref: 'Cliente' },
     // items: [{ type: Schema.ObjectId, ref: 'VentaItem' }],
     fecha: String,
     tipoPago: String,

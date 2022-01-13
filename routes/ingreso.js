@@ -8,7 +8,8 @@ var router = express.Router();
 //Rutas
 router.post('/:bd/ingreso/save', Ingreso.save);
 router.get('/:bd/ingresos/:fecha', Ingreso.getIngresosDelDia);
-// router.get('/ingreso/:id', Ingreso.getingreso);
+// router.get('/:bd/ingresos/recuperarclientes', Ingreso.getRecuperarClientes);
+router.get('/:bd/ingresos/cuentas/clientes', Ingreso.getCuentasClientes);
 // router.put('/ingreso/:id', Ingreso.update);
 // router.delete('/ingreso/:id', Ingreso.delete);
 
