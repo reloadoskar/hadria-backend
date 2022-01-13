@@ -5,6 +5,7 @@ var Schema = mongoose.Schema;
 
 var ClienteSchema = Schema({
     nombre: {type: String, unique: true},
+    sexo: String,
     rfc: {type: String},
     direccion: String,
     tel1: String,
