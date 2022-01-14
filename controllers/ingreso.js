@@ -110,7 +110,7 @@ const controller = {
 
     getCuentasClientes: async (req, res) => {
         const bd = req.params.bd
-        console.log(bd)
+        
         const conn = con(bd)
         const Ingreso = conn.model('Ingreso')
 

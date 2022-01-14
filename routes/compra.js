@@ -9,6 +9,7 @@ var router = express.Router();
 router.post('/:bd/compra/save', CompraController.save);
 router.post('/:bd/compra/additem', CompraController.addCompraItem);
 router.get('/:bd/compras/:mes/:year', CompraController.getCompras);
+router.get('/:bd/compras/provedor/:year/:month', CompraController.getComprasProvedor);
 router.get('/:bd/compra/recuperarVentas/:id', CompraController.recuperarVentas);
 router.get('/:bd/compra/recuperarGastos/:id', CompraController.recupearGastos);
 router.get('/:bd/compras/activas', CompraController.getComprasActivas);

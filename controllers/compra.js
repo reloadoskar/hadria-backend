@@ -279,6 +279,45 @@ var controller = {
             })
     },
 
+    getComprasProvedor: async (req, res) => {
+        const bd = req.params.bd
+        let mes = req.params.month
+        let year = req.params.year
+        console.log(bd)
+        if (mes < 10) {
+            mes = "0" + mes
+        }
+        const conn = con(bd)
+        const Compra = conn.model('Compra')
+
+        const resp = await Compra.aggregate([
+            {$match: { fecha: { $gt: year + "-" + mes + "-00", $lt: year + "-" + mes + "-32" } }},
+            {$group: { 
+                _id: "$provedor", 
+                provedor: { $first: "$provedor" }, 
+                saldo: { $sum: "$saldo" }, 
+                importe: { $sum: "$importe" }  
+                } 
+            },
+            {$lookup: { from: "provedors", localField: "provedor", foreignField: "_id", as: "provedor" } },
+            { $unwind: "$provedor"},
+        ])
+        .then(compras => {
+            conn.close()
+            return res.status(200).send({
+                status: "success",
+                compras: compras
+            })
+        })
+        .catch(err=>{
+            conn.close()
+            return res.status(200).send({
+                status: "error",
+                message: "error: "+err
+            })
+        })
+    },
+
     getCompra: async (req, res) => {
         const compraId = req.params.id;
         const bd = req.params.bd
