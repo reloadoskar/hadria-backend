@@ -480,19 +480,41 @@ var controller = {
             })
     },
 
-    delete: (req, res) => {
+    delete: async (req, res) => {
         const compraId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
         const Compra = conn.model('Compra')
-        Compra.findOneAndDelete({ _id: compraId }, (err, compraRemoved) => {
-            conn.close()
-            if (!compraRemoved) {
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'No se pudo borrar el compra.'
+        const CompraItem = conn.model('CompraItem')
+        const VentaItem = conn.model('VentaItem')
+
+        const itemsStatus = await CompraItem.deleteMany({compra: compraId})
+            // .then(()=>{
+                
+            // })
+            .catch((err)=>{
+                return res.status(200).send({
+                    status: "error",
+                    message: "No se pudo cancelar los items de la compra "+err,
                 })
-            }
+            })
+        
+        const ventasStatus = await VentaItem.deleteMany({compra: compraId})
+            .catch((err)=>{
+                return res.status(200).send({
+                    status: "error",
+                    message: "No se pudo cancelar los items de las ventas "+err,
+                })
+            })
+
+        const compraStatus = await Compra.findOneAndDelete({ _id: compraId }, (err, compraRemoved) => {
+            conn.close()
+            // if (!compraRemoved) {
+            //     return res.status(500).send({
+            //         status: 'error',
+            //         message: 'No se pudo borrar la compra.'
+            //     })
+            // }
             if (err) {
                 return res.status(500).send({
                     status: 'error',
@@ -526,7 +548,7 @@ var controller = {
                         err
                     })
                 } else {
-                    CompraItem.updateMany({ "compra": saved._id }, { "stock": 0 }, (err, n) => {
+                    CompraItem.updateMany({ "compra": compraId }, { "stock": 0 }, (err, n) => {
                         conn.close()
                         return res.status(200).send({
                             status: 'success',

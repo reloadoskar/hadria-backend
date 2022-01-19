@@ -195,6 +195,20 @@ const controller = {
             })            
     },
 
+    getIngresosDelMes: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+        const year = req.params.year
+        const month = req.params.month
+        if (mes < 10) {
+            mes = "0" + mes
+        }
+        return res.status(200).send({
+            status: "",
+            message: ""
+        })
+    },
+
     getIngresosDelDia: (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)

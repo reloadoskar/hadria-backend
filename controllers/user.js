@@ -15,7 +15,7 @@ const controller = {
         const conn = con(bd)
         const params = req.body;
         const Empleado = conn.model('Empleado')
-    
+        console.log(params)
         Empleado.findOneAndUpdate({_id: params._id}, params, {new:true}, (err, empleadoUpdated) => {
             conn.close()
             if(err){
@@ -151,7 +151,7 @@ const controller = {
                     user.nombre = nombre
                     user.apellido = apellido
                     user.email = email
-                    user.database = count + 1
+                    user.database = 9
                     user.level = 1
                     user.fechaInicio = curDateISO
                     user.tryPeriodEnds = tryPeriod
@@ -167,7 +167,7 @@ const controller = {
                                     err
                                 })
                             }else{
-                                let con2 = con(usr.database)
+                                let con2 = con(user.database)
                                 let Ubicacion = con2.model('Ubicacion')
                                 let Unidad = con2.model('Unidad')
                                 let Empaque = con2.model('Empaque')
