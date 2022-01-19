@@ -253,6 +253,14 @@ var controller = {
             .populate('ventaItems')
             .populate({
                 path: 'ventaItems',
+                populate: { path: 'venta' },
+            })
+            .populate({
+                path: 'ventaItems',
+                populate: { path: 'ubicacion' },
+            })
+            .populate({
+                path: 'ventaItems',
                 populate: { path: 'producto' },
             })
             .populate({
