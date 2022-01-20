@@ -182,6 +182,7 @@ const controller = {
                 conn.close()         
                 return res.status(200).send({
                     status: 'success',
+                    message: "Ingreso cancelado correctamente.",
                     ingresoRemoved
                 })
             })
