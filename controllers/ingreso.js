@@ -176,7 +176,28 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const Ingreso = conn.model('Ingreso')
-        const resp = await Ingreso
+        const ingreso = await Ingreso
+            .findById(ingresoId)
+            .catch(err=> {
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'No se encontró la cuenta.',
+                    err
+                })
+            })
+
+        const updateCuenta = await Ingreso.findByIdAndUpdate(ingreso.referenciaCobranza, {$inc: {saldo: ingreso.importe} })
+            .catch(err=> {
+                conn.close()
+                return res.status(500).send({
+                    status: 'error',
+                    message: 'No se pudo actualizar la cuenta.',
+                    err
+                })
+            })
+
+        const removeIngreso = await Ingreso
             .findOneAndDelete({_id: ingresoId})
             .then(ingresoRemoved => {   
                 conn.close()         
@@ -193,7 +214,8 @@ const controller = {
                     message: 'No se pudo borrar el ingreso.',
                     err
                 })
-            })            
+            })
+        
     },
 
     getIngresosDelMes: (req, res) => {

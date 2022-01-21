@@ -15,6 +15,7 @@ var IngresoSchema = Schema({
     acuenta: Number,
     saldo: Number,
     descripcion: String,
+    referenciaCobranza: { type: Schema.ObjectId, ref: 'Ingreso'}
 },{
     timestamps: true
 });

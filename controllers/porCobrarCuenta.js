@@ -14,6 +14,7 @@ var controller = {
         ingreso.concepto = "VENTA"
         ingreso.tipoPago = params.tipoPago
         ingreso.importe = params.total
+        ingreso.referenciaCobranza = params.cuenta
         if(params.tipoPago === 'CREDITO'){
             ingreso.acuenta = params.acuenta
             ingreso.saldo = params.saldo
@@ -130,6 +131,7 @@ var controller = {
         ingreso.concepto = "COBRANZA"
         ingreso.descripcion = "PAGO DE: " + params.cuenta.venta.cliente.nombre + " " + params.referencia
         ingreso.tipoPago = params.tipoPago
+        ingreso.referenciaCobranza = params.cuenta._id
         
         //ACTUALIZAMOS SALDO CLIENTE Y AGREGAMOS PAGO
         var cltId = params.cuenta.venta.cliente._id
