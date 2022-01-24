@@ -515,7 +515,7 @@ var controller = {
                 })
             })
 
-        const compraStatus = await Compra.findOneAndDelete({ _id: compraId }, (err, compraRemoved) => {
+        const compraStatus = await Compra.findOneAndUpdate({ _id: compraId },{ status: "CANCELADO", saldo: 0, importe:0, ventas:[], pagos:[] }, (err, compraUpdated) => {
             conn.close()
             // if (!compraRemoved) {
             //     return res.status(500).send({
@@ -532,7 +532,7 @@ var controller = {
             return res.status(200).send({
                 status: 'success',
                 message: 'Compra eliminada correctamente',
-                compraRemoved
+                compraRemoved: compraUpdated
             })
         })
 
