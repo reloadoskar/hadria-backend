@@ -115,7 +115,6 @@ const controller = {
     },
 
     update: async (req, res) => {
-        const egresoId = req.params.id;
         const params = req.body;
         const bd = req.params.bd
         const conn = con(bd)
@@ -123,11 +122,12 @@ const controller = {
 
             // Find and update
         const resp = await Egreso
-            .findOneAndUpdate({ _id: egresoId }, params, { new: true })
+            .findOneAndUpdate({ _id: params._id }, params, { new: true })
             .then(egresoUpdated => {
                 conn.close()
                 return res.status(200).send({
                     status: 'success',
+                    message: 'Todo bien 👌',
                     egreso: egresoUpdated
                 })
             })
