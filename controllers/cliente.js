@@ -115,25 +115,22 @@ const controller = {
 
             // Find and update
         const resp = await Cliente
-            .findOneAndUpdate({ _id: params._id }, params, { new: true }, (err, clienteUpdated) => {
-                conn.close()
-                if (err) {
-                    return res.status(500).send({
-                        status: 'error',
-                        message: 'Error al actualizar'
+            .findByIdAndUpdate(params._id , params, { new: true } )
+                .then( updatd => {
+                    conn.close()
+                    return res.status(200).send({
+                        status: 'success',
+                        message: "Actualizado correctamente",
+                        cliente: updatd
                     })
-                }
-                if (!clienteUpdated) {
-                    return res.status(404).send({
+                .catch(err => {
+                    conn.close()
+                    return res.status(200).send({
                         status: 'error',
-                        message: 'No existe el cliente'
+                        message: "No se pudo actualizar " + err
                     })
-                }
-                return res.status(200).send({
-                    status: 'success',
-                    message: "Actualizado correctamente",
-                    cliente: clienteUpdated
                 })
+                
             })
     },
 

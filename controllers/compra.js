@@ -174,12 +174,11 @@ var controller = {
                     populate: { path: 'producto' },
                 })
                 .populate({
-                    path: 'VentaItems',
-                    populate: { path: 'producto', populate: { path: 'unidad' } },
-                })
-                .populate({
                     path: 'ventaItems',
-                    populate: { path: 'producto', populate: { path: 'empaque' } },
+                    populate: { path: 'producto',
+                        populate: { path: 'unidad'},
+                        populate: { path: 'empaque'}
+                    }
                 })
                 .then(compras => {
                     conexion.close()
@@ -253,7 +252,9 @@ var controller = {
             .populate('ventaItems')
             .populate({
                 path: 'ventaItems',
-                populate: { path: 'venta' },
+                populate: { path: 'venta',
+                    populate: {path: 'cliente'} 
+                },
             })
             .populate({
                 path: 'ventaItems',
@@ -261,15 +262,10 @@ var controller = {
             })
             .populate({
                 path: 'ventaItems',
-                populate: { path: 'producto' },
-            })
-            .populate({
-                path: 'VentaItems',
-                populate: { path: 'producto', populate: { path: 'unidad' } },
-            })
-            .populate({
-                path: 'ventaItems',
-                populate: { path: 'producto', populate: { path: 'empaque' } },
+                populate: { path: 'producto',
+                    populate: { path: 'unidad'},
+                    populate: { path: 'empaque'}
+                }
             })
             .then(compras => {
                 conn.close()

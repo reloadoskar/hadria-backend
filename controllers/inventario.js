@@ -12,7 +12,6 @@ var controller = {
             .select('clave folio ubicacion items importe')
             .populate({
                 path: 'items',
-                select: 'stock empaques cantidad costo empaquesStock producto, ubicacion',
                 populate: {
                     path: 'producto ubicacion',
                     select: 'nombre descripcion unidad empaque',
@@ -65,6 +64,7 @@ var controller = {
                 empaques: 1,
                 empaquesStock: 1,
                 ubicacion: 1, 
+                createdAt: 1,
                 "compra._id":1,
                 "compra.folio": 1, 
                 "compra.clave": 1, 
