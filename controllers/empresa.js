@@ -23,7 +23,6 @@ const controller = {
                 if(!empresa){
                     let emp = new Empresa()
                     emp.bd = bd
-                    console.log(emp)
                     emp.save((err, e) =>{
                         conn.close()
                         return res.status(200).send({
@@ -34,8 +33,8 @@ const controller = {
                 }else{
                     conn.close()
                     return res.status(200).send({
-                        status: 'error',
-                        message: "no existe la empresa",
+                        status: 'success',
+                        message: "Empresa encontrada",
                         empresa
                     })
                 }
