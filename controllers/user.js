@@ -339,8 +339,7 @@ const controller = {
             .catch(err => {
                 return res.status(200).send({
                     status: "error",
-                    message: "Algo paso con la BASE DE DATOS.",
-                    err
+                    message: "Algo paso con la BASE DE DATOS."+err,
                 })
             })
         }catch(err){

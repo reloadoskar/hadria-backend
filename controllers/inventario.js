@@ -13,7 +13,7 @@ var controller = {
             .populate({
                 path: 'items',
                 populate: {
-                    path: 'producto ubicacion',
+                    path: 'producto',
                     select: 'nombre descripcion unidad empaque',
                     populate: {
                         path: 'unidad empaque',
@@ -21,7 +21,10 @@ var controller = {
                     }
                 }
             })
-            .populate('items.ubicacion')
+            .populate({
+                path: 'items',
+                populate: {path: 'ubicacion'}
+            })
             .populate({path: 'provedor', select: "nombre clave"})
             .populate('ubicacion')
             .sort('folio')
@@ -39,8 +42,7 @@ var controller = {
                 conn.close()
                 return res.status(500).send({
                     status: 'error',
-                    message: "No se encontraron items.",
-                    err
+                    message: "No se encontraron items." + err,
                 })
             })
     },

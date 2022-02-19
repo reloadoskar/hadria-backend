@@ -47,7 +47,7 @@ const controller = {
         const Provedor = conn.model('Provedor')
         const resp = await Provedor
             .find({})
-            .sort('clave')
+            .sort({nombre: 1})
             .lean()
             .then(provedors => {
                 conn.close()

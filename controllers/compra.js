@@ -145,41 +145,9 @@ var controller = {
             const Compra = conexion.model('Compra')
             const resp = await Compra
                 .find({ status: "ACTIVO" })
+                .select("folio clave saldo status")
                 .sort('folio')
                 .lean()
-                .populate('provedor', 'nombre diasDeCredito comision email cta1 tel1')
-                .populate('ubicacion')
-                .populate('tipoCompra')
-                .populate({
-                    path: 'items',
-                    populate: { path: 'producto' },
-                })
-                .populate({
-                    path: 'items',
-                    populate: { path: 'ubicacion' },
-                })
-                .populate({
-                    path: 'items',
-                    populate: { path: 'producto', populate: { path: 'unidad' } },
-                })
-                .populate({
-                    path: 'items',
-                    populate: { path: 'producto', populate: { path: 'empaque' } },
-                })
-                .populate('gastos')
-                .populate('pagos')
-                .populate('ventaItems')
-                .populate({
-                    path: 'ventaItems',
-                    populate: { path: 'producto' },
-                })
-                .populate({
-                    path: 'ventaItems',
-                    populate: { path: 'producto',
-                        populate: { path: 'unidad'},
-                        populate: { path: 'empaque'}
-                    }
-                })
                 .then(compras => {
                     conexion.close()
                     return res.status(200).send({
@@ -451,7 +419,7 @@ var controller = {
                 conn.close()
                 return res.status(404).send({
                     status: "error",
-                    err
+                    message: "Error: " + err
                 })
             })
     },

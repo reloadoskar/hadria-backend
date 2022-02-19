@@ -3,95 +3,158 @@ const con = require('../conections/hadriaUser')
 exports.cxp_list = async (req, res) => {
     const bd = req.params.bd
     const conn = con(bd)
-    const Provedor = conn.model('Provedor')
 
-    const resp = await Provedor
-        .find({cuentas: {$ne: []}})
-        .select('nombre tel1 diasDeCredito cuentas')
-        .populate({
-            path: 'cuentas',
-            match: { saldo: {$ne: 0} },
-            select: 'concepto folio importe saldo compra',
-            populate: { path: 'compra', select: 'clave folio fecha'}
+    const Egreso = conn.model('Egreso')
+
+    let resp = await Egreso
+        .find({saldo: {$gt:0}})
+        .populate({ 
+            path: 'compra',
+            select: 'folio provedor remision importe saldo fecha status clave',
+            populate: {path: 'provedor', select: 'nombre clave diasDeCredito comision'}
         })
         .lean()
-        .then( provs => {
+        .then( cuentas => {
             conn.close()
             return res.status(200).send({
                 status: 'success',
                 message: 'Cuentas encontradas',
-                cuentas: provs
+                cuentas
             })
         })
-        .catch(err => {
+        .catch(error =>{
             conn.close()
             return res.status(500).send({
                 status: 'error',
-                message: 'Cuentas encontradas',
-                err
+                message: 'Cuentas encontradas'+ error.message,
             })
         })
 }
 
-exports.cxp_create_pago = (req, res) => {
-    var params = req.body
+exports.cxp_create_pago = async (req, res) => {
+    let params = req.body
     const bd = req.params.bd
     const conn = con(bd)
 
-    var Egreso = conn.model('Egreso')
-    var Provedor = conn.model('Provedor')
-    var Compra = conn.model('Compra')
+    const Egreso = conn.model('Egreso')
+    // const Provedor = conn.model('Provedor')
+    const Compra = conn.model('Compra')
+    
+    const cuentas = params.provedor.cuentas
+    let importe = params.importe
 
-    Egreso.estimatedDocumentCount()
-    .exec((err,c)=> {
-        if(err){console.log(err)}
-        var nextFolio = c + 1
-        var egreso = new Egreso()
-        egreso.folio = nextFolio
-        egreso.ubicacion = params.ubicacion
-        egreso.fecha = params.fecha
-        egreso.tipo = 'PAGO'
-        egreso.importe = params.importe
-        egreso.saldo = 0
-        egreso.descripcion = "PAGO A: " + params.cuenta.concepto + " #"+ params.cuenta.compra.folio
-        egreso.compra = params.cuenta.compra
-        egreso.concepto = "PAGO" 
-        Compra.findById(params.cuenta.compra).exec((err, compra)=>{
-            compra.pagos.push(egreso._id)
-            compra.save()
-        })
-        Provedor.findById(params.provedor).exec((err, provedor)=> {
-            if(err || !provedor){console.log(err)}
-            // console.log(provedor)
-            provedor.pagos.push(egreso._id)
-            provedor.save((err, saved)=>{
-                if(err){console.log(err)}
-                egreso.save((err, egSaved) => {
-                    if(err){console.log(err)}
-                    Egreso.findById(params.cuenta._id).exec((err, eg)=>{
-                        if(err){
-                            conn.close()
-                            return res.status(500).send({
-                                status: "error",
-                                message: "¡Ups! Ocurrió un Eerror.",
-                                err
-                            })
-                        }
-                        eg.saldo -= params.importe
-                        eg.save((err, saved)=>{
-                            conn.close()
-                            return res.status(200).send({
-                                status: "success",
-                                message: "Pago registrado correctamente",
-                                pago: egSaved
-                            })
-                        })
-                    })
-
-
-                })
+    console.log("Creando pago por: " + importe)
+    console.log("Obteniendo la cuenta de egresos...")
+    const ultimoFolioEgreso = await Egreso.estimatedDocumentCount()
+    console.log("Obtenido: "+ ultimoFolioEgreso)
+    
+    let siguienteFolio = ultimoFolioEgreso + 1
+    
+    console.log("Mapeando cuentas...")
+    
+    let i = 0;
+    while (importe > 0) {
+        console.info("Cuenta id: " + cuentas[i]._id + " saldo: $" + cuentas[i].saldo)
+        let saldo = cuentas[i].saldo;  
+        if(saldo>=importe){ 
+            console.log("Saldo mayor/igual al importe: " + i + ":" + cuentas[i].saldo)
+            console.log("Creando nuevo egreso...")
+            const nuevoEgreso = await Egreso.create({
+                folio: siguienteFolio + i,
+                ubicacion: params.ubicacion,
+                fecha: params.fecha,
+                tipo: 'PAGO',
+                importe: importe,
+                saldo: 0,
+                descripcion: "PAGO A: " + cuentas[i].concepto + " #"+ cuentas[i].compra.folio,
+                compra: cuentas[i].compra,
+                concepto: "PAGO",
             })
-        })
+            .then(async egresoGuardado=>{
+                console.log("Egreso guardado: "+ egresoGuardado)
+
+                console.log("Actualizando compra: "+ cuentas[i].compra._id)
+                let compraActualizada = await Compra
+                    .findOneAndUpdate({_id: cuentas[i].compra._id}, {$push: {pagos: egresoGuardado._id}} , {new: true})
+                    .then( async compra=>{
+                        console.log("Compra actualizada." + compra)
+
+                        console.log("Actualizando cuenta...." + cuentas[i]._id )
+                        let nuevoSaldo = cuentas[i].saldo-=importe;
+                        let cuentaActualizada = await Egreso
+                            .findOneAndUpdate({id_: cuentas[i]._id}, { saldo: nuevoSaldo }, {new: true})
+                            .then(cuenta=>{
+                                console.log("Cuenta actualizada: " + cuenta)
+                            })
+                            .catch(err=>{
+                                conn.close()
+                                console.error("Error: no se actualizo la cuenta." + err)
+                            })
+                    })
+                    .catch(err=>{
+                        conn.close()
+                        console.error("Error: no se actualizo la compra." + err)
+                    })
+            })
+            .catch(err=>{
+                conn.close()
+                console.error("Error: no se guardo el egreso." + err)
+            })
+            cuentas[i].saldo-=importe;
+            importe=0;  
+        }else{ //saldo menor al importe
+            console.log("Saldo menor al importe: " + i + ":" + cuentas[i].saldo)
+            console.log("Creando nuevo egreso...")
+            const nuevoEgreso = await Egreso.create({
+                folio: siguienteFolio + i,
+                ubicacion: params.ubicacion,
+                fecha: params.fecha,
+                tipo: 'PAGO',
+                importe: importe,
+                saldo: 0,
+                descripcion: "PAGO A: " + cuentas[i].concepto + " #"+ cuentas[i].compra.folio,
+                compra: cuentas[i].compra,
+                concepto: "PAGO",
+            })
+            .then( async egresoGuardado=>{
+                console.log("Egreso guardado: "+ egresoGuardado)
+
+                console.log("Actualizando compra: "+ cuentas[i].compra._id)
+                let compraActualizada = await Compra
+                    .findOneAndUpdate({_id: cuentas[i].compra._id}, { $push: {pagos: nuevoEgreso._id}}, {new: true})
+                    .then( async compra=>{
+                        console.info("Se actualizo la compra" + compra)
+
+                        console.log("Actualizando cuenta: " + cuentas[i]._id)
+                        let cuentaActualizada = await Egreso
+                            .findOneAndUpdate({_id: cuenta._id}, { saldo: 0 } , {new: true})
+                            .then( async cuenta=>{
+                                console.info("Se actualizo la cuenta" + cuenta)
+                            })
+                            .catch(err=>{
+                                conn.close()
+                                console.error("Error: no se actualizo la cuenta." + err)
+                            })
+                    })
+                    .catch(err=>{
+                        conn.close()
+                        console.error("Error: no se actualizo la compra." + err)
+                    })
+            })
+            .catch(err=>{
+                conn.close()
+                console.error("Error: no se guardo el egreso." + err)
+            })
+            importe-=cuentas[i].saldo;
+            cuentas[i].saldo=0;
+        }
+        i++;  
+    }
+    conn.close()
+    return res.status(200).send({
+        status: 'success',
+        message: "Pago guardado.",
+        cuentas
     })
 }
 

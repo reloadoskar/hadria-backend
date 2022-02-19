@@ -116,22 +116,21 @@ const controller = {
             // Find and update
         const resp = await Cliente
             .findByIdAndUpdate(params._id , params, { new: true } )
-                .then( updatd => {
-                    conn.close()
-                    return res.status(200).send({
-                        status: 'success',
-                        message: "Actualizado correctamente",
-                        cliente: updatd
-                    })
-                .catch(err => {
-                    conn.close()
-                    return res.status(200).send({
-                        status: 'error',
-                        message: "No se pudo actualizar " + err
-                    })
+            .then( updatd => {
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    message: "Actualizado correctamente",
+                    cliente: updatd
                 })
-                
             })
+            .catch(err => {
+                conn.close()
+                return res.status(200).send({
+                    status: 'error',
+                    message: "No se pudo actualizar " + err
+                })
+            })                
     },
 
     delete: async (req, res) => {

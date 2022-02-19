@@ -2,12 +2,7 @@ const globals = require('../globals')
 const mongoose = require('mongoose');
 const clientOption = {
     socketTimeoutMS: 6000,
-    // keepAlive: 30000,
-    poolSize: 5,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false
+    maxPoolSize: 5
   };
 module.exports = function conexionLobby(){
   const conn = mongoose.createConnection(globals.dbMaster, clientOption);
