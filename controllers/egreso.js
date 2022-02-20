@@ -13,7 +13,11 @@ const controller = {
         let egreso = new Egreso()
         if(params.compra !== 1){
             const compra = await Compra.findById(params.compra)
-            compra.gastos.push(egreso._id)
+            if(params.tipo==="PAGO"){
+                compra.pagos.push(egreso._id)
+            }else{
+                compra.gastos.push(egreso._id)
+            }
             compra.save()
             
             egreso.compra = params.compra
