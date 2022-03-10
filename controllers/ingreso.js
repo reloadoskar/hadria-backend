@@ -16,12 +16,12 @@ const controller = {
         ingreso.tipoPago = params.tipoPago
         ingreso.importe = params.importe
 
-        if(ingreso.concepto === "PRESTAMO"){
+        if (ingreso.concepto === "PRESTAMO") {
             Compra.estimatedDocumentCount((err, count) => {
                 const nDocuments = count
                 var compra = new Compra()
                 compra._id = mongoose.Types.ObjectId(),
-                compra.folio = nDocuments + 1
+                    compra.folio = nDocuments + 1
                 compra.provedor = params.provedor
                 compra.ubicacion = params.ubicacion
                 compra.tipoCompra = "PRESTAMO"
@@ -31,12 +31,11 @@ const controller = {
                 compra.status = 'ACTIVO'
                 compra.save()
             })
-
         }
 
         ingreso.save((err, ingresoSaved) => {
             conn.close()
-            if(err){
+            if (err) {
                 return res.status(500).send({
                     status: 'error',
                     message: "No se pudo registrar el Ingreso.",
@@ -48,7 +47,6 @@ const controller = {
                 message: "Ingreso registrado correctamente.",
                 ingreso: ingresoSaved
             })
-
         })
     },
 
@@ -57,22 +55,22 @@ const controller = {
         const conn = con(bd)
         const Ingreso = conn.model('Ingreso')
         const resp = await Ingreso
-            .find({importe:{$gt:0}}).sort({fecha: -1, createdAt: -1})
-            .populate({path: 'ubicacion', select: 'nombre'})
+            .find({ importe: { $gt: 0 } }).sort({ fecha: -1, createdAt: -1 })
+            .populate({ path: 'ubicacion', select: 'nombre' })
             .lean()
             .then(ingresos => {
                 conn.close()
                 return res.status(200).send({
                     status: 'success',
                     ingresos
-                })                
+                })
             })
-            .catch( err => {
+            .catch(err => {
                 conn.close()
                 return res.status(500).send({
                     status: 'error',
                     message: 'Error al devolver los ingresos' + err
-                })            
+                })
             })
     },
 
@@ -81,7 +79,7 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const Ingreso = conn.model('Ingreso')
-        if(!ingresoId){
+        if (!ingresoId) {
             return res.status(404).send({
                 status: 'error',
                 message: 'No existe el ingreso'
@@ -98,8 +96,8 @@ const controller = {
                     ingreso
                 })
             })
-            .catch(err => {   
-                conn.close()     
+            .catch(err => {
+                conn.close()
                 return res.status(404).send({
                     status: 'success',
                     message: 'No existe el ingreso.',
@@ -108,27 +106,27 @@ const controller = {
             })
     },
 
-    getCuentasClientes: async (req, res) => {
+    getCuentasdelosClientes: async (req, res) => {
         const bd = req.params.bd
-        
-        const conn = con(bd)
-        const Ingreso = conn.model('Ingreso')
+        const conn = con(bd) 
+        const Ingreso = conn.model('Ingreso') 
 
         const resp = await Ingreso
             .aggregate([
-                {$match: { saldo: {$gt: 0} } },
-                {$lookup: { from: "ventas", localField: "venta", foreignField: "_id", as: "venta" } },
-                { $unwind: "$venta"},
-                {$addFields: {cliente: "$venta.cliente"}},
-                {$group: { 
-                    _id: "$cliente", 
-                    cliente: { $first: "$cliente" }, 
-                    saldo: { $sum: "$saldo" }, 
-                    importe: { $sum: "$importe" }  
-                    } 
+                { $match: { saldo: { $gt: 0 } } },
+                { $lookup: { from: "ventas", localField: "venta", foreignField: "_id", as: "venta" } },
+                { $unwind: "$venta" },
+                { $addFields: { cliente: "$venta.cliente" } },
+                {
+                    $group: {
+                        _id: "$cliente",
+                        cliente: { $first: "$cliente" },
+                        saldo: { $sum: "$saldo" },
+                        importe: { $sum: "$importe" }
+                    }
                 },
-                {$lookup: { from: "clientes", localField: "cliente", foreignField: "_id", as: "cliente" } },
-                { $unwind: "$cliente"}
+                { $lookup: { from: "clientes", localField: "cliente", foreignField: "_id", as: "cliente" } },
+                { $unwind: "$cliente" }
             ])
             .then(ingresos => {
                 conn.close()
@@ -137,10 +135,10 @@ const controller = {
                     cuentas: ingresos
                 })
             })
-            .catch(err=>{
+            .catch(err => {
                 return res.status(200).send({
                     status: "error",
-                    message: "aca: "+err,
+                    message: "aca: " + err,
                 })
             })
     },
@@ -150,9 +148,9 @@ const controller = {
         const conn = con(bd)
         const params = req.body;
         const Ingreso = conn.model('Ingreso')
-    
+
         const resp = await Ingreso
-            .findOneAndUpdate({_id: params._id}, params, {new:true})
+            .findOneAndUpdate({ _id: params._id }, params, { new: true })
             .then(ingresoUpdated => {
                 conn.close()
                 return res.status(200).send({
@@ -178,7 +176,7 @@ const controller = {
         const Ingreso = conn.model('Ingreso')
         const ingreso = await Ingreso
             .findById(ingresoId)
-            .catch(err=> {
+            .catch(err => {
                 conn.close()
                 return res.status(500).send({
                     status: 'error',
@@ -187,8 +185,8 @@ const controller = {
                 })
             })
 
-        const updateCuenta = await Ingreso.findByIdAndUpdate(ingreso.referenciaCobranza, {$inc: {saldo: ingreso.importe} })
-            .catch(err=> {
+        const updateCuenta = await Ingreso.findByIdAndUpdate(ingreso.referenciaCobranza, { $inc: { saldo: ingreso.importe } })
+            .catch(err => {
                 conn.close()
                 return res.status(500).send({
                     status: 'error',
@@ -198,9 +196,9 @@ const controller = {
             })
 
         const removeIngreso = await Ingreso
-            .findOneAndDelete({_id: ingresoId})
-            .then(ingresoRemoved => {   
-                conn.close()         
+            .findOneAndDelete({ _id: ingresoId })
+            .then(ingresoRemoved => {
+                conn.close()
                 return res.status(200).send({
                     status: 'success',
                     message: "Ingreso cancelado correctamente.",
@@ -215,7 +213,6 @@ const controller = {
                     err
                 })
             })
-        
     },
 
     getIngresosMonthYear: (req, res) => {
@@ -223,28 +220,26 @@ const controller = {
         const conn = con(bd)
         const year = req.params.year
         let month = req.params.month
-        // if (month < 10) {
-        //     month = "0" + month
-        // }
+
         const Ingreso = conn.model('Ingreso')
 
         const ing = Ingreso
-            .find({fecha: { $gt: year + "-" + month + "-00", $lt: year + "-" + month + "-32" }})
-            .sort({folio: 1})
+            .find({ fecha: { $gt: year + "-" + month + "-00", $lt: year + "-" + month + "-32" } })
+            .sort({ folio: 1 })
             .populate('ubicacion')
-            .then(ingresos=>{
+            .then(ingresos => {
                 conn.close()
                 return res.status(200).send({
                     status: "success",
-                    message: "Ingresos encontrados.",
+                    message: "Ingresos encontrados. 👍",
                     ingresos
                 })
             })
-            .catch(err=>{
+            .catch(err => {
                 conn.close()
                 return res.status(200).send({
                     status: "error",
-                    message: "Ocurrio un error: "+err
+                    message: "Ocurrio un error: " + err
                 })
 
             })
@@ -255,9 +250,9 @@ const controller = {
         const bd = req.params.bd
         const conn = con(bd)
         const fecha = req.params.fecha
-    
+
         const Ingreso = conn.model('Ingreso')
-        try{
+        try {
             Ingreso.ingresosDelDia(fecha)
                 .then(ingresos => {
                     conn.close()
@@ -271,8 +266,7 @@ const controller = {
                     console.log(err)
                     throw "No se cargaron los ingresos."
                 })
-            
-        }catch(err){
+        } catch (err) {
             conn.close()
             return res.status(200).send({
                 status: "error",
@@ -280,7 +274,6 @@ const controller = {
             })
         }
     }
-
 }
 
 module.exports = controller;

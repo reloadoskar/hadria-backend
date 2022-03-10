@@ -68,12 +68,6 @@ const controller = {
             })
     },
 
-    getClientesCuentas: async (req, res) => {
-        const bd = req.params.bd
-        const conn = con(bd)
-        
-    },
-
     getCliente: async (req, res) => {
         const clienteId = req.params.id;
         const bd = req.params.bd
