@@ -43,8 +43,7 @@ const controller = {
                 conn.close()            
                 return res.status(200).send({
                     status: 'warning',
-                    message: 'No existe el registro.',
-                    err
+                    message: 'No existe el registro.'+err
                 })
             })
     },

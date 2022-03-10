@@ -146,18 +146,18 @@ const controller = {
     },
 
     update: async (req, res) => {
-        const ingresoId = req.params.id;
         const bd = req.params.bd
         const conn = con(bd)
         const params = req.body;
         const Ingreso = conn.model('Ingreso')
     
         const resp = await Ingreso
-            .findOneAndUpdate({_id: ingresoId}, params, {new:true})
+            .findOneAndUpdate({_id: params._id}, params, {new:true})
             .then(ingresoUpdated => {
                 conn.close()
                 return res.status(200).send({
                     status: 'success',
+                    message: 'Todo bien 👌',
                     ingreso: ingresoUpdated
                 })
             })
@@ -218,19 +218,38 @@ const controller = {
         
     },
 
-    getIngresosDelMes: (req, res) => {
+    getIngresosMonthYear: (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
         const year = req.params.year
-        const month = req.params.month
-        if (mes < 10) {
-            mes = "0" + mes
-        }
-        return res.status(200).send({
-            status: "",
-            message: ""
-        })
+        let month = req.params.month
+        // if (month < 10) {
+        //     month = "0" + month
+        // }
+        const Ingreso = conn.model('Ingreso')
+
+        const ing = Ingreso
+            .find({fecha: { $gt: year + "-" + month + "-00", $lt: year + "-" + month + "-32" }})
+            .sort({folio: 1})
+            .populate('ubicacion')
+            .then(ingresos=>{
+                conn.close()
+                return res.status(200).send({
+                    status: "success",
+                    message: "Ingresos encontrados.",
+                    ingresos
+                })
+            })
+            .catch(err=>{
+                conn.close()
+                return res.status(200).send({
+                    status: "error",
+                    message: "Ocurrio un error: "+err
+                })
+
+            })
     },
+
 
     getIngresosDelDia: (req, res) => {
         const bd = req.params.bd
@@ -243,7 +262,7 @@ const controller = {
                 .then(ingresos => {
                     conn.close()
                     return res.status(200).send({
-                        status: "succes",
+                        status: "success",
                         ingresos
                     })
                 })

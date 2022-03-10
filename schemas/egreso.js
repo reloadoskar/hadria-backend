@@ -15,6 +15,7 @@ var EgresoSchema = Schema({
     saldo: Number,
     compra: {type: Schema.ObjectId, ref: 'Compra'},
     inversion: {type: Schema.ObjectId, ref: 'Inversion'},
+    cuenta: {type: Schema.ObjectId, ref: 'Egreso'}
 },{
     timestamps: true
 });

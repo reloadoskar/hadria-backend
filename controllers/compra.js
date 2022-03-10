@@ -176,9 +176,9 @@ var controller = {
         const bd = req.params.bd
         let mes = req.params.mes
         let year = req.params.year
-        if (mes < 10) {
-            mes = "0" + mes
-        }
+        // if (mes < 10) {
+        //     mes = "0" + mes
+        // }
         const conn = con(bd)
         const Compra = conn.model('Compra')
 

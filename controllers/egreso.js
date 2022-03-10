@@ -21,6 +21,7 @@ const controller = {
             compra.save()
             
             egreso.compra = params.compra
+            egreso.cuenta = params.cuenta
         }
 
         if(params.inversion){
@@ -197,6 +198,42 @@ const controller = {
                 message: err
             })
         }
+    },
+
+    getEgresosMonthYear: async (req, res) =>{
+        const bd = req.params.bd
+        const conn = con(bd)
+        let month = req.params.month
+        const year = req.params.year
+        // if (month < 10) {
+        //     month = "0" + month
+        // }
+        const Egreso = conn.model('Egreso')
+
+        const eg = Egreso
+            .find({fecha: { $gt: year + "-" + month + "-00", $lt: year + "-" + month + "-32" }})
+            .sort({folio: 1})
+            .populate({
+                path:'compra',
+                select: 'folio provedor ubicacion remision importe fecha clave'
+            })
+            .populate('ubicacion')
+            .then(egresos =>{
+                conn.close()
+                return res.status(200).send({
+                    status: 'success',
+                    message: "Egresos encontrados.",
+                    egresos
+                })
+            })
+            .catch(err=>{
+                conn.close()
+                return res.status(200).send({
+                    status: 'error',
+                    message: "Ocurrió un error. "+err,
+                })
+            })
+
     }
 
 }
