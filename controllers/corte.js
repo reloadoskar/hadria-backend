@@ -112,6 +112,7 @@ var controller = {
                 .lean()
                 .populate({path: 'venta', populate: {path: "cliente"} })
                 .populate('compra')
+                .populate('compraItem')
                 .populate('producto')
             corte.items = items
             conn.close()
