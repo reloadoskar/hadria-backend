@@ -181,8 +181,8 @@ var controller = {
         // }
         const conn = con(bd)
         const Compra = conn.model('Compra')
-
-        const resp = await Compra
+        const Liquidacion = conn.model('Liquidacion')
+        const compra = await Compra
             .find({
                 fecha: { $gt: year + "-" + mes + "-00", $lt: year + "-" + mes + "-32" }
             })
@@ -235,20 +235,22 @@ var controller = {
                     populate: { path: 'empaque'}
                 }
             })
-            .then(compras => {
+            compra.liquidacion = await Liquidacion.find({compra: compra._id})
+            console.log(compra)
+            // .then(compras => {
                 conn.close()
                 return res.status(200).send({
                     status: 'success',
                     compras: compras
                 })
-            })
-            .catch(err => {
-                conn.close()
-                return res.status(500).send({
-                    status: 'error',
-                    message: 'Error al devolver los compras' + err
-                })
-            })
+            // })
+            // .catch(err => {
+            //     conn.close()
+            //     return res.status(500).send({
+            //         status: 'error',
+            //         message: 'Error al devolver los compras' + err
+            //     })
+            // })
     },
 
     getComprasProvedor: async (req, res) => {

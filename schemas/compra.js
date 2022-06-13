@@ -15,6 +15,7 @@ var CompraSchema = Schema({
     ventas: [{ type: Schema.ObjectId, ref: 'Venta' }],
     ventaItems: [{ type: Schema.ObjectId, ref: 'VentaItem' }],
     movimientos:[{ type: Schema.ObjectId, ref: 'Movimiento' }],
+    liquidacions: [{ type: Schema.ObjectId, ref: 'Liquidacion' }],
     fecha: String,
     remision: String,
     saldo: Number,

@@ -1,8 +1,8 @@
 const globals = require('../globals')
 const mongoose = require('mongoose');
 const clientOption = {
-    socketTimeoutMS: 6000,
-    maxPoolSize: 5
+    socketTimeoutMS: 10000,
+    minPoolSize: 5
   };
 module.exports = function conexionLobby(){
   const conn = mongoose.createConnection(globals.dbMaster, clientOption);
@@ -11,7 +11,7 @@ module.exports = function conexionLobby(){
       console.log("HADRIA_2 On-Line");
   });
   conn.on('error',(err) =>{
-    conn.close()
+    //conn.close()
     console.log(err)
   })
   conn.on('close', () => {

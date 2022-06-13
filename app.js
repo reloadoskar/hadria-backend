@@ -38,7 +38,7 @@ var insumo_routes = require('./routes/insumo')
 var inversion_routes = require('./routes/inversion')
 var compra_item_routes = require('./routes/compraItem')
 var produccion_item_routes = require('./routes/produccionItem')
-
+var liquidacion_routes = require('./routes/liquidacion')
 //Usar rutas
 app.use('/api', producto_routes);
 app.use('/api', cliente_routes);
@@ -66,6 +66,7 @@ app.use('/api', insumo_routes)
 app.use('/api', compra_item_routes)
 app.use('/api', produccion_item_routes)
 app.use('/api', inversion_routes)
+app.use('/api', liquidacion_routes)
 
 app.get('/', (req, res) => {
     res.send('Rutas cargadas y listas.');

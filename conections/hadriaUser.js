@@ -1,8 +1,10 @@
 const globals = require('../globals')
 const mongoose = require('mongoose');
 const clientOption = {
-    maxPoolSize: 10,
-    socketTimeoutMS: 6000,
+    minPoolSize: 10,
+    maxPoolSize: 50,
+    socketTimeoutMS: 10000,
+    serverSelectionTimeoutMS: 5000,
     family: 4
   }
 module.exports = function conexionCliente(bd) {
@@ -38,6 +40,7 @@ module.exports = function conexionCliente(bd) {
           conn.model('Unidad', require('../schemas/unidad'));
           conn.model('Venta', require('../schemas/venta'));
           conn.model('VentaItem', require('../schemas/venta_item'));
+          conn.model('Liquidacion', require('../schemas/liquidacion'));
           
           conn.on('connected', function(){
             console.log("Conectado -- Modelos Cargados.")

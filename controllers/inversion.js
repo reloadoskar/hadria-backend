@@ -4,41 +4,32 @@ const mongoose = require('mongoose');
 const con = require('../conections/hadriaUser')
 
 var controller = {
-    save: (req, res) => {
+    save: async (req, res) => {
         const params = req.body;
         const bd = req.params.bd
         const conn = con(bd)
         const Inversion = conn.model( 'Inversion')
         
-        Inversion.estimatedDocumentCount().then(count => {
-            var inversion = new Inversion();
-            inversion._id = mongoose.Types.ObjectId()
-            inversion.folio = count + 1
-
-            inversion.provedor = params.productor
-            inversion.descripcion = params.descripcion
-            inversion.fecha = params.fecha
-            inversion.status = 'ACTIVO'
-            inversion.save(function(error){
-                if(error){
-
-                }
-                inversion
-                    .populate('provedor', 'nombre')
-                    .execPopulate()
-                    .then((err, inv) => {
-                        conn.close()  
-                        return res.status(200).send({
-                            status: 'success',
-                            message: 'Inversion registrada correctamente.',
-                            inversion,
-                        })
-                            
-                    })
-
-            })
+        const numeroInversiones = await Inversion.estimatedDocumentCount()
+        const nuevaInversion = await Inversion.create({
+            _id : mongoose.Types.ObjectId(),
+            folio : numeroInversiones + 1,
+            provedor : params.productor,
+            descripcion : params.descripcion,
+            fecha : params.fecha,
+            status : 'ACTIVO',
         })
-    
+        
+        let inversionPopulated = await nuevaInversion.populate('provedor')
+
+        if(inversionPopulated){
+            conn.close()  
+            return res.status(200).send({
+                status: 'success',
+                message: 'Inversion registrada correctamente.',
+                inversion: inversionPopulated
+            })            
+        }
     },
 
     getInversions: async (req, res) => {

@@ -124,7 +124,7 @@ var controller = {
             conn.close()
             return res.status(500).send({
                 status: "error",
-                message: 'No se cargó el corte correctamente.',
+                message: 'No se cargó el corte correctamente.'+err,
                 corte,
                 err
             })
