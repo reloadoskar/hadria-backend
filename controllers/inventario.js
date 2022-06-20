@@ -189,6 +189,7 @@ var controller = {
             movimiento.item = params.itemsel
             movimiento.cantidad = params.itemselcantidad
             movimiento.empaques = params.itemselempaques
+            movimiento.clasificacion = params.clasificacion
             movimiento.pesadas = params.pesadas
             movimiento.save((err, movimiento) => {
                 if(err){
@@ -223,6 +224,7 @@ var controller = {
                         nitem.compra = params.itemsel.compra._id
                         nitem.producto = params.itemsel.producto._id
                         nitem.cantidad = params.itemselcantidad
+                        nitem.clasificacion = params.clasificacion
                         nitem.stock = params.itemselcantidad
                         nitem.empaques = params.itemselempaques
                         nitem.empaquesStock = params.itemselempaques

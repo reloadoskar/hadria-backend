@@ -7,6 +7,7 @@ var MovimientoSchema = Schema({
     origen: {},
     destino: {},
     item: {},
+    clasificacion: String,
     cantidad: Number,
     empaques: Number,
     pesadas: []

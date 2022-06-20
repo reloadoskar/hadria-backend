@@ -8,6 +8,7 @@ var CompraItemSchema = Schema({
     ubicacion: { type: Schema.ObjectId, ref: 'Ubicacion' },
     producto: { type: Schema.ObjectId, ref: 'Producto' },
     provedor: { type: Schema.ObjectId, ref: 'Provedor' },
+    clasificacion: String,
     cantidad: Number,
     empaques: Number,
     empaquesStock: Number,
