@@ -5,29 +5,22 @@ var controller = {
     getInventario: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        const Compra = conn.model('Compra')
+        // const Compra = conn.model('Compra')
+        const CompraItem = conn.model('CompraItem')
 
-        const resp = await Compra
-            .find({"status": "ACTIVO"})
-            .select('clave folio ubicacion items importe')
+        const inventario = await CompraItem
+            .find({"stock": {$gt:1} })
+            .populate('ubicacion')
+            .populate('compra')
             .populate({
-                path: 'items',
+                path: 'producto',
+                select: 'nombre descripcion unidad empaque',
                 populate: {
-                    path: 'producto',
-                    select: 'nombre descripcion unidad empaque',
-                    populate: {
-                        path: 'unidad empaque',
-                        select: 'abr'
-                    }
+                    path: 'unidad empaque',
+                    select: 'abr'
                 }
             })
-            .populate({
-                path: 'items',
-                populate: {path: 'ubicacion'}
-            })
-            .populate({path: 'provedor', select: "nombre clave"})
-            .populate('ubicacion')
-            .sort('folio')
+            .sort('createdAt')
             .lean()
             .then( inv => {
                 conn.close()
@@ -62,6 +55,7 @@ var controller = {
             .lookup({ from: 'empaques', localField: "producto.empaque", foreignField: '_id', as: 'productoempaque' })
             .project({
                 _id: 1,
+                clasificacion: 1,
                 stock: 1,
                 empaques: 1,
                 empaquesStock: 1,
@@ -121,6 +115,7 @@ var controller = {
                     empaques: 1,
                     empaquesStock: 1,
                     ubicacion: 1, 
+                    clasificacion: 1,
                     "compra._id":1,
                     "compra.folio": 1, 
                     "compra.clave": 1, 
@@ -139,6 +134,7 @@ var controller = {
                     items: {$push: {
                         _id: "$_id", 
                         compra: "$compra", 
+                        clasificacion: "$clasificacion",
                         producto: "$producto", 
                         productounidad: "$productounidad", 
                         productoempaque: "$productoempaque", 

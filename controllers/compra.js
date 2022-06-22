@@ -41,6 +41,7 @@ var controller = {
                             let compraItem = {}
                             compraItem._id = mongoose.Types.ObjectId()
                             compraItem.ubicacion = params.ubicacion
+                            compraItem.clasificacion = "LINEA"
                             compraItem.compra = compra._id
                             compraItem.producto = item.producto._id
                             compraItem.cantidad = item.cantidad
