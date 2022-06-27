@@ -8,6 +8,7 @@ var router = express.Router();
 //Rutas
 router.get('/:bd/inventario', Inventario.getInventario);
 router.post('/:bd/inventario/movimiento', Inventario.moveInventario);
+router.get('/:bd/inventario/movimientos/', Inventario.getMovimientos);
 router.get('/:bd/inventario/:ubicacion', Inventario.getInventarioBy);
 router.get('/:bd/inventarioxubicacion/', Inventario.getInventarioUbicacion);
 

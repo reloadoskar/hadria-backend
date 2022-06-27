@@ -165,6 +165,23 @@ var controller = {
         }
     },
 
+    getMovimientos: (req, res) => {
+        const bd = req.params.bd
+        const conn = con(bd)
+
+        const Movimiento = conn.model('Movimiento')
+
+        const movimientos = Movimiento.find()
+            .then(movs=>{
+                return res.status(200).send({
+                    status: "success",
+                    message: "Movimientos encontrados",
+                    movimientos: movs 
+                })
+            })
+
+    },
+
     moveInventario: (req, res) => {
         const bd = req.params.bd
         const params = req.body;
@@ -180,7 +197,7 @@ var controller = {
 
 
         const movimiento = new Movimiento()
-            movimiento.origen = params.origen
+            movimiento.origen = params.origensel
             movimiento.destino = params.destino
             movimiento.item = params.itemsel
             movimiento.cantidad = params.itemselcantidad
@@ -243,12 +260,13 @@ var controller = {
                                     if(err){
                                         return res.status(500).send({
                                             status:"error",
-                                            mesage: "No se actualizo la compra.",
+                                            message: "No se actualizo la compra.",
                                             err
                                         })
                                     }
                                     return res.status(200).send({
                                         status:'success',
+                                        message: "Movimiento guardado correctamente. 👍",
                                         movimiento
                                     })
                                 })

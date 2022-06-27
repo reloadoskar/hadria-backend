@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const clientOption = {
     minPoolSize: 10,
     maxPoolSize: 50,
-    socketTimeoutMS: 10000,
-    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 20000,
+    serverSelectionTimeoutMS: 10000,
     family: 4
   }
 module.exports = function conexionCliente(bd) {

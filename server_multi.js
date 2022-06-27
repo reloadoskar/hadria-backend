@@ -10,5 +10,6 @@ const server = app.listen(PORT, () => {
 })
 
 process.on('SIGINT', function(err) {
+    console.log("ADIOSITO TEMECUIDAS!!!")
     process.exit(err ? 1 : 0)
 })

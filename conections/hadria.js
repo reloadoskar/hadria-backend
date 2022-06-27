@@ -1,7 +1,7 @@
 const globals = require('../globals')
 const mongoose = require('mongoose');
 const clientOption = {
-    socketTimeoutMS: 10000,
+    socketTimeoutMS: 20000,
     minPoolSize: 5
   };
 module.exports = function conexionLobby(){
