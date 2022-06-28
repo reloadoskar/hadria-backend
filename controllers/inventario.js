@@ -10,8 +10,8 @@ var controller = {
 
         const inventario = await CompraItem
             .find({"stock": {$gt:1} })
-            .populate('ubicacion')
-            .populate('compra')
+            .populate({path:'ubicacion', select: 'nombre tipo'})
+            .populate({path:'compra', select:'folio fecha clave'})
             .populate({
                 path: 'producto',
                 select: 'nombre descripcion unidad empaque',
@@ -167,11 +167,17 @@ var controller = {
 
     getMovimientos: (req, res) => {
         const bd = req.params.bd
+        const mes = req.params.mes
+        const year = 2022
         const conn = con(bd)
+        let f1 = new Date(year + "-" + mes + "-01")
+        // console.log(f1)
+        let f2 = new Date(year + "-" + mes + "-31")
+        // console.log(f2)
 
         const Movimiento = conn.model('Movimiento')
 
-        const movimientos = Movimiento.find()
+        const movimientos = Movimiento.find({createdAt: { $gt: f1, $lt: f2 }})
             .then(movs=>{
                 return res.status(200).send({
                     status: "success",
