@@ -60,7 +60,11 @@ var controller = {
             venta.fecha = params.fecha
             venta.importe = params.total
             venta.tipoPago = params.tipoPago
-            
+            venta.pesadas = params.pesadas
+            venta.tara=params.tara
+            venta.ttara=params.ttara
+            venta.bruto=params.bruto
+            venta.neto=params.neto
             let items = params.items
 
             items.map(item => {

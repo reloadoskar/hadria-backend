@@ -16,6 +16,11 @@ var VentaSchema = Schema({
     items: [{type: Schema.ObjectId, ref: 'VentaItem'}],
     pagos: [{type: Schema.ObjectId, ref: 'Ingreso'}],
     status: String,
+    pesadas: [],
+    tara: Number,
+    ttara: Number,
+    bruto: Number,
+    neto: Number
 },{
     timestamps: true
 });
