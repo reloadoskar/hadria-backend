@@ -5,7 +5,6 @@ var controller = {
     getInventario: async (req, res) => {
         const bd = req.params.bd
         const conn = con(bd)
-        // const Compra = conn.model('Compra')
         const CompraItem = conn.model('CompraItem')
 
         const inventario = await CompraItem
@@ -45,42 +44,12 @@ var controller = {
         const conn = con(bd)
         const ubicacion = req.params.ubicacion;
         const CompraItem = conn.model('CompraItem')
-        CompraItem        
-            .aggregate()
-            .match({ubicacion: mongoose.Types.ObjectId(ubicacion), stock: { $gt: 0} })
-            .lookup({ from: 'ubicacions', localField: "ubicacion", foreignField: '_id', as: 'ubicacion' })
-            .lookup({ from: 'compras', localField: "compra", foreignField: '_id', as: 'compra' })
-            .lookup({ from: 'productos', localField: "producto", foreignField: '_id', as: 'producto' })
-            .lookup({ from: 'unidads', localField: "producto.unidad", foreignField: '_id', as: 'productounidad' })
-            .lookup({ from: 'empaques', localField: "producto.empaque", foreignField: '_id', as: 'productoempaque' })
-            .project({
-                _id: 1,
-                clasificacion: 1,
-                stock: 1,
-                empaques: 1,
-                empaquesStock: 1,
-                ubicacion: 1, 
-                createdAt: 1,
-                "compra._id":1,
-                "compra.folio": 1, 
-                "compra.clave": 1, 
-                "compra.status": 1,
-                "producto._id": 1,
-                "producto.descripcion": 1,
-                "productounidad": 1,
-                "productoempaque": 1,
+        CompraItem.find({ubicacion: mongoose.Types.ObjectId(ubicacion), stock: { $gt: 0} })
+            .populate('ubicacion')
+            .populate({path:'compra', select: 'folio clave'})
+            .populate({path: 'producto',
+                populate: {path: 'unidad empaque', select: 'abr'}
             })
-            .unwind('compra')
-            .unwind('producto')
-            .unwind('ubicacion')
-            .unwind('productounidad')
-            .unwind('productoempaque')
-            // .group({
-            //     _id: "$ubicacion",
-            //     items: {$push: {_id: "$_id", compra: "$compra", producto: "$producto", stock: "$stock", empaquesStock: "$empaquesStock", empaques: "$empaques"}},
-            // })
-            
-            .sort('_id.nombre')
             .then(inventario => {
                 conn.close()
                 return res.status(200).send({
@@ -210,6 +179,11 @@ var controller = {
             movimiento.empaques = params.itemselempaques
             movimiento.clasificacion = params.clasificacion
             movimiento.pesadas = params.pesadas
+            movimiento.comentario = params.comentario
+            movimiento.tara=params.tara
+            movimiento.ttara=params.ttara
+            movimiento.bruto=params.bruto
+            movimiento.neto=params.neto
             movimiento.save((err, movimiento) => {
                 if(err){
                     return res.status(500).send({

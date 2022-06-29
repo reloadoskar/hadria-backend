@@ -10,7 +10,12 @@ var MovimientoSchema = Schema({
     clasificacion: String,
     cantidad: Number,
     empaques: Number,
-    pesadas: []
+    comentario: String,
+    pesadas: [],
+    tara: Number,
+    ttara: Number,
+    bruto: Number,
+    neto: Number
 },{
     timestamps: true
 });
