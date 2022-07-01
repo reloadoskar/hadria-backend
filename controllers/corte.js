@@ -24,15 +24,19 @@ var controller = {
                     .lean() 
                     .populate({
                         path: 'items',
-                        populate: { path: 'producto'},
+                        populate: { path: 'producto', select: 'descripcion'},
                     })
                     .populate({
                         path: 'items',
-                        populate: { path: 'compra'},
+                        populate:{path:'compraItem',select:'clasificacion'}
                     })
-                    .populate('pagos')
+                    .populate({
+                        path: 'items',
+                        populate: { path: 'compra', select: 'clave folio'},
+                    })
+                    // .populate('pagos')
                     .populate('ubicacion')
-                    .populate('cliente')
+                    .populate({path:'cliente', select: 'nombre'})
                     .sort('folio')
                     .catch(err => {
                         throw new Error("No ventas " + err)
@@ -97,10 +101,28 @@ var controller = {
                     .lookup({ from: 'productos', localField: "producto", foreignField: '_id', as: 'producto' })
                     .lookup({ from: 'compras', localField: "compra", foreignField: '_id', as: 'compra' })
                     .lookup({ from: 'compraitems', localField: "compraItem", foreignField: '_id', as: 'item' })
-                    .group({_id: "$item", item: {$first:"$compraItem"}, compra: {$first:"$compra"}, producto: {$first: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
+                    .group({
+                        _id: "$item", 
+                        item: {$first:"$compraItem"}, 
+                        compra: {$first:"$compra"}, 
+                        producto: {$first: "$producto"}, 
+                        cantidad: { $sum: "$cantidad" }, 
+                        empaques: { $sum: "$empaques" }, 
+                        importe: { $sum: "$importe" } })
+                    .project({
+                        "_id":1,
+                        "item":1,
+                        "compra.clave":1,
+                        "compra.folio":1,
+                        "producto.descripcion":1,
+                        "cantidad":1,
+                        "empaques":1,
+                        "importe":1
+                    })
                     .unwind('producto')
                     .unwind('compra')
                     .unwind('item')
+                    .unwind('_id')
                     .sort({"_id": 1})
                     .catch( err => {
                         throw new Error("No se cargaron los items: "+ err)
@@ -110,10 +132,10 @@ var controller = {
 
             const items = await VentaItem.find({ubicacion: ubicacion, fecha: fecha})
                 .lean()
-                .populate({path: 'venta', populate: {path: "cliente"} })
-                .populate('compra')
-                .populate('compraItem')
-                .populate('producto')
+                .populate({path: 'venta', select:'folio cliente', populate: {path: "cliente", select:'nombre'} })
+                .populate({path:'compra', select: 'folio'})
+                .populate({path:'compraItem', select: 'clasificacion'})
+                .populate({path:'producto', select:'descripcion'})
             corte.items = items
             conn.close()
             return res.status(200).send({

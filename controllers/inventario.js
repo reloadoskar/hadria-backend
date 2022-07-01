@@ -146,7 +146,7 @@ var controller = {
 
         const Movimiento = conn.model('Movimiento')
 
-        const movimientos = Movimiento.find({createdAt: { $gt: f1, $lt: f2 }})
+        const movimientos = Movimiento.find({createdAt: { $gt: f1, $lt: f2 }}).sort({'createdAt': -1})
             .then(movs=>{
                 return res.status(200).send({
                     status: "success",
