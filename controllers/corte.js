@@ -20,15 +20,15 @@ var controller = {
         try{
             const ventas = await
                 Venta.find({"ubicacion": ubicacion, "fecha": fecha })
-                    .select('ubicacion cliente tipoPago acuenta importe items folio')
+                    .select('ubicacion cliente tipoPago acuenta importe items folio createdAt fecha')
                     .lean() 
                     .populate({
                         path: 'items',
-                        populate: { path: 'producto', select: 'descripcion'},
+                        populate: { path: 'producto', select: 'descripcion, createdAt'},
                     })
                     .populate({
                         path: 'items',
-                        populate:{path:'compraItem',select:'clasificacion'}
+                        populate:{path:'compraItem',select:'clasificacion, createdAt'}
                     })
                     .populate({
                         path: 'items',
@@ -132,9 +132,9 @@ var controller = {
 
             const items = await VentaItem.find({ubicacion: ubicacion, fecha: fecha})
                 .lean()
-                .populate({path: 'venta', select:'folio cliente', populate: {path: "cliente", select:'nombre'} })
+                .populate({path: 'venta', select:'folio cliente createdAt', populate: {path: "cliente", select:'nombre'} })
                 .populate({path:'compra', select: 'folio'})
-                .populate({path:'compraItem', select: 'clasificacion'})
+                .populate({path:'compraItem', select: 'clasificacion createdAt'})
                 .populate({path:'producto', select:'descripcion'})
             corte.items = items
             conn.close()
