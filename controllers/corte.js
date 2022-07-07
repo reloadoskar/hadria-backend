@@ -1,157 +1,244 @@
 'use strict'
 const con = require('../conections/hadriaUser')
+const {agruparPor, 
+    agruparPorObjeto, 
+    agrupaVentaItemsPorProducto, 
+    agrupaVentaItemsPorVenta,
+    agrupaVentaItemsPorCompraItem} = require('../tools/tools')
 var mongoose = require('mongoose');
 
 var controller = {
-    getData: async (req, res) => {
-        const ubicacion = req.params.ubicacion;
+    // getData: async (req, res) => {
+    //     const ubicacion = req.params.ubicacion;
+    //     const fecha = req.params.fecha;
+    //     const bd = req.params.bd
+    //     const conn = con(bd)
+    //     const Venta = conn.model('Venta')
+    //     const Ingreso = conn.model('Ingreso')
+    //     const Egreso = conn.model('Egreso')
+    //     const Ubicacion = conn.model('Ubicacion')
+    //     const VentaItem = conn.model('VentaItem')
+    //     let corte = {}
+    //     corte.fecha = fecha
+    //     corte.status="ABIERTO"
+
+    //     try{
+    //         const ventas = await
+    //             Venta.find({"ubicacion": ubicacion, "fecha": fecha })
+    //                 .select('ubicacion cliente tipoPago acuenta importe items folio createdAt fecha')
+    //                 .lean() 
+    //                 .populate({
+    //                     path: 'items',
+    //                     populate: { path: 'producto', select: 'descripcion, createdAt'},
+    //                 })
+    //                 .populate({
+    //                     path: 'items',
+    //                     populate:{path:'compraItem',select:'clasificacion, createdAt'}
+    //                 })
+    //                 .populate({
+    //                     path: 'items',
+    //                     populate: { path: 'compra', select: 'clave folio'},
+    //                 })
+    //                 // .populate('pagos')
+    //                 .populate('ubicacion')
+    //                 .populate({path:'cliente', select: 'nombre'})
+    //                 .sort('folio')
+    //                 .catch(err => {
+    //                     throw new Error("No ventas " + err)
+    //                 })
+    //         corte.ventas = ventas
+
+    //         const egresos = await Egreso
+    //             .find({
+    //                 ubicacion: ubicacion, 
+    //                 fecha: fecha, 
+    //                 tipo: {$ne: 'COMPRA'}})
+    //             .select("ubicacion concepto descripcion fecha importe")
+    //             .lean()
+    //             .populate('ubicacion')
+    //             .sort('ubicacion concepto descripcion fecha importe')
+
+    //         corte.egresos = egresos
+
+    //         const ingresos = await Ingreso
+    //             .find({"ubicacion": ubicacion, "fecha": fecha, concepto: {$ne: 'VENTA'}})
+    //             .select('ubicacion concepto descripcion fecha importe')
+    //             .lean()
+    //             .populate('ubicacion')
+    //             .sort('ubicacion concepto descripcion fecha importe')
+            
+    //         corte.ingresos = ingresos
+
+    //         const creditos = await Venta
+    //             .find({"tipoPago": 'CRÉDITO', "ubicacion": ubicacion, "fecha": fecha })
+    //             .select('folio ubicacion cliente tipoPago acuenta items saldo importe')
+    //             .lean()
+    //             .populate('ubicacion')
+    //             .populate('cliente')
+    //             .populate({
+    //                 path: 'items',
+    //                 populate: { path: 'producto'},
+    //             })
+    //             .populate({
+    //                 path: 'items',
+    //                 populate: {path: 'compra', select: 'clave folio'}
+    //             })
+    //             .sort('ubicacion cliente tipoPago acuenta saldo importe')
+
+    //         corte.creditos = creditos
+            
+    //         const ub = await Ubicacion
+    //             .findById(ubicacion)
+    //             .lean()
+                
+    //         corte.ubicacion = ub
+
+    //         const resumn = await VentaItem
+    //             .aggregate()
+    //             .match({ubicacion: mongoose.Types.ObjectId(ubicacion), fecha: fecha })
+    //             // V 1.0
+    //             // .group({_id: {producto: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
+    //             // .lookup({ from: 'productos', localField: "_id.producto", foreignField: '_id', as: 'producto' })
+    //             // .sort({"_id.producto": 1, "_id.precio": -1})
+    //             // .unwind('producto')
+
+    //             // V 2.0
+    //                 .lookup({ from: 'productos', localField: "producto", foreignField: '_id', as: 'producto' })
+    //                 .lookup({ from: 'compras', localField: "compra", foreignField: '_id', as: 'compra' })
+    //                 .lookup({ from: 'compraitems', localField: "compraItem", foreignField: '_id', as: 'item' })
+    //                 .group({
+    //                     _id: "$item", 
+    //                     item: {$first:"$compraItem"}, 
+    //                     compra: {$first:"$compra"}, 
+    //                     producto: {$first: "$producto"}, 
+    //                     cantidad: { $sum: "$cantidad" }, 
+    //                     empaques: { $sum: "$empaques" }, 
+    //                     importe: { $sum: "$importe" } })
+    //                 .project({
+    //                     "_id":1,
+    //                     "item":1,
+    //                     "compra.clave":1,
+    //                     "compra.folio":1,
+    //                     "producto.descripcion":1,
+    //                     "cantidad":1,
+    //                     "empaques":1,
+    //                     "importe":1
+    //                 })
+    //                 .unwind('producto')
+    //                 .unwind('compra')
+    //                 .unwind('item')
+    //                 .unwind('_id')
+    //                 .sort({"_id": 1})
+    //                 .catch( err => {
+    //                     throw new Error("No se cargaron los items: "+ err)
+    //                 })
+                
+    //         corte.resumenVentas = resumn
+
+    //         const items = await VentaItem.find({ubicacion: ubicacion, fecha: fecha})
+    //             .lean()
+    //             .populate({path: 'venta', select:'folio cliente createdAt', populate: {path: "cliente", select:'nombre'} })
+    //             .populate({path:'compra', select: 'folio'})
+    //             .populate({path:'compraItem', select: 'clasificacion createdAt'})
+    //             .populate({path:'producto', select:'descripcion'})
+    //         corte.items = items
+    //         conn.close()
+    //         return res.status(200).send({
+    //             corte
+    //         })
+                
+    //     }catch(err){
+    //         conn.close()
+    //         return res.status(500).send({
+    //             status: "error",
+    //             message: 'No se cargó el corte correctamente.'+err,
+    //             corte,
+    //             err
+    //         })
+    //     }
+
+    // },
+    getData: async(req,res)=>{
+        const ubicacionid = req.params.ubicacion;
         const fecha = req.params.fecha;
         const bd = req.params.bd
         const conn = con(bd)
-        const Venta = conn.model('Venta')
-        const Ingreso = conn.model('Ingreso')
-        const Egreso = conn.model('Egreso')
-        const Ubicacion = conn.model('Ubicacion')
         const VentaItem = conn.model('VentaItem')
-        let corte = {}
-        corte.fecha = fecha
-        corte.status="ABIERTO"
+        const Venta = conn.model('Venta')
+        const Egreso = conn.model('Egreso')
+        const Ingreso = conn.model('Ingreso')
+        const Ubicacion = conn.model('Ubicacion')
+        const Corte = conn.model('Corte')
 
-        try{
-            const ventas = await
-                Venta.find({"ubicacion": ubicacion, "fecha": fecha })
-                    .select('ubicacion cliente tipoPago acuenta importe items folio createdAt fecha')
-                    .lean() 
-                    .populate({
-                        path: 'items',
-                        populate: { path: 'producto', select: 'descripcion, createdAt'},
-                    })
-                    .populate({
-                        path: 'items',
-                        populate:{path:'compraItem',select:'clasificacion, createdAt'}
-                    })
-                    .populate({
-                        path: 'items',
-                        populate: { path: 'compra', select: 'clave folio'},
-                    })
-                    // .populate('pagos')
-                    .populate('ubicacion')
-                    .populate({path:'cliente', select: 'nombre'})
-                    .sort('folio')
-                    .catch(err => {
-                        throw new Error("No ventas " + err)
-                    })
-            corte.ventas = ventas
+        var ecorte = await Corte.find({fecha:fecha,ubicacion: ubicacionid}).populate('ubicacion').lean()
 
-            const egresos = await Egreso
+            if(ecorte.length===1){
+                return res.status(200).send({
+                    status:'info',
+                    message: 'Corte encontrado',
+                    corte: ecorte[0]
+                })
+            }else{
+                let corte= {}
+                corte.fecha = fecha
+                corte.status="ABIERTO"
+                
+                const ub = await Ubicacion
+                .findById(ubicacionid)
+                .lean()
+                corte.ubicacion = ub
+                
+                const ventaItems = await VentaItem.find({ubicacion: ubicacionid, fecha: fecha})
+                    .populate({path:'venta',select: 'folio cliente pesadas', populate:{path:'cliente',select: 'nombre'}})
+                    .populate({path:'compra', select: 'folio'})
+                    .populate({path:'compraItem', select: 'producto clasificacion stock cantidad empaquesStock empaques createdAt', populate:{path:'producto', select: 'descripcion empaque unidad', populate:'empaque unidad'}})
+                    .populate({path:'producto', select: 'descripcion empaque unidad'})
+                corte.ventaItems = ventaItems
+                corte.ventaPorProducto = agrupaVentaItemsPorProducto(ventaItems, 'producto')
+                corte.ventaPorCompraItem = agrupaVentaItemsPorCompraItem(ventaItems)
+                corte.ventas = agrupaVentaItemsPorVenta(ventaItems)
+                
+                const egresos = await Egreso
                 .find({
-                    ubicacion: ubicacion, 
-                    fecha: fecha, 
-                    tipo: {$ne: 'COMPRA'}})
-                .select("ubicacion concepto descripcion fecha importe")
-                .lean()
-                .populate('ubicacion')
-                .sort('ubicacion concepto descripcion fecha importe')
-
-            corte.egresos = egresos
-
-            const ingresos = await Ingreso
-                .find({"ubicacion": ubicacion, "fecha": fecha, concepto: {$ne: 'VENTA'}})
-                .select('ubicacion concepto descripcion fecha importe')
-                .lean()
-                .populate('ubicacion')
-                .sort('ubicacion concepto descripcion fecha importe')
-            
-            corte.ingresos = ingresos
-
-            const creditos = await Venta
-                .find({"tipoPago": 'CRÉDITO', "ubicacion": ubicacion, "fecha": fecha })
-                .select('folio ubicacion cliente tipoPago acuenta items saldo importe')
-                .lean()
-                .populate('ubicacion')
-                .populate('cliente')
-                .populate({
-                    path: 'items',
-                    populate: { path: 'producto'},
-                })
-                .populate({
-                    path: 'items',
-                    populate: {path: 'compra', select: 'clave folio'}
-                })
-                .sort('ubicacion cliente tipoPago acuenta saldo importe')
-
-            corte.creditos = creditos
-            
-            const ub = await Ubicacion
-                .findById(ubicacion)
-                .lean()
-                
-            corte.ubicacion = ub
-
-            const resumn = await VentaItem
-                .aggregate()
-                .match({ubicacion: mongoose.Types.ObjectId(ubicacion), fecha: fecha })
-                // V 1.0
-                // .group({_id: {producto: "$producto"}, cantidad: { $sum: "$cantidad" }, empaques: { $sum: "$empaques" }, importe: { $sum: "$importe" } })
-                // .lookup({ from: 'productos', localField: "_id.producto", foreignField: '_id', as: 'producto' })
-                // .sort({"_id.producto": 1, "_id.precio": -1})
-                // .unwind('producto')
-
-                // V 2.0
-                    .lookup({ from: 'productos', localField: "producto", foreignField: '_id', as: 'producto' })
-                    .lookup({ from: 'compras', localField: "compra", foreignField: '_id', as: 'compra' })
-                    .lookup({ from: 'compraitems', localField: "compraItem", foreignField: '_id', as: 'item' })
-                    .group({
-                        _id: "$item", 
-                        item: {$first:"$compraItem"}, 
-                        compra: {$first:"$compra"}, 
-                        producto: {$first: "$producto"}, 
-                        cantidad: { $sum: "$cantidad" }, 
-                        empaques: { $sum: "$empaques" }, 
-                        importe: { $sum: "$importe" } })
-                    .project({
-                        "_id":1,
-                        "item":1,
-                        "compra.clave":1,
-                        "compra.folio":1,
-                        "producto.descripcion":1,
-                        "cantidad":1,
-                        "empaques":1,
-                        "importe":1
+                        ubicacion: ubicacionid, 
+                        fecha: fecha, 
+                        tipo: {$ne: 'COMPRA'}})
+                    .select("ubicacion concepto descripcion fecha importe")
+                    .lean()
+                    .sort('fecha concepto descripcion importe')
+                    corte.egresos = egresos
+                    
+                    const ingresos = await Ingreso
+                    .find({"ubicacion": ubicacionid, "fecha": fecha, concepto: {$ne: 'VENTA'}})
+                    .select('ubicacion concepto descripcion fecha importe')
+                    .lean()
+                    .populate('ubicacion')
+                    .sort('ubicacion concepto descripcion fecha importe')
+                    corte.ingresos = ingresos
+                    
+                    const creditos = await Venta
+                    .find({"tipoPago": 'CRÉDITO', "ubicacion": ubicacionid, "fecha": fecha })
+                    .select('folio ubicacion cliente tipoPago acuenta items saldo importe')
+                    .lean()
+                    .populate({path:'cliente', select:'nombre tel1 email limite_de_credito'})
+                    .populate({
+                        path: 'items',
+                        populate: { path: 'producto'},
                     })
-                    .unwind('producto')
-                    .unwind('compra')
-                    .unwind('item')
-                    .unwind('_id')
-                    .sort({"_id": 1})
-                    .catch( err => {
-                        throw new Error("No se cargaron los items: "+ err)
+                    .populate({
+                        path: 'items',
+                        populate: {path: 'compra', select: 'clave folio'}
                     })
-                
-            corte.resumenVentas = resumn
-
-            const items = await VentaItem.find({ubicacion: ubicacion, fecha: fecha})
-                .lean()
-                .populate({path: 'venta', select:'folio cliente createdAt', populate: {path: "cliente", select:'nombre'} })
-                .populate({path:'compra', select: 'folio'})
-                .populate({path:'compraItem', select: 'clasificacion createdAt'})
-                .populate({path:'producto', select:'descripcion'})
-            corte.items = items
-            conn.close()
-            return res.status(200).send({
-                corte
-            })
-                
-        }catch(err){
-            conn.close()
-            return res.status(500).send({
-                status: "error",
-                message: 'No se cargó el corte correctamente.'+err,
-                corte,
-                err
-            })
-        }
-
+                    .sort('ubicacion cliente tipoPago acuenta saldo importe')
+                    corte.creditos = creditos
+                    
+                conn.close()
+                return res.status(200).send({
+                    status:'success',
+                    message: "Corte generado correctamente",
+                    corte: corte
+                })
+            }
     },
 
     save: (req, res) => {
