@@ -63,12 +63,13 @@ function agrupaVentaItemsPorVenta(items){
         (grupo[item.ventaFolio] = grupo[item.ventaFolio] || 
             { id: item.ventaFolio, 
                 venta: item.venta, 
+                compra: item.compra, 
                 items:[], 
                 cantidad:0, 
                 empaques:0, 
-                importe: item.importe
+                importe: 0
         })
-        grupo[item.ventaFolio].items.push( item.compraItem)
+        grupo[item.ventaFolio].items.push( item)
         grupo[item.ventaFolio].cantidad += item.cantidad
         grupo[item.ventaFolio].empaques += item.empaques
         grupo[item.ventaFolio].importe += item.importe

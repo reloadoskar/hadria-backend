@@ -15,6 +15,7 @@ const controller = {
         //Asignar valores
         cliente.nombre = params.nombre;
         cliente.direccion = params.direccion;
+        cliente.ubicacion = params.ubicacion;
         cliente.rfc = params.rfc;
         cliente.tel1 = params.tel1;
         cliente.email = params.email;

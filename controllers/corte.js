@@ -189,9 +189,10 @@ var controller = {
                 corte.ubicacion = ub
                 
                 const ventaItems = await VentaItem.find({ubicacion: ubicacionid, fecha: fecha})
-                    .populate({path:'venta',select: 'folio cliente pesadas', populate:{path:'cliente',select: 'nombre'}})
+                    .populate({path:'venta',select: 'ubicacion folio cliente pesadas fecha tipoPago acuenta', populate:{path:'cliente',select: 'nombre'}})
+                    .populate({path:'venta',populate:{path:'ubicacion',select: 'nombre'}})
                     .populate({path:'compra', select: 'folio'})
-                    .populate({path:'compraItem', select: 'producto clasificacion stock cantidad empaquesStock empaques createdAt', populate:{path:'producto', select: 'descripcion empaque unidad', populate:'empaque unidad'}})
+                    .populate({path:'compraItem', select: 'compra producto clasificacion stock cantidad empaquesStock empaques createdAt', populate:{path:'producto', select: 'descripcion empaque unidad', populate:'empaque unidad'}})
                     .populate({path:'producto', select: 'descripcion empaque unidad'})
                 corte.ventaItems = ventaItems
                 corte.ventaPorProducto = agrupaVentaItemsPorProducto(ventaItems, 'producto')
