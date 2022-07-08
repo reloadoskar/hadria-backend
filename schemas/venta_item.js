@@ -15,6 +15,11 @@ var VentaItemSchema = Schema({
     empaques: Number,
     precio: Number,
     importe: Number,
+    pesadas: [],
+    tara: Number,
+    ttara: Number,
+    bruto: Number,
+    neto: Number
 },{
     timestamps: true
 });
