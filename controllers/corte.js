@@ -197,7 +197,13 @@ var controller = {
                 corte.ventaItems = ventaItems
                 corte.ventaPorProducto = agrupaVentaItemsPorProducto(ventaItems, 'producto')
                 corte.ventaPorCompraItem = agrupaVentaItemsPorCompraItem(ventaItems)
-                corte.ventas = agrupaVentaItemsPorVenta(ventaItems)
+                // corte.ventas = agrupaVentaItemsPorVenta(ventaItems)
+
+                const ventas = await Venta.find({ubicacion: ubicacionid, fecha: fecha})
+                    .populate({path:'ubicacion', select: 'nombre'})
+                    .populate({path:'cliente', select:'nombre'})
+
+                corte.ventas = ventas
                 
                 const egresos = await Egreso
                 .find({

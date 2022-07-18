@@ -133,12 +133,12 @@ var controller = {
         })
     },
     
-    getVentas: (req, res) => {
+    getVentas: async (req, res) => {
         const bd= req.params.bd
         const conn = con(bd)
-        var Venta = conn.model('Venta')
-        Venta.find({})
-        .populate('compras')
+        var VentaItem = conn.model('VentaItem')
+        let ventas =  await VentaItem.find({})
+        // .populate('compras')
         .exec((err, ventas) => {
             conn.close()
             if(err)console.log(err)
@@ -246,29 +246,40 @@ var controller = {
         
     },
 
-    getVentasSemana: (req, res) => {
+    getVentasSemana: async (req, res) => {
         let fecha1 = req.query.f1
         let fecha2 = req.query.f2
         const bd= req.params.bd
         const conn = con(bd)
-        const Venta = conn.model('Venta')
-        Venta.aggregate([
-            { $match: { fecha: { $gte: fecha1, $lte: fecha2 } } },
-            { $group: 
-                { 
-                    _id: "$fecha" ,                
-                    totalVenta: { $sum: "$importe" } ,
-                } 
-            },
-            { $sort: {_id: 1 } }
-        ]).exec((err, ventas) => {
-            conn.close()
-            if(err)console.log(err)
-                res.status(200).send({
-                    status: "success",
-                    ventas
+        const VentaItem = conn.model('VentaItem')
+        // const Venta = conn.model('Venta')
+        // Venta.aggregate([
+        //     { $match: { fecha: { $gte: fecha1, $lte: fecha2 } } },
+        //     { $group: 
+        //         { 
+        //             _id: "$fecha" ,                
+        //             totalVenta: { $sum: "$importe" } ,
+        //         } 
+        //     },
+        //     { $sort: {_id: 1 } }
+        // ]).exec((err, ventas) => {
+        //     conn.close()
+        //     if(err)console.log(err)
+        //         res.status(200).send({
+        //             status: "success",
+        //             ventas
+        //         })
+        // })
+
+        let ventas= await VentaItem.find({fecha: { $gte: fecha1, $lte: fecha2 }})
+            .then(data=>{
+                return res.status(200).send({
+                    status: 'success',
+                    ventas: data
                 })
-        })
+            })
+
+
     },
 
     getVentaItems: async (req, res) => {
