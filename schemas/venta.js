@@ -16,6 +16,7 @@ var VentaSchema = Schema({
     items: [{type: Schema.ObjectId, ref: 'VentaItem'}],
     pagos: [{type: Schema.ObjectId, ref: 'Ingreso'}],
     status: String,
+    itemsCancelados: [{}],
     pesadas: [],
     tara: Number,
     ttara: Number,
