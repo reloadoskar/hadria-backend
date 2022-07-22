@@ -17,11 +17,6 @@ var VentaSchema = Schema({
     pagos: [{type: Schema.ObjectId, ref: 'Ingreso'}],
     status: String,
     itemsCancelados: [{}],
-    pesadas: [],
-    tara: Number,
-    ttara: Number,
-    bruto: Number,
-    neto: Number
 },{
     timestamps: true
 });

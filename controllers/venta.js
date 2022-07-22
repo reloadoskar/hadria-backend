@@ -60,11 +60,6 @@ var controller = {
             venta.fecha = params.fecha
             venta.importe = params.total
             venta.tipoPago = params.tipoPago
-            venta.pesadas = params.pesadas
-            venta.tara=params.tara
-            venta.ttara=params.ttara
-            venta.bruto=params.bruto
-            venta.neto=params.neto
             let items = params.items
 
             items.map(item => {
@@ -80,7 +75,11 @@ var controller = {
                     ventaItem.empaques = item.empaques
                     ventaItem.precio = item.precio
                     ventaItem.importe = item.importe
-
+                    ventaItem.pesadas = item.pesadas
+                    ventaItem.tara = item.tara
+                    ventaItem.ttara = item.ttara
+                    ventaItem.bruto = item.bruto
+                    ventaItem.neto = item.neto
                     ventaItem.save((err, vItmSaved)=>{
                         if(err)console.log(err)
                     })
