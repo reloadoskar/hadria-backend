@@ -374,10 +374,7 @@ var controller = {
                 venta.items.map(item => {
                     let stockUpdated = 0
                     let empUpdated = 0 
-            let empUpdated = 0 
-                    let empUpdated = 0 
-            let empUpdated = 0 
-                    let empUpdated = 0 
+                
                         stockUpdated = item.compraItem.stock + item.cantidad
                         empUpdated = item.compraItem.empaquesStock + item.empaques
 
