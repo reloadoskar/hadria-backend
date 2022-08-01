@@ -80,7 +80,7 @@ var controller = {
                     ventaItem.ttara = item.ttara
                     ventaItem.bruto = item.bruto
                     ventaItem.neto = item.neto
-                    ventaItem.save((err, vItmSaved)=>{
+                    ventaItem.save((err)=>{
                         if(err)console.log(err)
                     })
                     venta.items.push(ventaItem._id)
@@ -339,7 +339,7 @@ var controller = {
             })
     },
 
-    cancel: async (req, res) => {
+    cancel: (req, res) => {
         const id = req.params.id;
         const bd= req.params.bd
         const conn = con(bd)
@@ -347,130 +347,83 @@ var controller = {
         const VentaItem = conn.model('VentaItem')
         const CompraItem = conn.model('CompraItem')
         const Ingreso = conn.model('Ingreso')
-        let mensajes = []
-        let laventa = await Venta.findById(id)
-            .populate({path:'items', populate:{path: 'compraItem', populate:{path:'compra', select:'folio'}}})
-            .populate({path:'items', populate:{path: 'producto', select:'descripcion'}})
-            .exec()
-            laventa.tipoPago = "CANCELADO"
-            laventa.saldo = 0
-            laventa.importe = 0
-        let itemsquesevanacancelar = []
-            // laventa.itemsCancelados = []
-            // console.log("ITEMS: 🤖"+lositems)
-        // const noseguardolaventa = await laventa.save().catch(err=>console.log(err))
-        // if(noseguardolaventa){mensajes.push("No se guardó la venta. 💀⛔ "+ noseguardolaventa)}else{mensajes.push("Venta gurdada correctamente. ✅")}
-            // laventa.motivoCancelacion: 
-        laventa.items.forEach(item => {
-            itemsquesevanacancelar.push({
-                cantidad: item.cantidad,
-                empaques: item.empaques,
-                importe: item.importe,
-                pesadas: item.pesadas,
-                precio: item.precio,
-                producto: item.compraItem.compra.folio +"-"+ item.producto.descripcion +" "+ item.compraItem.clasificacion,
+        
+        Venta.findById(id)
+            .populate({
+                path: 'items',
+                populate: { path: 'compraItem'},
             })
-            let stockUpdated = 0
-            let empUpdated = 0 
-            stockUpdated = item.compraItem.stock + item.cantidad
-            empUpdated = item.compraItem.empaquesStock + item.empaques
-
-            CompraItem.updateOne({_id: item.compraItem._id },
-                {"$inc": { "stock":  +item.cantidad, "empaquesStock": +item.empaques }},
-                (err, doc) => {
-                    if(err){mensajes.push(err)}
-                    mensajes.push("Item actualizado")
+            .exec((err, venta) => {
+                if(!venta){
+                    return res.status(500).send({
+                        status: 'error',
+                        message: 'No se encontró la venta.'
+                    })
                 }
-            )
-        })
-        console.log(itemsquesevanacancelar)
-        laventa.itemsCancelados = itemsquesevanacancelar
-        let noseguardolaventa = await laventa.save().catch(err=>console.log(err))
-        let noventaitemseliminados = await VentaItem.deleteMany({"venta": laventa._id}).catch(err=>err)
-        // if(noventaitemseliminados){mensajes.push("No se eliminaron los items. 💀⛔ "+ noseguardolaventa)}else{mensajes.push("Items de la venta actualizados correctamente. ✅")}
-        let noingresoseliminados = await Ingreso.deleteMany({"venta": laventa._id}).catch(err=>err)
-        // if(noingresoseliminados){mensajes.push("No se eliminaron los ingresos. 💀⛔ "+ noseguardolaventa)}else{mensajes.push("Ingresos actualizados correctamente. ✅")}
+                if(err){
+                    return res.status(500).send({
+                        status: 'error',
+                        message: 'Ocurrio un error.'
+                    })
+                }
 
-        return res.status(200).send({
-            status: 'success',
-            mensajes: mensajes,
-            venta: laventa
-        })
+                venta.tipoPago = "CANCELADO"
+                venta.saldo = 0
+                venta.importe = 0
 
+                venta.items.map(item => {
+                    let stockUpdated = 0
+                    let empUpdated = 0 
+            let empUpdated = 0 
+                    let empUpdated = 0 
+            let empUpdated = 0 
+                    let empUpdated = 0 
+                        stockUpdated = item.compraItem.stock + item.cantidad
+                        empUpdated = item.compraItem.empaquesStock + item.empaques
 
+                    CompraItem.updateOne({_id: item.compraItem._id },
+                            {"$inc": { "stock":  +item.cantidad, "empaquesStock": +item.empaques }},
+                            (err, doc) => {
+                                if(err)console.log(err)
+                            }
+                        )
+                    // CompraItem.findById(item.compraItem._id).exec((err, item) => {
+                    //     if(err){console.log(err)}
+                    //     item.stock = stockUpdated
+                    //     item.empaquesStock = empUpdated
+                    //     item.save( (err, itemSaved) => {
+                    //         if(err)console.log("Error al actualizar stock"+err)
+                    //     })
+                    // })
+                })
 
-        // Venta.findById(id)
-        //     .populate({
-        //         path: 'items',
-        //         populate: { path: 'compraItem'},
-        //     })
-        //     .exec((err, venta) => {
-        //         if(!venta){
-        //             return res.status(500).send({
-        //                 status: 'error',
-        //                 message: 'No se encontró la venta.'
-        //             })
-        //         }
-        //         if(err){
-        //             return res.status(500).send({
-        //                 status: 'error',
-        //                 message: 'Ocurrio un error.'
-        //             })
-        //         }
-
-        //         venta.tipoPago = "CANCELADO"
-        //         venta.saldo = 0
-        //         venta.importe = 0
-
-        //         venta.items.map(item => {
-        //             let stockUpdated = 0
-        //             let empUpdated = 0 
-        //                 stockUpdated = item.compraItem.stock + item.cantidad
-        //                 empUpdated = item.compraItem.empaquesStock + item.empaques
-
-        //             CompraItem.updateOne({_id: item.compraItem._id },
-        //                     {"$inc": { "stock":  +item.cantidad, "empaquesStock": +item.empaques }},
-        //                     (err, doc) => {
-        //                         if(err)console.log(err)
-        //                     }
-        //                 )
-        //             // CompraItem.findById(item.compraItem._id).exec((err, item) => {
-        //             //     if(err){console.log(err)}
-        //             //     item.stock = stockUpdated
-        //             //     item.empaquesStock = empUpdated
-        //             //     item.save( (err, itemSaved) => {
-        //             //         if(err)console.log("Error al actualizar stock"+err)
-        //             //     })
-        //             // })
-        //         })
-
-        //         VentaItem.deleteMany({"venta": venta._id}, err => {
-        //             if(err)console.log(err)
-        //         })
+                VentaItem.deleteMany({"venta": venta._id}, err => {
+                    if(err)console.log(err)
+                })
                 
-        //         Ingreso.deleteMany({"venta": venta._id}, err => {
-        //             if(err)console.log(err)
-        //         })
+                Ingreso.deleteMany({"venta": venta._id}, err => {
+                    if(err)console.log(err)
+                })
                 
-        //         venta.save((err, ventaSaved) => {
+                venta.save((err, ventaSaved) => {
                     
-        //             conn.close()
-        //             if(err || !ventaSaved){
-        //                 return res.status(200).send({
-        //                     status: 'error',
-        //                     message: 'No se actualizo la venta.',
-        //                 })
-        //             }
-        //             else{
-        //                 return res.status(200).send({
-        //                     status: 'success',
-        //                     message: 'Venta cancelada correctamente',
-        //                     venta
-        //                 })
-        //             }
-        //         })
+                    conn.close()
+                    if(err || !ventaSaved){
+                        return res.status(200).send({
+                            status: 'error',
+                            message: 'No se actualizo la venta.',
+                        })
+                    }
+                    else{
+                        return res.status(200).send({
+                            status: 'success',
+                            message: 'Venta cancelada correctamente',
+                            venta
+                        })
+                    }
+                })
 
-        // })
+        })
 
     },
 
