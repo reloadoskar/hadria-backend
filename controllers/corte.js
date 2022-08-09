@@ -202,7 +202,7 @@ var controller = {
                 const ventas = await Venta.find({ubicacion: ubicacionid, fecha: fecha})
                     .populate({path:'ubicacion', select: 'nombre'})
                     .populate({path:'cliente', select:'nombre'})
-                    .populate({path:'items', select: 'compra compraItem', 
+                    .populate({path:'items', select: 'compra compraItem pesadas', 
                         populate: {path: 'compra', select: 'folio'}})
                     .populate({path:'items', 
                         populate: {path: 'compraItem', select: 'clasificacion producto', populate:{path:'producto', select:'descripcion'}}})

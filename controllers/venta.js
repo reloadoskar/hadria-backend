@@ -154,13 +154,23 @@ var controller = {
         const conn = con(bd)
         const Venta = conn.model('Venta')
         Venta.findOne({"folio": folio })
+            // .populate({
+            //     path: 'items',
+            //     populate: { path: 'producto'},
+            // })
             .populate({
                 path: 'items',
-                populate: { path: 'producto'},
+                populate: { path: 'compra', select: 'folio'},
             })
             .populate({
                 path: 'items',
-                populate: { path: 'compra'},
+                populate: { 
+                    path: 'compraItem', 
+                    select: 'clasificacion producto', 
+                    populate: {path: 'producto', 
+                        select: 'descripcion'
+                    }
+                },
             })
             .populate({path:'pagos', populate: {path: 'ubicacion'}})            
             .populate('ubicacion')
@@ -251,26 +261,11 @@ var controller = {
         const bd= req.params.bd
         const conn = con(bd)
         const VentaItem = conn.model('VentaItem')
-        // const Venta = conn.model('Venta')
-        // Venta.aggregate([
-        //     { $match: { fecha: { $gte: fecha1, $lte: fecha2 } } },
-        //     { $group: 
-        //         { 
-        //             _id: "$fecha" ,                
-        //             totalVenta: { $sum: "$importe" } ,
-        //         } 
-        //     },
-        //     { $sort: {_id: 1 } }
-        // ]).exec((err, ventas) => {
-        //     conn.close()
-        //     if(err)console.log(err)
-        //         res.status(200).send({
-        //             status: "success",
-        //             ventas
-        //         })
-        // })
 
         let ventas= await VentaItem.find({fecha: { $gte: fecha1, $lte: fecha2 }})
+            .populate({path:'ubicacion', select:'nombre'})
+            .populate({path:'producto', select:'descripcion'})
+            .populate({path:'compraItem', select:'clasificacion'})
             .then(data=>{
                 return res.status(200).send({
                     status: 'success',
