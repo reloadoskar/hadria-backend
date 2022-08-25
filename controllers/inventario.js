@@ -157,7 +157,7 @@ var controller = {
 
     },
 
-    moveInventario: (req, res) => {
+    moveInventario: async (req, res) => {
         const bd = req.params.bd
         const params = req.body;
         const destinoId = params.destino._id
@@ -170,8 +170,11 @@ var controller = {
         const Compra = conn.model('Compra')
         const Movimiento = conn.model('Movimiento')
 
+        const numeroMovimientos = await Movimiento.countDocuments()
 
         const movimiento = new Movimiento()
+            movimiento.folio = numeroMovimientos + 1
+            movimiento.fecha = params.fecha
             movimiento.origen = params.origensel
             movimiento.destino = params.destino
             movimiento.item = params.itemsel

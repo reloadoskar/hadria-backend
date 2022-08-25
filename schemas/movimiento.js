@@ -4,6 +4,8 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var MovimientoSchema = Schema({
+    fecha: String,
+    folio: Number,
     origen: {},
     destino: {},
     item: {},
