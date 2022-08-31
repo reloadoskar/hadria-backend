@@ -139,9 +139,9 @@ var controller = {
         const mes = req.params.mes
         const year = 2022
         const conn = con(bd)
-        let f1 = new Date(year + "-" + mes + "-01")
+        let f1 = new Date(year + "-" + mes + "-00")
         // console.log(f1)
-        let f2 = new Date(year + "-" + mes + "-31")
+        let f2 = new Date(year + "-" + mes + "-32")
         // console.log(f2)
 
         const Movimiento = conn.model('Movimiento')
