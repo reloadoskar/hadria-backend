@@ -136,17 +136,17 @@ var controller = {
 
     getMovimientos: (req, res) => {
         const bd = req.params.bd
-        const mes = req.params.mes
-        const year = 2022
+        const fecha = req.params.mes //cambiar por fecha
+        // const year = 2022
         const conn = con(bd)
-        let f1 = year + "-" + mes + "-01"
+        // let f1 = year + "-" + mes + "-01"
         // console.log(f1)
-        let f2 = year + "-" + mes + "-31"
+        // let f2 = year + "-" + mes + "-31"
         // console.log(f2)
 
         const Movimiento = conn.model('Movimiento')
 
-        const movimientos = Movimiento.find({fecha: { $gte: f1, $lte: f2 }}).sort({'createdAt': -1})
+        const movimientos = Movimiento.find({fecha: fecha}).sort({'createdAt': -1})
             .then(movs=>{
                 return res.status(200).send({
                     status: "success",
@@ -156,6 +156,28 @@ var controller = {
             })
 
     },
+    // getMovimientos: (req, res) => {
+    //     const bd = req.params.bd
+    //     const mes = req.params.mes
+    //     const year = 2022
+    //     const conn = con(bd)
+    //     let f1 = year + "-" + mes + "-01"
+    //     // console.log(f1)
+    //     let f2 = year + "-" + mes + "-31"
+    //     // console.log(f2)
+
+    //     const Movimiento = conn.model('Movimiento')
+
+    //     const movimientos = Movimiento.find({fecha: { $gte: f1, $lte: f2 }}).sort({'createdAt': -1})
+    //         .then(movs=>{
+    //             return res.status(200).send({
+    //                 status: "success",
+    //                 message: "Movimientos encontrados",
+    //                 movimientos: movs 
+    //             })
+    //         })
+
+    // },
 
     moveInventario: async (req, res) => {
         const bd = req.params.bd
